@@ -1,0 +1,33 @@
+### Intellij ###
+.idea/
+*.iml
+*.iws
+modules.xml
+*.ipr
+cmake-build-*/
+out/
+.idea_modules/
+
+# VisualStudioCode
+.vscode-test
+.vscode
+.history
+
+# macOs
+.DS_Store
+
+### Kotlin ###
+*.class
+*.log
+*.ctxt
+.kotlin/
+
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+.gradletasknamecache
+
+# Java heap dump
+*.hprof

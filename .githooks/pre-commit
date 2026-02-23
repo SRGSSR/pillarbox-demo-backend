@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Define color codes
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+
+# Script to run code quality checks
+echo "${YELLOW}Running ktlintCheck...${NC}"
+if ! ./gradlew ktlintCheck; then
+    echo "${RED}ktlintCheck failed ✘${NC}"
+    echo "${RED}Commit aborted.${NC}"
+    exit 1
+fi
+
+echo "${GREEN}ktlintCheck passed ✔${NC}"
+
+echo "${YELLOW}Running detekt...${NC}"
+if ! ./gradlew detekt; then
+    echo "${RED}detekt failed ✘${NC}"
+    echo "${RED}Commit aborted.${NC}"
+    exit 1
+fi
+
+echo "${GREEN}detekt passed ✔${NC}"
+
+exit 0

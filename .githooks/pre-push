@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-push Git hook script to run code quality checks
+
+# Define color codes
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+echo "${YELLOW}Running tests...${NC}"
+
+# Check if tests was successful
+if ! ./gradlew test; then
+    echo "${RED}There are failing tests ✘${NC}"
+    echo "${RED}Push aborted.${NC}"
+    exit 1
+fi

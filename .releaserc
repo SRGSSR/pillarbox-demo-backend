@@ -80,13 +80,6 @@
       }
     ],
     [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "./gradlew clean release -Pversion=${nextRelease.version} && echo ${nextRelease.version} > scripts/osctl/.version && (cd scripts/osctl && zip -r ../../osctl.zip .)",
-        "successCmd": "echo ${nextRelease.version} > VERSION"
-      }
-    ],
-    [
       "@semantic-release/github",
       {
         "assets": [
@@ -100,10 +93,6 @@
           {
             "path": "README.md",
             "label": "Readme"
-          },
-          {
-            "path": "osctl.zip",
-            "label": "OpenSearch CLI Tools"
           }
         ]
       }

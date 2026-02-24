@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "identifier": { "type": "string" },
+    "title": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "description": { "type": "string" },
+    "posterUrl": { "type": "string", "format": "uri" },
+    "seasonNumber": { "type": "integer" },
+    "episodeNumber": { "type": "integer" },
+    "viewport": { "type": "string" },
+    "source": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "type": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "videoFragmentFormat": { "type": "string" },
+        "audioFragmentsFormat": { "type": "string" }
+      },
+      "required": ["url"]
+    },
+    "drm": {
+      "type": "object",
+      "properties": {
+        "keySystem": { "type": "string" },
+        "licenseUrl": { "type": "string", "format": "uri" },
+        "certificateUrl": { "type": "string", "format": "uri" },
+        "multisession": { "type": "boolean" }
+      },
+      "required": ["keySystem", "licenseUrl"]
+    },
+    "subtitles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "kind": { "type": "string" },
+          "language": { "type": "string" },
+          "url": { "type": "string", "format": "uri" }
+        },
+        "required": ["label", "kind", "language", "url"]
+      }
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "identifier": { "type": "string" },
+          "title": { "type": "string" },
+          "posterUrl": { "type": "string", "format": "uri" },
+          "startTime": { "type": "number" },
+          "endTime": { "type": "number" }
+        },
+        "required": ["title", "startTime", "endTime"]
+      }
+    },
+    "timeRanges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "startTime": { "type": "number" },
+          "endTime": { "type": "number" },
+          "type": { "type": "string" }
+        },
+        "required": ["startTime", "endTime", "type"]
+      }
+    },
+    "customData": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": []
+}

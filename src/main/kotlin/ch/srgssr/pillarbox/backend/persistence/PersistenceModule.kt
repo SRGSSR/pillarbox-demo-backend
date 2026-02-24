@@ -1,7 +1,9 @@
 package ch.srgssr.pillarbox.backend.persistence
 
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
+import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.v1.core.Table
 import org.koin.dsl.module
 
 /**
@@ -12,5 +14,6 @@ import org.koin.dsl.module
  */
 fun persistenceModule() =
   module {
-    single { MediaRepository() }
+    single<Table> { MediaTable }
+    single { MediaRepository(get()) }
   }

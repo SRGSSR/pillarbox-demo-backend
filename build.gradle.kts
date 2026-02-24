@@ -27,20 +27,22 @@ repositories {
 
 dependencies {
   // Dependencies
+  implementation(libs.bundles.exposed)
+  implementation(libs.bundles.flyway)
   implementation(libs.bundles.koin)
   implementation(libs.bundles.kotlinx)
   implementation(libs.bundles.ktor.server)
+  implementation(libs.hikaricp)
   implementation(libs.logback.classic)
+  implementation(libs.postgresql)
 
   // Test Dependencies
+  testImplementation(libs.bundles.ktor.test)
+  testImplementation(libs.h2)
+  testImplementation(libs.json.schema.validator)
   testImplementation(libs.kotest.assertions.ktor)
-  testImplementation(libs.kotest.extensions.koin) {
-    exclude(group = "io.insert-koin", module = "koin-core")
-    exclude(group = "io.insert-koin", module = "koin-test")
-  }
   testImplementation(libs.kotest.runner.junit5)
   testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.ktor.server.test.host)
   testImplementation(libs.mockk)
 }
 
@@ -119,3 +121,26 @@ configurations
       }
     }
   }
+
+val startEnvironment =
+  tasks.register<Exec>("startEnvironment") {
+    group = "environment"
+    description = "Starts the Docker Compose environment for local development"
+    commandLine("docker", "compose", "up", "-d", "--wait")
+  }
+
+tasks.register<Exec>("stopEnvironment") {
+  group = "environment"
+  description = "Stops the Docker Compose environment"
+  commandLine("docker", "compose", "down")
+}
+
+tasks.withType<JavaExec>().configureEach {
+  environment("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox")
+  environment("DATABASE_USER", "dev_user")
+  environment("DATABASE_PASSWORD", "dev_password")
+}
+
+tasks.run {
+  dependsOn(startEnvironment)
+}

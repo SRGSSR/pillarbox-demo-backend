@@ -2,31 +2,69 @@
 
 ![Pillarbox logo](docs/README-images/logo.jpg)
 
-Pillarbox Demo Backend is a Kotlin-based Koin & Ktor service designed to act as the lightweight
-backbone for media management.
-
-This service provides a simple REST API to publish, organize, and retrieve media assets using a
-simplified format. It is built to serve the Pillarbox demo ecosystem.
+Pillarbox Demo Backend is a Kotlin-based service designed to act as the lightweight backbone for
+media management within the [Pillarbox](https://pillarbox.ch) ecosystem.
 
 ## Quick Guide
 
 **Prerequisites and Requirements**
 
 - **JDK 24** or higher
+- **Docker & Docker Compose**: Required for running the local environment.
 
-**Setup**
+### Development Commands
 
-1. Build the Application:
-   ```bash
-   ./gradlew clean build -x test
-   ```
+| Task      | Command                        |
+|-----------|--------------------------------|
+| **Build** | `./gradlew build`              |
+| **Run**   | `./gradlew run`                |
+| **Test**  | `./gradlew test`               |
+| **Lint**  | `./gradlew ktlintCheck detekt` |
 
-2. Run the Application:
+> [!TIP]
+> Running `./gradlew run` automatically starts the required infrastructure via Docker Compose.
 
-- Using Gradle:
-  ```bash
-  ./gradlew run
-  ```
+## Documentation
+
+This project is a Kotlin-based application built with [Ktor][ktor] and [Koin][koin],
+using [Exposed][exposed] and [Flyway][flyway] to manage data persistence in a PostgreSQL database.
+
+### Core Functionality
+
+The service bridges the gap between media management and player consumption through versioned
+endpoints:
+
+1. **Management API**: A CRUD interface to publish and organize media metadata using a rich domain
+   model.
+2. **Player API**: A specialized endpoint that serves media in a format optimized for Pillarbox
+   players. This API implements selection logic for streams and DRM based on client preferences.
+
+All player-facing responses are strictly validated against
+the [Pillarbox Standard Metadata Schema][pillarbox-schema].
+
+### Data Flow
+
+The following diagram illustrates how the Management and Player APIs interact with the persistence
+layer:
+
+```mermaid
+sequenceDiagram
+  participant Admin as Management Client
+  participant App as Pillarbox Backend
+  participant DB as Database
+  participant Player as Pillarbox Player
+  Note over Admin, DB: Media Publication
+  Admin ->> App: Publish Media
+  App ->> DB: Persist Domain Model
+  DB -->> App: Success
+  App -->> Admin: Created
+  Note over Player, DB: Media Consumption
+  Player ->> App: Request Playback
+  App ->> DB: Fetch Domain Model
+  DB -->> App: Data retrieved
+  App ->> App: Adapt to Player Format
+  App -->> Player: Return Optimized Media
+```
 
 ### Continuous Integration
 
@@ -38,7 +76,8 @@ This project automates its own development workflow using GitHub Actions:
 
 2. **Release Workflow**
    When changes are pushed to `main`, this workflow handles versioning and releases with
-   `semantic-release`. It automatically bumps the version, generates release notes, creates a tag.
+   `semantic-release`. It automatically bumps the version, generates release notes, creates a tag,
+   and publishes a Docker image to Amazon ECR
 
 ## Contributing
 
@@ -80,4 +119,8 @@ Refer to our [Contribution Guide](docs/CONTRIBUTING.md) for more detailed inform
 
 This project is licensed under the [MIT License](LICENSE).
 
-[main-entry-point]: src/main/kotlin/ch/srgssr/pillarbox/backend/PillarboxBackendApplication.kt
+[ktor]: https://ktor.io/
+[koin]: https://insert-koin.io/
+[exposed]: https://jetbrains.github.io/Exposed/
+[flyway]: https://flywaydb.org/
+[pillarbox-schema]: src/test/resources/schemas/pillarbox-standard-metadata-schema.json

@@ -1,77 +1,79 @@
 package ch.srgssr.pillarbox.backend.persistence.media
 
+import ch.srgssr.pillarbox.backend.db.ExposedRepository
 import ch.srgssr.pillarbox.backend.domain.model.Media
-import kotlinx.coroutines.flow.Flow
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.update
 
 /**
- * Repository responsible for the persistence and retrieval of [Media] entities.
+ * Repository responsible for the persistence and retrieval of [Media] entities using Exposed.
  *
- * This class serves as the bridge between the domain layer and the data storage.
+ * This implementation maps the [Media] domain model to the [MediaTable] schema and
+ * provides specialized methods for media-specific data manipulations.
+ *
+ * @param db The [Database] instance used for all transactions.
  */
-@SuppressWarnings("UNUSED_PARAMETER")
-class MediaRepository {
+class MediaRepository(
+  db: Database,
+) : ExposedRepository<Media, String>(db = db, table = MediaTable, idColumn = MediaTable.id) {
   /**
-   * Retrieves a paginated stream of all available media resources.
-   *
-   * @param limit The maximum number of items to return.
-   * @param offset The number of items to skip for pagination.
-   *
-   * @return A [Flow] emitting the collection of [Media] objects.
+   * Decodes a [ResultRow] from the [MediaTable] into a [Media] domain object.
    */
-  suspend fun getAll(
-    limit: Int,
-    offset: Long,
-  ): Flow<Media> {
-    TODO("Not yet implemented")
-  }
+  override fun ResultRow.decode() =
+    Media(
+      id = this[MediaTable.id],
+      tags = this[MediaTable.tags],
+      sources = this[MediaTable.sources],
+      drmConfigs = this[MediaTable.drmConfigs],
+      metadata = this[MediaTable.metadata],
+    )
 
   /**
-   * Finds a specific media resource by its unique identifier.
-   *
-   * @param id The unique identifier of the media.
-   * @return The [Media] object if found, or null if no match exists.
+   * Encodes a [Media] domain object into an [UpdateBuilder] for inserts or upserts.
    */
-  suspend fun find(id: String): Media? {
-    TODO("Not yet implemented")
-  }
-
-  /**
-   * Persists or overwrites a media resource.
-   *
-   * @param id The unique identifier to associate with this media.
-   * @param media The media entity to save.
-   */
-  suspend fun save(
-    id: String,
-    media: Media,
+  override fun Table.encode(
+    builder: UpdateBuilder<*>,
+    item: Media,
   ) {
-    TODO("Not yet implemented")
+    builder[MediaTable.id] = item.id
+    builder[MediaTable.tags] = item.tags
+    builder[MediaTable.sources] = item.sources
+    builder[MediaTable.drmConfigs] = item.drmConfigs
+    builder[MediaTable.metadata] = item.metadata
   }
 
   /**
    * Atomically updates the tags of a specific media resource.
    *
-   * This method retrieves the existing tags, applies the [transform] function,
-   * and persists the result.
+   * This method retrieves the current tags within a transaction, applies the [transform]
+   * function, and persists the updated list back to the database.
    *
    * @param id The unique identifier of the media to update.
    * @param transform A lambda that receives the current list of tags and returns the new list.
-   * @return The updated list of tags if the media was found and updated, or null if the media does not exist.
+   *
+   * @return The updated list of tags if the media was found and updated, or `null` if the media does not exist.
    */
   suspend fun updateTags(
     id: String,
     transform: (List<String>) -> List<String>,
-  ): List<String>? {
-    TODO("Not yet implemented")
-  }
+  ): List<String>? =
+    query {
+      val currentTags =
+        MediaTable
+          .select(MediaTable.tags)
+          .where { MediaTable.id eq id }
+          .singleOrNull()
+          ?.get(MediaTable.tags) ?: return@query null
 
-  /**
-   * Deletes a media resource from the persistence layer.
-   *
-   * @param id The unique identifier of the media to delete.
-   * @return true if the media was successfully deleted, false if it did not exist.
-   */
-  suspend fun delete(id: String): Boolean {
-    TODO("Not yet implemented")
-  }
+      val updatedTags = transform(currentTags)
+
+      MediaTable.update({ MediaTable.id eq id }) { it[tags] = updatedTags }
+
+      updatedTags
+    }
 }

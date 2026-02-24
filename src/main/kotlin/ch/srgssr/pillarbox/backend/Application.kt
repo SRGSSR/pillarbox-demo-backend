@@ -1,5 +1,7 @@
 package ch.srgssr.pillarbox.backend
 
+import ch.srgssr.pillarbox.backend.db.databaseModule
+import ch.srgssr.pillarbox.backend.db.toDatabaseConfig
 import ch.srgssr.pillarbox.backend.entrypoint.web.media
 import ch.srgssr.pillarbox.backend.entrypoint.web.playerMedia
 import ch.srgssr.pillarbox.backend.io.jsonModule
@@ -27,6 +29,7 @@ fun Application.module() {
   install(Koin) {
     slf4jLogger()
     modules(
+      databaseModule(environment.config.toDatabaseConfig()),
       persistenceModule(),
       jsonModule(),
     )

@@ -80,6 +80,12 @@
       }
     ],
     [
+      "@semantic-release/exec",
+      {
+        "successCmd": "echo ${nextRelease.version} > VERSION"
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         "assets": [

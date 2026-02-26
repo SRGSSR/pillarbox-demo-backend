@@ -10,7 +10,9 @@ media management within the [Pillarbox](https://pillarbox.ch) ecosystem.
 **Prerequisites and Requirements**
 
 - **JDK 24** or higher
-- **Docker & Docker Compose**: Required for running the local environment.
+- **Docker & Docker Compose**: Required for running the local environment. On Linux, follow these
+  [post-installation][docker-post-install] steps to allow your user to run Docker commands without
+  relying on `sudo`.
 
 ### Development Commands
 
@@ -119,8 +121,9 @@ Refer to our [Contribution Guide](docs/CONTRIBUTING.md) for more detailed inform
 
 This project is licensed under the [MIT License](LICENSE).
 
-[ktor]: https://ktor.io/
-[koin]: https://insert-koin.io/
+[docker-post-install]: https://docs.docker.com/engine/install/linux-postinstall/
 [exposed]: https://jetbrains.github.io/Exposed/
 [flyway]: https://flywaydb.org/
+[koin]: https://insert-koin.io/
+[ktor]: https://ktor.io/
 [pillarbox-schema]: src/test/resources/schemas/pillarbox-standard-metadata-schema.json

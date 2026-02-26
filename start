@@ -1,0 +1,59 @@
+#!/bin/bash
+
+warn() { echo -e "\033[33m$1\033[0m"; }
+error() { echo -e "\033[31m$1\033[0m"; }
+
+# Usage function
+usage() {
+  warn "Usage: $0 [options]"
+  echo ""
+  echo "Options:"
+  echo "  -k, --keep      Keep Docker containers running after the script exits"
+  echo "  -h, --help      Show this help message"
+  echo ""
+  echo "Example:"
+  echo "  $0 --keep       Launch app and keep the Docker containers up on exit"
+  echo ""
+  exit 1
+}
+
+KEEP_DOCKER=false
+
+# Parse Arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -k|--keep) KEEP_DOCKER=true ;;
+        -h|--help) usage ;;
+        *) error "Unknown option: $1"; usage ;;
+    esac
+    shift
+done
+
+cleanup() {
+    trap '' SIGINT SIGTERM EXIT
+
+    if [ -n "$COMPILER_PID" ]; then
+        warn "[Pillarbox] Stopping background compiler..."
+        kill "$COMPILER_PID" 2>/dev/null
+    fi
+
+    if [ "$KEEP_DOCKER" = true ]; then
+        warn "[Pillarbox] Keeping Docker containers running. Shutting down Gradle..."
+    else
+        warn "[Pillarbox] Shutting down local environment..."
+        docker compose down
+    fi
+    exit
+}
+
+trap cleanup SIGINT SIGTERM EXIT
+
+echo "[Pillarbox] Starting Docker containers..."
+docker compose up -d --wait
+
+echo "[Pillarbox] Starting Continuous Compilation..."
+./gradlew -t classes -x test -x check --console=plain &
+COMPILER_PID=$!
+
+echo "[Pillarbox] Launching Ktor Application..."
+./gradlew run --console=plain

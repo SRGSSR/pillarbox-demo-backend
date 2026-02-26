@@ -122,25 +122,23 @@ configurations
     }
   }
 
-val startEnvironment =
-  tasks.register<Exec>("startEnvironment") {
-    group = "environment"
-    description = "Starts the Docker Compose environment for local development"
-    commandLine("docker", "compose", "up", "-d", "--wait")
-  }
+tasks.named<JavaExec>("run") {
+  val envFile = rootProject.file(".env")
+  val localEnv =
+    Properties().apply {
+      if (envFile.exists()) {
+        envFile.inputStream().use { load(it) }
+      }
+    }
 
-tasks.register<Exec>("stopEnvironment") {
-  group = "environment"
-  description = "Stops the Docker Compose environment"
-  commandLine("docker", "compose", "down")
-}
+  fun getEnv(
+    key: String,
+    default: String,
+  ): String = System.getenv(key) ?: localEnv.getProperty(key) ?: default
 
-tasks.withType<JavaExec>().configureEach {
-  environment("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox")
-  environment("DATABASE_USER", "dev_user")
-  environment("DATABASE_PASSWORD", "dev_password")
-}
-
-tasks.run {
-  dependsOn(startEnvironment)
+  val isDev = getEnv("DEVELOPMENT", "true").toBoolean()
+  systemProperty("io.ktor.development", isDev)
+  environment("DATABASE_URL", getEnv("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox"))
+  environment("DATABASE_USER", getEnv("DATABASE_USER", "dev_user"))
+  environment("DATABASE_PASSWORD", getEnv("DATABASE_PASSWORD", "dev_password"))
 }

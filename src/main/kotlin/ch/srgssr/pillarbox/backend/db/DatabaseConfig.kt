@@ -63,7 +63,7 @@ fun ApplicationConfig.toDatabaseConfig(): DatabaseConfig {
     password = db.property("password").getString(),
     poolSize = db.propertyOrNull("poolSize")?.getString()?.toInt() ?: 10,
     connectionTimeout = db.propertyOrNull("connectionTimeout")?.getString()?.toLong() ?: 30000,
-    idleTimeout = db.propertyOrNull("idleTimeout")?.getString()?.toLong() ?: 60000,
+    idleTimeout = db.propertyOrNull("idleTimeout")?.getString()?.toLong() ?: 600000,
     dataSourceProperties = customProps,
   )
 }

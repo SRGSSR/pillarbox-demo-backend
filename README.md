@@ -14,17 +14,49 @@ media management within the [Pillarbox](https://pillarbox.ch) ecosystem.
   [post-installation][docker-post-install] steps to allow your user to run Docker commands without
   relying on `sudo`.
 
-### Development Commands
+### Local Development
 
-| Task      | Command                        |
-|-----------|--------------------------------|
-| **Build** | `./gradlew build`              |
-| **Run**   | `./gradlew run`                |
-| **Test**  | `./gradlew test`               |
-| **Lint**  | `./gradlew ktlintCheck detekt` |
+Use the convenience script to orchestrate the local environment. This script starts the Docker
+containers, launches the background compiler for hot-reloading, and runs the Ktor application.
+
+```bash
+# Standard start (cleans up Docker on exit)
+./start
+
+# Keep Docker containers running after exiting the app
+./start --keep
+```
+
+If you prefer to manage the infrastructure and application lifecycles independently, you can
+execute the steps separately:
+
+| Step  | Action                   | Command                       |
+|-------|--------------------------|-------------------------------|
+| **1** | **Start Infrastructure** | `docker compose up -d --wait` |
+| **2** | **Start Application**    | `./gradlew run`               |
+| **3** | **Cleanup**              | `docker compose down`         |
+
+### Environment Configuration
+
+The application supports externalized configuration via a .env file. This allows you to override
+database credentials or point to remote environments without modifying the source code:
+
+1. **Initialize the env file:** `cp .env.example .env`
+2. **Customize:** Edit `.env` to match your local or remote setup.
 
 > [!TIP]
-> Running `./gradlew run` automatically starts the required infrastructure via Docker Compose.
+> Check the [.env.example](.env.example) for all the supported variables.
+
+### 3. Build & Quality Tools
+
+Use these commands for standard development lifecycle tasks.
+
+| Goal            | Command                        |
+|-----------------|--------------------------------|
+| **Build**       | `./gradlew build`              |
+| **Run Tests**   | `./gradlew test`               |
+| **Linting**     | `./gradlew ktlintCheck detekt` |
+| **Format Code** | `./gradlew ktlintFormat`       |
 
 ## Documentation
 

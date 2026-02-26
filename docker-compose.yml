@@ -1,3 +1,5 @@
+name: pillarbox-demo-backend
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -12,3 +14,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512m

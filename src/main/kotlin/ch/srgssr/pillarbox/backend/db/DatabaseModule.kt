@@ -8,6 +8,7 @@ import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.koin.core.logger.Level.DEBUG
 import org.koin.dsl.module
+import org.koin.dsl.onClose
 import javax.sql.DataSource
 
 /**
@@ -44,6 +45,9 @@ fun databaseModule(dbConfig: DatabaseConfig) =
           validate()
         },
       )
+    } onClose {
+      it?.connection?.close()
+      println("[Pillarbox] HikariPool closed.")
     }
 
     single {

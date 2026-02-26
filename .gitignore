@@ -31,3 +31,6 @@ gradle-app.setting
 
 # Java heap dump
 *.hprof
+
+# Environment file
+.env

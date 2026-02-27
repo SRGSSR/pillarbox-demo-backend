@@ -2,11 +2,11 @@ package ch.srgssr.pillarbox.backend.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.koin.core.logger.Level.DEBUG
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 import javax.sql.DataSource
@@ -15,17 +15,20 @@ import javax.sql.DataSource
  * Defines the Koin module for database infrastructure.
  *
  * This module provides:
- *   1. A [DataSource] (HikariCP) configured using the provided [dbConfig].
+ *   1. The [DatabaseConfig] with the configuration parameters for the database.
+ *   1. A [DataSource] (HikariCP) configured using the loaded [DatabaseConfig].
  *   2. An Exposed [Database] instance, which automatically triggers [runMigration] on the
  *      data source before establishing the connection.
  *
- * @param dbConfig The configuration parameters for the database.
- *
  * @return A Koin [Module] containing the database infrastructure definitions.
  */
-fun databaseModule(dbConfig: DatabaseConfig) =
+fun databaseModule() =
   module {
+    single { get<ApplicationConfig>().toDatabaseConfig() }
+
     single<DataSource> {
+      val dbConfig = get<DatabaseConfig>()
+
       HikariDataSource(
         HikariConfig().apply {
           driverClassName = dbConfig.driverClassName
@@ -51,11 +54,12 @@ fun databaseModule(dbConfig: DatabaseConfig) =
     }
 
     single {
+      val dbConfig = get<DatabaseConfig>()
       val dataSource = get<DataSource>()
       val db = Database.connect(dataSource)
 
       if (dbConfig.autoCreate) {
-        val allTables = getAll<Table>().toTypedArray()
+        val allTables = get<List<Table>>().toTypedArray()
 
         transaction(db) {
           SchemaUtils.create(*allTables)

@@ -47,7 +47,7 @@ database credentials or point to remote environments without modifying the sourc
 > [!TIP]
 > Check the [.env.example](.env.example) for all the supported variables.
 
-### 3. Build & Quality Tools
+### Build & Quality Tools
 
 Use these commands for standard development lifecycle tasks.
 
@@ -57,6 +57,11 @@ Use these commands for standard development lifecycle tasks.
 | **Run Tests**   | `./gradlew test`               |
 | **Linting**     | `./gradlew ktlintCheck detekt` |
 | **Format Code** | `./gradlew ktlintFormat`       |
+
+### Usage
+
+To get started with the console and API, please refer to
+the [Development & API Usage Guide](docs/DEVELOPMENT.md).
 
 ## Documentation
 

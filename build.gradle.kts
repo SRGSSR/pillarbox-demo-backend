@@ -31,6 +31,7 @@ dependencies {
   implementation(libs.bundles.flyway)
   implementation(libs.bundles.koin)
   implementation(libs.bundles.kotlinx)
+  implementation(libs.bundles.ktor.client)
   implementation(libs.bundles.ktor.server)
   implementation(libs.hikaricp)
   implementation(libs.logback.classic)
@@ -43,6 +44,7 @@ dependencies {
   testImplementation(libs.kotest.assertions.ktor)
   testImplementation(libs.kotest.runner.junit5)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mock.oauth2.server)
   testImplementation(libs.mockk)
 }
 
@@ -141,4 +143,11 @@ tasks.named<JavaExec>("run") {
   environment("DATABASE_URL", getEnv("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox"))
   environment("DATABASE_USER", getEnv("DATABASE_USER", "dev_user"))
   environment("DATABASE_PASSWORD", getEnv("DATABASE_PASSWORD", "dev_password"))
+  environment("AUTH_ISSUER", getEnv("AUTH_ISSUER", "http://localhost:8081/realms/pillarbox"))
+  environment("AUTH_CLIENT_ID", getEnv("AUTH_CLIENT_ID", "pillarbox-api"))
+  environment("AUTH_CLIENT_SECRET", getEnv("AUTH_CLIENT_SECRET", ""))
+  environment("SESSION_COOKIE_SECRET", getEnv("SESSION_COOKIE_SECRET", "dev-secret-at-least-32-chars-long-!!!"))
+  environment("SESSION_SECURE", getEnv("SESSION_SECURE", "false"))
+  environment("SESSION_TIMEOUT", getEnv("SESSION_TIMEOUT", "28800"))
+  environment("SESSION_VALIDATION_INTERVAL", getEnv("SESSION_VALIDATION_INTERVAL", "600"))
 }

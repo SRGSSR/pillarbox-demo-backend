@@ -9,7 +9,7 @@ shadow = "9.3.1"
 versions-plugin = "0.53.0"
 
 # Libs
-exposed = "1.0.0"
+exposed = "1.1.1"
 flyway = "12.0.0"
 h2 = "2.4.240"
 hikaricp = "7.0.2"
@@ -20,6 +20,7 @@ kotlinx-coroutines = "1.10.2"
 kotlinx-serialization-json = "1.10.0"
 ktor = "3.4.0"
 logback = "1.5.32"
+mock-oauth2-server = "3.0.1"
 mockk = "1.14.9"
 postgresql = "42.7.9"
 
@@ -28,6 +29,7 @@ exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "e
 exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
+exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
@@ -36,9 +38,18 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-htmx = { module = "io.ktor:ktor-htmx ", version.ref = "ktor" }
+ktor-htmx-html = { module = "io.ktor:ktor-htmx-html ", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-ktor-server-content-negotation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder ", version.ref = "ktor" }
+ktor-server-htmx = { module = "io.ktor:ktor-server-htmx ", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -49,9 +60,8 @@ json-schema-validator = { module = "com.networknt:json-schema-validator", versio
 kotest-assertions-ktor = { module = "io.kotest:kotest-assertions-ktor", version.ref = "kotest" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+mock-oauth2-server = { module = "no.nav.security:mock-oauth2-server", version.ref = "mock-oauth2-server"}
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [bundles]
@@ -59,7 +69,8 @@ exposed = [
   "exposed-core",
   "exposed-dao",
   "exposed-jdbc",
-  "exposed-json"
+  "exposed-json",
+  "exposed-kotlin-datetime"
 ]
 
 flyway = [
@@ -73,17 +84,28 @@ koin = [
   "koin-logger"
 ]
 
+ktor-client = [
+  "ktor-client-cio",
+  "ktor-client-content-negotiation",
+  "ktor-client-core",
+  "ktor-serialization-kotlinx-json",
+]
+
 ktor-server = [
+  "ktor-htmx",
+  "ktor-htmx-html",
+  "ktor-serialization-kotlinx-json",
+  "ktor-server-auth",
+  "ktor-server-auth-jwt",
+  "ktor-server-content-negotiation",
   "ktor-server-core",
-  "ktor-server-netty",
-  "ktor-server-content-negotation",
-  "ktor-serialization-kotlinx-json"
+  "ktor-server-html-builder",
+  "ktor-server-htmx",
+  "ktor-server-netty"
 ]
 
 ktor-test = [
-  "ktor-server-test-host",
-  "ktor-client-content-negotiation",
-  "ktor-client-serialization-kotlinx-json"
+  "ktor-server-test-host"
 ]
 
 kotlinx = [

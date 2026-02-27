@@ -6,12 +6,14 @@ import ch.srgssr.pillarbox.backend.test.mediaFixture
 import ch.srgssr.pillarbox.backend.test.shouldMatchSchema
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import ch.srgssr.pillarbox.backend.test.toMediaRequestV1
+import ch.srgssr.pillarbox.backend.test.token
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -49,6 +51,7 @@ class PlayerMediaRouteTest :
           }
 
         client.post("/v1/media") {
+          bearerAuth(token)
           contentType(ContentType.Application.Json)
           setBody(mediaFixture.toMediaRequestV1())
         } shouldHaveStatus HttpStatusCode.Created
@@ -75,6 +78,7 @@ class PlayerMediaRouteTest :
         for (i in 0..totalMedia) {
           val fixture = mediaFixture { id = "media-$i" }
           client.post("/v1/media") {
+            bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(fixture.toMediaRequestV1())
           } shouldHaveStatus HttpStatusCode.Created

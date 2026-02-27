@@ -7,6 +7,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -16,6 +17,7 @@ import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 
 /**
  * Generic helper to register standard Media CRUD endpoints.
@@ -43,7 +45,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
     val mediaFlow = mediaRepository.getAll(limit, offset)
 
-    call.respond(mediaFlow.map { toResponse(it) })
+    call.respond(mediaFlow.map { toResponse(it) }.toList())
   }
 
   get("/{id}") {
@@ -89,12 +91,14 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
  */
 fun Route.media(mediaRepository: MediaRepository) {
   // Entry point for the V1 media API.
-  route("v1/media") {
-    mediaEndpoints<MediaRequestV1, MediaResponseV1, TagBatchUpdateRequestV1>(
-      mediaRepository = mediaRepository,
-      toDomain = { it.toMedia() },
-      toResponse = { it.toMediaResponseV1() },
-      applyTags = { dto, tags -> dto.apply(tags) },
-    )
+  authenticate("pillarbox-jwt") {
+    route("v1/media") {
+      mediaEndpoints<MediaRequestV1, MediaResponseV1, TagBatchUpdateRequestV1>(
+        mediaRepository = mediaRepository,
+        toDomain = { it.toMedia() },
+        toResponse = { it.toMediaResponseV1() },
+        applyTags = { dto, tags -> dto.apply(tags) },
+      )
+    }
   }
 }

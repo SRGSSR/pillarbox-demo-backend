@@ -47,11 +47,10 @@ class PlayerMediaResponseV1Test :
     should("select the correct DRM config based on keySystem") {
       val media =
         mediaFixture {
-          withWidevine()
-          withFairPlay()
+          withDash(MediaLibrary.Widevine, MediaLibrary.FairPlay)
         }
 
-      val response = media.toPlayerResponse(mimeType = null, keySystem = "com.apple.fps")
+      val response = media.toPlayerResponse(mimeType = "application/dash+xml", keySystem = "com.apple.fps")
 
       response.drm shouldBe MediaLibrary.FairPlay
     }
@@ -59,10 +58,10 @@ class PlayerMediaResponseV1Test :
     should("return null for DRM if the requested keySystem doesn't exist") {
       val media =
         mediaFixture {
-          withWidevine()
+          withMp4(MediaLibrary.Widevine)
         }
 
-      val response = media.toPlayerResponse(mimeType = null, keySystem = "com.microsoft.playready")
+      val response = media.toPlayerResponse(mimeType = "video/mp4", keySystem = "com.microsoft.playready")
 
       response.drm shouldBe null
     }
@@ -90,7 +89,7 @@ class PlayerMediaResponseV1Test :
     should("handle empty sources or drm lists gracefully") {
       val media = mediaFixture {}
 
-      val emptyMedia = media.copy(sources = emptyList(), drmConfigs = emptyList())
+      val emptyMedia = media.copy(sources = emptyList())
 
       val response = emptyMedia.toPlayerResponse(null, null)
 

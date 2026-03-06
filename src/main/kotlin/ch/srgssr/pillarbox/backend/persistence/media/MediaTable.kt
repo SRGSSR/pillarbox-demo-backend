@@ -24,12 +24,6 @@ object MediaTable : Table("pb_media") {
   val tags = array<String>("tags")
 
   /**
-   * Digital Rights Management configurations.
-   * Stored as a JSONB list of [DrmConfig] objects.
-   */
-  val drmConfigs = jsonb<List<DrmConfig>>("drm_configs", Json.Default)
-
-  /**
    * List of available delivery sources.
    * Stored as a JSONB list of [MediaSource] objects.
    */

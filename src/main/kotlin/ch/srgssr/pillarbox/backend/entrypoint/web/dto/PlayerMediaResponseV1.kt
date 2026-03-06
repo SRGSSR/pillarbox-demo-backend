@@ -49,7 +49,16 @@ data class PlayerMediaResponseV1(
   val chapters: List<Chapter>?,
   val timeRanges: List<TimeRange>?,
   val customData: JsonObject?,
-)
+) {
+  @Serializable
+  data class MediaSource(
+    val url: String,
+    val type: String? = null,
+    val mimeType: String? = null,
+    val videoFragmentFormat: String? = null,
+    val audioFragmentFormat: String? = null,
+  )
+}
 
 /**
  * Transforms a [Media] domain model into a [PlayerMediaResponseV1].
@@ -72,7 +81,7 @@ fun Media.toPlayerResponse(
     }
 
   val selectedDrm =
-    drmConfigs.firstOrNull {
+    selectedSource?.drmConfigs?.firstOrNull {
       it.keySystem.equals(keySystem, ignoreCase = true)
     }
 
@@ -85,7 +94,7 @@ fun Media.toPlayerResponse(
     seasonNumber = metadata.seasonNumber,
     episodeNumber = metadata.episodeNumber,
     viewport = metadata.viewport,
-    source = selectedSource,
+    source = selectedSource?.toPlayerMediaSourceV1(),
     drm = selectedDrm,
     subtitles = metadata.subtitles,
     chapters = metadata.chapters,
@@ -93,3 +102,19 @@ fun Media.toPlayerResponse(
     customData = metadata.customData,
   )
 }
+
+/**
+ * Maps the internal [Media] domain model to the [MediaResponseV1] DTO.
+ *
+ * Use this extension to prepare domain data for the admin web entry point.
+ *
+ * @return A [MediaResponseV1] containing the domain model's data.
+ */
+fun MediaSource.toPlayerMediaSourceV1() =
+  PlayerMediaResponseV1.MediaSource(
+    url = url,
+    type = type,
+    mimeType = mimeType,
+    videoFragmentFormat = videoFragmentFormat,
+    audioFragmentFormat = audioFragmentFormat,
+  )

@@ -54,19 +54,20 @@ class MediaBuilder {
   private val timeRanges = mutableListOf<TimeRange>()
   var metadata = MediaMetadata(title = "Default Test Title")
 
-  fun withDash() = apply { sources.add(MediaLibrary.Dash) }
+  fun withDash(vararg drm: DrmConfig) =
+    apply {
+      sources.add(MediaLibrary.Dash.copy(drmConfigs = drm.toList()))
+    }
 
-  fun withHls() = apply { sources.add(MediaLibrary.Hls) }
+  fun withHls(vararg drm: DrmConfig) =
+    apply {
+      sources.add(MediaLibrary.Hls.copy(drmConfigs = drm.toList()))
+    }
 
-  fun withMp4() = apply { sources.add(MediaLibrary.Mp4) }
-
-  fun withWidevine() = apply { drmConfigs.add(MediaLibrary.Widevine) }
-
-  fun withPlayReady() = apply { drmConfigs.add(MediaLibrary.PlayReady) }
-
-  fun withFairPlay() = apply { drmConfigs.add(MediaLibrary.FairPlay) }
-
-  fun withClearKey() = apply { drmConfigs.add(MediaLibrary.ClearKey) }
+  fun withMp4(vararg drm: DrmConfig) =
+    apply {
+      sources.add(MediaLibrary.Mp4.copy(drmConfigs = drm.toList()))
+    }
 
   fun withSubtitles() = apply { subtitles.add(MediaLibrary.EnglishSubtitles) }
 
@@ -77,8 +78,7 @@ class MediaBuilder {
   fun build() =
     Media(
       id = id,
-      sources = sources.ifEmpty { listOf(MediaLibrary.Dash) }, // Sane default
-      drmConfigs = drmConfigs,
+      sources = sources.ifEmpty { listOf(MediaLibrary.Dash) },
       metadata =
         metadata.copy(
           subtitles = subtitles.ifEmpty { null },
@@ -95,6 +95,5 @@ fun Media.toMediaRequestV1() =
     id = id,
     tags = tags,
     sources = sources,
-    drmConfigs = drmConfigs,
     metadata = metadata,
   )

@@ -9,7 +9,6 @@ import kotlinx.serialization.json.JsonObject
  * @property id The unique identifier for the media.
  * @property tags A list of labels or categories associated with the media.
  * @property sources The list of available playback sources (streams).
- * @property drmConfigs The DRM configurations available for this media.
  * @property metadata Descriptive information for display and playback.
  */
 @Serializable
@@ -17,7 +16,6 @@ data class Media(
   val id: String,
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
-  val drmConfigs: List<DrmConfig> = emptyList(),
   val metadata: MediaMetadata,
 )
 
@@ -28,7 +26,8 @@ data class Media(
  * @property type The type of the source (e.g., "ON-DEMAND", "LIVE").
  * @property mimeType The MIME type of the content.
  * @property videoFragmentFormat The format used for video segments.
- * @property audioFragmentsFormat The format used for audio segments.
+ * @property audioFragmentFormat The format used for audio segments.
+ * @property drmConfigs The DRM configurations available for this source.
  */
 @Serializable
 data class MediaSource(
@@ -36,7 +35,8 @@ data class MediaSource(
   val type: String? = null,
   val mimeType: String? = null,
   val videoFragmentFormat: String? = null,
-  val audioFragmentsFormat: String? = null,
+  val audioFragmentFormat: String? = null,
+  val drmConfigs: List<DrmConfig> = emptyList(),
 )
 
 /**

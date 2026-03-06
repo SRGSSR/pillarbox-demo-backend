@@ -2,6 +2,7 @@ package ch.srgssr.pillarbox.backend.entrypoint.web
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.PlayerMediaResponseV1
+import ch.srgssr.pillarbox.backend.test.MediaLibrary
 import ch.srgssr.pillarbox.backend.test.mediaFixture
 import ch.srgssr.pillarbox.backend.test.shouldMatchSchema
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
@@ -42,9 +43,8 @@ class PlayerMediaRouteTest :
         val mediaFixture =
           mediaFixture {
             id = mediaId
-            withDash()
+            withDash(MediaLibrary.Widevine)
             withHls()
-            withWidevine()
             withSubtitles()
             withIntro()
             withChapters()

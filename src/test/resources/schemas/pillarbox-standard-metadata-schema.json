@@ -17,7 +17,7 @@
         "type": { "type": "string" },
         "mimeType": { "type": "string" },
         "videoFragmentFormat": { "type": "string" },
-        "audioFragmentsFormat": { "type": "string" }
+        "audioFragmentFormat": { "type": "string" }
       },
       "required": ["url"]
     },

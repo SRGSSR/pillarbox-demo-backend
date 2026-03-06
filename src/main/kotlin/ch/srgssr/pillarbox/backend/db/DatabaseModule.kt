@@ -49,8 +49,7 @@ fun databaseModule() =
         },
       )
     } onClose {
-      it?.connection?.close()
-      println("[Pillarbox] HikariPool closed.")
+      (it as? HikariDataSource)?.close()
     }
 
     single {

@@ -72,7 +72,7 @@ fun Media.toPlayerResponse(
     }
 
   val selectedDrm =
-    drmConfigs.firstOrNull {
+    selectedSource?.drmConfigs?.firstOrNull {
       it.keySystem.equals(keySystem, ignoreCase = true)
     }
 

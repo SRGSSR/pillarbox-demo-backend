@@ -1,6 +1,5 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.dto
 
-import ch.srgssr.pillarbox.backend.domain.model.DrmConfig
 import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
@@ -19,7 +18,6 @@ import kotlinx.serialization.Serializable
  * @property id The unique identifier for the media resource.
  * @property tags A list of keywords or labels used for categorization or filtering.
  * @property sources The complete collection of all available streaming endpoints.
- * @property drmConfigs All Digital Rights Management configurations associated with this media.
  * @property metadata Detailed contextual information including titles, chapters, and markers.
  */
 @Serializable
@@ -27,7 +25,6 @@ data class MediaResponseV1(
   val id: String,
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
-  val drmConfigs: List<DrmConfig> = emptyList(),
   val metadata: MediaMetadata,
 )
 
@@ -43,6 +40,5 @@ fun Media.toMediaResponseV1() =
     id = this.id,
     tags = this.tags,
     sources = this.sources,
-    drmConfigs = this.drmConfigs,
     metadata = this.metadata,
   )

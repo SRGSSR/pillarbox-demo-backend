@@ -29,7 +29,6 @@ class MediaRepository(
       id = this[MediaTable.id],
       tags = this[MediaTable.tags],
       sources = this[MediaTable.sources],
-      drmConfigs = this[MediaTable.drmConfigs],
       metadata = this[MediaTable.metadata],
     )
 
@@ -43,7 +42,6 @@ class MediaRepository(
     builder[MediaTable.id] = item.id
     builder[MediaTable.tags] = item.tags
     builder[MediaTable.sources] = item.sources
-    builder[MediaTable.drmConfigs] = item.drmConfigs
     builder[MediaTable.metadata] = item.metadata
   }
 

@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.server.config.ApplicationConfig
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.exposed.v1.core.Op
 import org.koin.dsl.module
 
 /**
@@ -36,7 +37,7 @@ fun authenticationModule() =
       SessionManager(
         repository = get(),
         httpClient = get(),
-        userInfoUrl = get<AuthConfig>().userInfoUrl,
+        userInfoUrl = get<OpenIDDiscovery>().userInfoEndpoint,
         validationIntervalSeconds = get<SessionConfig>().validationIntervalSeconds,
       )
     }

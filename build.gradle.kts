@@ -144,6 +144,7 @@ tasks.named<JavaExec>("run") {
   environment("DATABASE_USER", getEnv("DATABASE_USER", "dev_user"))
   environment("DATABASE_PASSWORD", getEnv("DATABASE_PASSWORD", "dev_password"))
   environment("AUTH_ISSUER", getEnv("AUTH_ISSUER", "http://localhost:8081/realms/pillarbox"))
+  environment("AUTH_ISSUER", getEnv("AUTH_DISCOVERY_PATH", ".well-known/openid-configuration"))
   environment("AUTH_CLIENT_ID", getEnv("AUTH_CLIENT_ID", "pillarbox-api"))
   environment("AUTH_CLIENT_SECRET", getEnv("AUTH_CLIENT_SECRET", ""))
   environment("SESSION_COOKIE_SECRET", getEnv("SESSION_COOKIE_SECRET", "dev-secret-at-least-32-chars-long-!!!"))

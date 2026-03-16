@@ -1,0 +1,7 @@
+<configuration>
+  <include resource="logback.xml"/>
+
+  <root level="DEBU">
+    <appender-ref ref="STDOUT"/>
+  </root>
+</configuration>

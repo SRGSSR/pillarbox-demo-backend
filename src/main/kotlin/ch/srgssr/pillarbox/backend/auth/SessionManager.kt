@@ -50,7 +50,13 @@ class SessionManager(
         return null
       }
 
-    return verifySession(session)
+    return if (session.expired) {
+      logger.warn { "Session $sessionId expired at ${session.expiresAt}" }
+      repository.delete(session.sessionId)
+      null
+    } else {
+      verifySession(session)
+    }
   }
 
   /**
@@ -83,6 +89,7 @@ class SessionManager(
   private val Session.valid: Boolean
     get() {
       val now = Clock.System.now()
+
       val elapsed = now - lastChecked
       val threshold = validationIntervalSeconds.seconds
 

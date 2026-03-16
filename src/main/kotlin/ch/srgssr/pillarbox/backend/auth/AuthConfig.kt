@@ -9,21 +9,19 @@ import kotlinx.serialization.Transient
  * Configuration parameters for the Authentication provider.
  *
  * @property issuer The base URL of the identity provider.
+ * @property discoveryUrl The standard URL where the OIDC discovery metadata can be found.
  * @property clientId The unique identifier for the application (audience).
  * @property clientSecret The secret key used for server-side token exchange.
  * @property realm The authentication realm used in the challenge header.
  */
 data class AuthConfig(
   val issuer: String,
+  val discoveryPath: String = ".well-known/openid-configuration",
   val clientId: String,
   val clientSecret: String,
   val realm: String,
 ) {
-  /**
-   * The standard URL where the OIDC discovery metadata can be found.
-   */
-  val discoveryUrl = "$issuer/.well-known/openid-configuration"
-  val userInfoUrl = "$issuer/protocol/openid-connect/userinfo"
+  val discoveryUrl: String = "$issuer/$discoveryPath"
 }
 
 /**
@@ -34,6 +32,7 @@ data class OpenIDDiscovery(
   @SerialName("authorization_endpoint") val authorizationEndpoint: String,
   @SerialName("token_endpoint") val tokenEndpoint: String,
   @SerialName("jwks_uri") val jwksUri: String,
+  @SerialName("userinfo_endpoint") val userInfoEndpoint: String,
 )
 
 /**
@@ -46,6 +45,7 @@ fun ApplicationConfig.toAuthConfig(): AuthConfig {
 
   return AuthConfig(
     issuer = auth.property("issuer").getString(),
+    discoveryPath = auth.propertyOrNull("discovery_path")?.getString() ?: ".well-known/openid-configuration",
     clientId = auth.property("client_id").getString(),
     clientSecret = auth.propertyOrNull("secret")?.getString() ?: "",
     realm = auth.property("realm").getString(),

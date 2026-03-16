@@ -16,5 +16,5 @@ fun httpClientModule() =
   module {
     single {
       HttpClient(CIO) { install(ContentNegotiation) { json(get()) } }
-    } onClose { it?.close() } // Always close the client!
+    } onClose { it?.close() }
   }

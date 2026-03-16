@@ -3,8 +3,10 @@ package ch.srgssr.pillarbox.backend.entrypoint.web
 import ch.srgssr.pillarbox.backend.auth.SessionId
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.authentication
 import io.ktor.server.auth.principal
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
@@ -30,19 +32,20 @@ fun Route.login(sessionRepository: SessionRepository) {
   authenticate("pillarbox-oauth") {
     get(Navigation.LOGIN) { }
     get(Navigation.CALLBACK) {
-      call.principal<OAuthAccessTokenResponse.OAuth2>()?.let { principal ->
-        val now = Clock.System.now()
-        val session =
-          Session(
-            sessionId = UUID.randomUUID().toString(),
-            accessToken = principal.accessToken,
-            expiresAt = principal.expiresIn.let { now + it.seconds },
-          )
+      val principal =
+        call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
+          ?: return@get call.respondRedirect(Navigation.LOGIN)
 
-        sessionRepository.save(session.sessionId, session)
-        call.sessions.set(SessionId(session.sessionId))
-        call.respondRedirect(Navigation.CONSOLE)
-      }
+      val session =
+        Session(
+          sessionId = UUID.randomUUID().toString(),
+          accessToken = principal.accessToken,
+          expiresAt = principal.expiresIn.let { Clock.System.now() + it.seconds },
+        )
+
+      sessionRepository.save(session.sessionId, session)
+      call.sessions.set(SessionId(session.sessionId))
+      call.respondRedirect(Navigation.CONSOLE)
     }
   }
 }

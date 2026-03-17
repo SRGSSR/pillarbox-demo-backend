@@ -4,7 +4,7 @@ import ch.srgssr.pillarbox.backend.auth.authenticationModule
 import ch.srgssr.pillarbox.backend.auth.configureOidc
 import ch.srgssr.pillarbox.backend.auth.installSession
 import ch.srgssr.pillarbox.backend.db.databaseModule
-import ch.srgssr.pillarbox.backend.entrypoint.web.dashboard
+import ch.srgssr.pillarbox.backend.entrypoint.web.console
 import ch.srgssr.pillarbox.backend.entrypoint.web.login
 import ch.srgssr.pillarbox.backend.entrypoint.web.media
 import ch.srgssr.pillarbox.backend.entrypoint.web.playerMedia
@@ -18,8 +18,10 @@ import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.netty.EngineMain
+import io.ktor.server.pebble.Pebble
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
+import io.pebbletemplates.pebble.loader.ClasspathLoader
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
@@ -35,6 +37,14 @@ import org.koin.logger.slf4jLogger
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 fun Application.module() {
+  install(Pebble) {
+    loader(
+      ClasspathLoader().apply {
+        prefix = "templates"
+      },
+    )
+  }
+
   install(Koin) {
     slf4jLogger()
     modules(
@@ -67,7 +77,7 @@ fun Application.module() {
     login(get())
     media(get())
     playerMedia(get())
-    dashboard()
+    console(get())
   }
 
   monitor.subscribe(ApplicationStopped) {

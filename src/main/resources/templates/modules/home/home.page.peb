@@ -1,0 +1,29 @@
+{% extends "../../../layouts/dashboard.layout.peb" %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/modules/home/home.page.css">
+<script src="/static/js/home.page.js" type="module" defer></script>
+{% endblock %}
+{% set breadcrumb_current = "Media Library" %}
+{% block mainContent %}
+<main
+  role="main"
+  id="main-container"
+  hx-get="/console/media?page=0"
+  hx-trigger="load">
+  <div class="loader">Loading initial media...</div>
+</main>
+{% endblock %}
+{% block footer %}
+{{ parent() }}
+<template id="confirm-dialog-template">
+  <dialog class="confirm-dialog">
+    <form method="dialog">
+      <p id="confirm-message"></p>
+      <footer>
+        <button value="cancel">Cancel</button>
+        <button value="confirm" class="danger">Confirm</button>
+      </footer>
+    </form>
+  </dialog>
+</template>
+{% endblock %}

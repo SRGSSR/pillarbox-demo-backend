@@ -1,0 +1,39 @@
+details.entry-item .item-body, article.entry-item, .drm-container, .form-row {
+  display: grid;
+  gap: var(--size-3);
+}
+
+details.entry-item summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+article header {
+  font-size: var(--font-size-5);
+}
+
+article header h3, details.entry-item summary .item-label {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+}
+
+article.entry-item {
+  padding: var(--size-4);
+  background: var(--surface-1);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-2);
+}
+
+article.entry-item header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding-bottom: var(--size-3);
+  border-bottom: var(--border-size-1) solid var(--surface-3);
+}
+
+.form-row {
+  grid-template-columns: repeat(auto-fit, minmax(var(--size-13) , 1fr));
+}

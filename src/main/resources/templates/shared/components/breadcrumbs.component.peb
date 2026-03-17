@@ -1,0 +1,5 @@
+<div class="breadcrumbs">
+    <span class="root">Console</span>
+    <span class="sep">/</span>
+    <span class="page">{{ breadcrumb_current | default("Media Library") }}</span>
+</div>

@@ -1,0 +1,28 @@
+{% extends "./html.layout.peb" %}
+
+{% block content %}
+
+{% include "../shared/components/sidebar.component.peb" %}
+
+<div class="app-container">
+    <header>
+      <button type="button" id="sidebar-toggle"
+            class="btn-icon" aria-label="Toggle Sidebar">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      {% include "../shared/components/breadcrumbs.component.peb" %}
+    </header>
+    <main>
+      {% block mainContent %}{% endblock %}
+    </main>
+</div>
+
+{% block footer %}{% endblock %}
+
+<script>
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+});
+</script>
+
+{% endblock %}

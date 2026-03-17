@@ -1,0 +1,57 @@
+{% macro inputText(name, label, value, required=false, placeholder="") %}
+<div class="field">
+    <label for="{{ name }}">{{ label }}</label>
+    <input type="text" id="{{ name }}" name="{{ name }}" value="{{ value }}"
+           placeholder="{{ placeholder }}"{% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro inputArray(name, label, value, required=false, placeholder="") %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <input type="text" id="{{ name }}" name="{{ name }}" value="{{ value }}"
+         placeholder="{{ placeholder }}"{% if required %}required{% endif %}
+         data-type="array">
+</div>
+{% endmacro %}
+
+{% macro inputNumber(name, label, value, min=0, required=false) %}
+<div class="field">
+    <label for="{{ name }}">{{ label }}</label>
+    <input type="number" id="{{ name }}" name="{{ name }}" value="{{ value }}"
+           min="{{ min }}"{% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro inputUrl(name, label, value, required=false, placeholder="") %}
+<div class="field">
+    <label for="{{ name }}">{{ label }}</label>
+    <input type="url" id="{{ name }}" name="{{ name }}" value="{{ value }}"
+           placeholder="{{ placeholder }}" {% if required %}required{% endif %}>
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, value, rows=3, required=false) %}
+<div class="field">
+    <label for="{{ name }}">{{ label }}</label>
+    <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+              {% if required %}required{% endif %}>{{ value }}</textarea>
+</div>
+{% endmacro %}
+
+{% macro inputJson(name, label, value, rows=3, required=false) %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+            {% if required %}required{% endif %} data-type="json">{{ value }}</textarea>
+</div>
+{% endmacro %}
+
+{% macro inputCheckbox(name, label, checked=false) %}
+<div class="field">
+    <label class="checkbox">
+        <input type="checkbox" name="{{ name }}" {% if checked %}checked{% endif %}>
+        {{ label }}
+    </label>
+</div>
+{% endmacro %}

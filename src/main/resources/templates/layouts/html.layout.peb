@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Pillarbox Console{% endblock %}</title>
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/open-props@1.7.23/open-props.min.css"
+        integrity="sha384-fsyUJwnN3qLArJUL5oaEYS3/WnhCmI4K5x+oB8wFigOMTJaIvys56ozH3+nE/qcf"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-props@1.7.23/normalize.min.css"
+        integrity="sha384-sddBOogFG2pe9DuB3k3ekS4as3O4oEzrarCR1HkYLY5Z/7pFYJt54z8VD1yGM7JF"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-props@1.7.23/buttons.min.css"
+        integrity="sha384-lcYzjXj751W4bLHOU+4aTCl5Ar2xVlz7u+S9aHf85HTPNSvmz9xWewQKObgGLrbl"
+        crossorigin="anonymous">
+  <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "htmx.org": "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/+esm",
+        "dot-object": "https://cdn.jsdelivr.net/npm/dot-object@2.1.5/+esm"
+      },
+      "integrity": {
+        "https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/+esm": "sha384-+P/zAq/Lv1SDaRUBQi/EPthdgpOxUgfsR2Dh9jGMd8W6LhWiLvKw5q53Eu9ZBsQQ",
+        "https://cdn.jsdelivr.net/npm/dot-object@2.1.5/+esm": "sha384-33DoLQJNeAiWh5mSaoV7ncSraT45SZa1GabRNc6BOAcZkbCD5MenqCs0KT2Pf6pn"
+      }
+    }
+  </script>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% block content %}{% endblock %}
+</body>
+</html>

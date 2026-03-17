@@ -1,0 +1,14 @@
+@import "../../layouts/dashboard.layout.css";
+@import "../../shared/fragments/media-grid.fragment.css";
+
+form[method="dialog"] {
+  display: grid;
+  gap: var(--size-3);
+}
+
+form[method="dialog"] footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: var(--size-3);
+}

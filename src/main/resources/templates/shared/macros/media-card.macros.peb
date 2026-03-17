@@ -1,0 +1,58 @@
+{% macro mediaCard(media, nextUrl = null) %}
+{# @pebvariable name="nextUrl" type="java.lang.String" #}
+{# @pebvariable name="media" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
+<article class="media-card" id="media-card-{{ media.id }}"
+    {% if nextUrl is not empty %}
+         hx-get="{{ nextUrl }}"
+         hx-trigger="revealed"
+         hx-swap="afterend"
+         hx-select=".media-card"
+    {% endif %}>
+  <figure>
+    <img src="{{ media.metadata.posterUrl | default("https://placehold.co/400x225") }}"
+         alt="{{ media.metadata.title | default('Media Poster') }}">
+  </figure>
+
+  <header>
+    <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
+    <p>{{ media.id }}</p>
+    <ul class="tag-list">
+            {% for tag in media.tags %}
+        <li>{{ tag }}</li>
+            {% endfor %}
+    </ul>
+  </header>
+
+
+  <footer class="actions">
+    <a class="btn btn-icon" href="/console/media/editor/{{ media.id }}" title="Edit {{ media.metadata.title }}">
+      <span class="material-symbols-outlined">edit</span>
+    </a>
+
+    <a class="btn btn-icon" href="/console/media/editor/{{ media.id }}/duplicate" title="Duplicate {{ media.metadata.title }}">
+      <span class="material-symbols-outlined">content_copy</span>
+    </a>
+
+    <button class="btn-icon danger"
+            hx-delete="/console/media/{{ media.id }}"
+            hx-target="[id='media-card-{{ media.id }}']"
+            hx-swap="outerHTML"
+            hx-confirm="Are you sure you want to delete {{ media.metadata.title }} ?"
+          title="Delete {{ media.metadata.title }}">
+      <span class="material-symbols-outlined">delete</span>
+    </button>
+  </footer>
+</article>
+{% endmacro %}
+
+{% macro mediaList(result, nextUrl = null) %}
+{# @pebvariable name="nextUrl" type="java.lang.String" #}
+{# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
+<section>
+  <div class="media-list">
+  {% for item in result.items %}
+    {{ mediaCard(item, loop.last ? nextUrl : null) }}
+  {% endfor %}
+  </div>
+</section>
+{% endmacro %}

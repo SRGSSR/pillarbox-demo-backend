@@ -1,0 +1,19 @@
+.btn-icon {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: var(--size-2);
+  margin: 0;
+  color: var(--gray-5);
+  box-shadow: none;
+  transition: all .2s var(--ease-out-3);
+}
+
+.btn-icon:hover {
+  color: var(--gray-0);
+  background: var(--surface-2);
+}
+
+button:hover {
+  box-shadow: none;
+}

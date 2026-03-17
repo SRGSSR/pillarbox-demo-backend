@@ -2,6 +2,8 @@ package ch.srgssr.pillarbox.backend.domain.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Represents a complete media object with its associated streams, DRM, and metadata.
@@ -12,8 +14,9 @@ import kotlinx.serialization.json.JsonObject
  * @property metadata Descriptive information for display and playback.
  */
 @Serializable
+@OptIn(ExperimentalUuidApi::class)
 data class Media(
-  val id: String,
+  val id: String = Uuid.random().toString(),
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
   val metadata: MediaMetadata,

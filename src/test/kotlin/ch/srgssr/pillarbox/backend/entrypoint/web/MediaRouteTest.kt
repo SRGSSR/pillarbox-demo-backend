@@ -50,14 +50,12 @@ class MediaRouteTest :
         val fixture = mediaFixture { id = "test-media-id" }
         val request = fixture.toMediaRequestV1()
 
-        // Create the media
         client.post("/v1/media") {
           bearerAuth(token)
           contentType(ContentType.Application.Json)
           setBody(request)
         } shouldHaveStatus HttpStatusCode.Created
 
-        // Update tags
         val tagUpdate =
           TagBatchUpdateRequestV1(
             operations =
@@ -79,7 +77,6 @@ class MediaRouteTest :
           }
         response.body<MediaResponseV1>().tags shouldContain "test-tag"
 
-        // Delete the Media
         client.delete("/v1/media/${fixture.id}") {
           bearerAuth(token)
         } shouldHaveStatus HttpStatusCode.NoContent

@@ -96,6 +96,30 @@ abstract class ExposedRepository<T, ID>(
     }
 
   /**
+   * Retrieves a paginated result including the total count of matches.
+   */
+  open suspend fun getAllPaginated(
+    limit: Int = 100,
+    offset: Long = 0,
+  ): PaginatedResult<T> =
+    query(readOnly = true) {
+      val query = table.selectAll()
+      val totalCount = query.count()
+      val items =
+        query
+          .limit(limit)
+          .offset(offset)
+          .map { it.decode() }
+
+      PaginatedResult(
+        items = items,
+        totalCount = totalCount,
+        limit = limit,
+        offset = offset,
+      )
+    }
+
+  /**
    * Persists or overwrites a resource using an upsert operation.
    *
    * @param idValue The unique identifier to associate with this entity.
@@ -105,11 +129,12 @@ abstract class ExposedRepository<T, ID>(
   open suspend fun save(
     idValue: ID,
     item: T,
-  ) = query {
-    table.upsert {
-      encode(it, item)
+  ): Unit =
+    query {
+      table.upsert {
+        encode(it, item)
+      }
     }
-  }
 
   /**
    * Deletes a resource from the persistence layer.
@@ -123,3 +148,19 @@ abstract class ExposedRepository<T, ID>(
       table.deleteWhere { idColumn eq id } > 0
     }
 }
+
+/**
+ * A generic wrapper for paginated data sets.
+ *
+ * @param T The type of items being paginated.
+ * @property items The slice of data for the current page.
+ * @property totalCount The total number of items available across all pages in the database.
+ * @property limit The maximum number of items requested for this page (page size).
+ * @property offset The starting point in the total data set (usually calculated as `page * limit`).
+ */
+data class PaginatedResult<T>(
+  val items: List<T>,
+  val totalCount: Long,
+  val limit: Int,
+  val offset: Long,
+)

@@ -6,10 +6,25 @@ Once the application is running, you can interact with it via the web console or
 
 ## Web Console
 
-For a visual management experience, use the built-in console.
+The Web Console provides a visual interface for managing media assets. It is built using **HTMX**
+and **Pebble templates**, allowing for dynamic updates without full page reloads.
 
 * **URL**: [http://localhost:8080/console](http://localhost:8080/console)
 * **Username / Password**: `dev/password`
+
+### Console Routes
+
+The console exposes several endpoints that return either full HTML pages or partial HTML fragments.
+
+| Method     | Endpoint                                 | Type | Description                                                                                                             |
+|------------|------------------------------------------|------|-------------------------------------------------------------------------------------------------------------------------|
+| **GET**    | `/console`                               | Page | Renders the main dashboard/home page.                                                                                   |
+| **GET**    | `/console/media`                         | HTMX | Returns a paginated grid fragment of media items, accepts `page` and `pageSize` query parameters to handle navigation.. |
+| **POST**   | `/console/media`                         | HTMX | Saves a media entity and triggers a client-side redirect.                                                               |
+| **DELETE** | `/console/media/{id}`                    | HTMX | Deletes a specific media entity from the repository.                                                                    |
+| **GET**    | `/console/media/editor/{id?}`            | Page | Opens the media editor (empty for new, populated for existing).                                                         |
+| **GET**    | `/console/media/editor/{id}/duplicate`   | Page | Opens the editor with data from an existing ID (ID cleared) for duplication.                                            |
+| **GET**    | `/console/media/editor/fragments/{name}` | HTMX | Returns a set of input fields for a specific object type.                                                               |
 
 ## REST API
 

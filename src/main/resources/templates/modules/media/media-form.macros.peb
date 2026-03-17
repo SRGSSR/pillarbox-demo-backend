@@ -1,0 +1,144 @@
+{% import "../../shared/macros/forms.macros.peb" %}
+
+{% macro timeRangeRow(index, item = null, open = true) %}
+{# @pebvariable name="open" type="java.lang.Boolean" #}
+{# @pebvariable name="index" type="java.lang.Long" #}
+{# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.TimeRange" #}
+<details class="entry-item" data-index="{{ index }}" {% if open %}open{% endif %}>
+  <summary>
+    <span class="item-label">
+      <span class="material-symbols-outlined">more_time</span>
+        {{ item.label | default("New Time Range") }}
+    </span>
+      {{ removeButton() }}
+  </summary>
+  <div class="item-body form-row">
+    {{ inputNumber("metadata.timeRanges[" + index + "].startTime", "Start (ms)", item.startTime) }}
+    {{ inputNumber("metadata.timeRanges[" + index + "].endTime", "End (ms)", item.endTime) }}
+    {{ inputText("metadata.timeRanges[" + index + "].type", "Type (e.g. intro)", item.type) }}
+  </div>
+</details>
+{% endmacro %}
+
+{% macro subtitleRow(index, item = null, open = true) %}
+{# @pebvariable name="open" type="java.lang.Boolean" #}
+{# @pebvariable name="index" type="java.lang.Long" #}
+{# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack" #}
+<details class="entry-item" data-index="{{ index }}" {% if open %}open{% endif %}>
+  <summary>
+    <span class="item-label">
+      <span class="material-symbols-outlined">closed_caption</span>
+      {{ item.label | default("New Subtitle") }}
+    </span>
+    {{ removeButton() }}
+  </summary>
+  <div class="item-body">
+    <div class="form-row">
+      {{ inputText("metadata.subtitles[" + index + "].label", "Label", item.label) }}
+      {{ inputText("metadata.subtitles[" + index + "].language", "ISO Lang", item.language) }}
+      {{ inputText("metadata.subtitles[" + index + "].kind", "Kind", item.kind) }}
+    </div>
+  {{ inputUrl("metadata.subtitles[" + index + "].url", "VTT URL", item.url) }}
+  </div>
+</details>
+{% endmacro %}
+
+{% macro chapterRow(index, item = null, open = true) %}
+{# @pebvariable name="open" type="java.lang.Boolean" #}
+{# @pebvariable name="index" type="java.lang.Long" #}
+{# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.Chapter" #}
+<details class="entry-item" data-index="{{ index }}" {% if open %}open{% endif %}>
+  <summary>
+    <span class="item-label">
+      <span class="material-symbols-outlined">library_add</span>
+        {{ item.label | default("New Chapter") }}
+    </span>
+    {{ removeButton() }}
+  </summary>
+  <div class="item-body">
+    <div class="form-row">
+      {{ inputText("metadata.chapters[" + index + "].title", "Title", item.title, required=true) }}
+      {{ inputText("metadata.chapters[" + index + "].identifier", "Identifier", item.identifier) }}
+    </div>
+    {{ inputUrl("metadata.chapters[" + index + "].posterUrl", "Poster Url", item.posterUrl) }}
+    <div class="form-row">
+      {{ inputNumber("metadata.chapters[" + index + "].startTime", "Start", item.startTime) }}
+      {{ inputNumber("metadata.chapters[" + index + "].endTime", "End", item.endTime) }}
+    </div>
+  </div>
+</details>
+{% endmacro %}
+
+{% macro drmRow(sourceIndex, drmIndex, item = null, open = true) %}
+{# @pebvariable name="open" type="java.lang.Boolean" #}
+{# @pebvariable name="sourceIndex" type="java.lang.Long" #}
+{# @pebvariable name="drmIndex" type="java.lang.Long" #}
+{# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.DrmConfig" #}
+<details class="entry-item" data-index="{{ drmIndex }}" {% if open %}open{% endif %}>
+  <summary>
+    <span class="item-label">
+      <span class="material-symbols-outlined">lock</span>
+      {{ item.keySystem | default("New DRM Config") }}
+    </span>
+    {{ removeButton() }}
+  </summary>
+  <div class="item-body">
+    {{ inputCheckbox("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].multisession", "Multisession", item.multisession) }}
+
+    <div class="form-row">
+      {{ inputText("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].keySystem", "Key System", item.keySystem) }}
+      {{ inputUrl("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].licenseUrl", "License URL", item.licenseUrl) }}
+    </div>
+    {{ inputUrl("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].certificateUrl", "Certificate URL", item.certificateUrl) }}
+  </div>
+</details>
+{% endmacro %}
+
+
+{% macro sourceRow(index, item = null, open = true) %}
+{# @pebvariable name="open" type="java.lang.Boolean" #}
+{# @pebvariable name="index" type="java.lang.Long" #}
+{# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.MediaSource" #}
+<article class="entry-item" data-index="{{ index }}">
+  <header>
+    <h3>
+      <span class="material-symbols-outlined">play_circle</span>
+      {{ item.mimeType | default("New Source") }}
+    </h3>
+    {{ removeButton() }}
+  </header>
+
+  {{ inputUrl("sources[" + index + "].url", "Source URL", item.url, required=true) }}
+
+  <div class="form-row">
+    {{ inputText("sources[" + index + "].type", "Type", item.type) }}
+    {{ inputText("sources[" + index + "].mimeType", "MIME Type", item.mimeType) }}
+  </div>
+
+  <div class="form-row">
+    {{ inputText("sources[" + index + "].videoFragmentFormat", "Video Format", item.videoFragmentFormat) }}
+    {{ inputText("sources[" + index + "].audioFragmentsFormat", "Audio Format", item.audioFragmentsFormat) }}
+  </div>
+
+  <div id="drm-container[{{ index }}]" class="drm-container">
+    {% for drm in item.drmConfigs %}
+    {{ drmRow(index, loop.index, drm, open) }}
+    {% endfor %}
+
+    <button type="button"
+            hx-get="/console/media/editor/fragments/drm?sourceIndex={{ index }}"
+            hx-swap="beforebegin"
+            data-index-selector="#drm-container[{{ index }}] > .entry-item:last-of-type">
+      Add DRM Configuration
+    </button>
+  </div>
+</article>
+{% endmacro %}
+
+{% macro removeButton() %}
+<button type="button" class="btn-icon danger"
+        hx-on:click="this.closest('.entry-item').remove()"
+        title="Remove">
+  <span class="material-symbols-outlined">delete</span>
+</button>
+{% endmacro %}

@@ -8,6 +8,8 @@ import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack
 import ch.srgssr.pillarbox.backend.domain.model.TimeRange
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object MediaLibrary {
   // Sources
@@ -45,8 +47,9 @@ object MediaLibrary {
     )
 }
 
+@OptIn(ExperimentalUuidApi::class)
 class MediaBuilder {
-  var id: String = "test-media-id"
+  var id: String = Uuid.random().toString()
   private val sources = mutableListOf<MediaSource>()
   private val drmConfigs = mutableListOf<DrmConfig>()
   private val subtitles = mutableListOf<SubtitleTrack>()

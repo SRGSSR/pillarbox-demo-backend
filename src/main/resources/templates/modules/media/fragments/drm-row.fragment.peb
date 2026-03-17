@@ -1,0 +1,5 @@
+{% import "../../../shared/macros/forms.macros.peb" %}
+{% import "../media-form.macros.peb" %}
+{# @pebvariable name="sourceIndex" type="java.lang.Long" #}
+{# @pebvariable name="index" type="java.lang.Long" #}
+{{ drmRow(sourceIndex, index, null, true) }}

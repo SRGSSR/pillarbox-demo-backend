@@ -1,0 +1,22 @@
+<aside class="sidebar" data-purpose="navigation-sidebar" id="sidebar">
+  <header>
+    <img src="/static/img/srgssr-logo.png" alt="SRG SSR Logo">
+    <h1>Pillarbox Console</h1>
+  </header>
+
+  <nav>
+    <a href="/console">
+        <span class="material-symbols-outlined">folder</span> Media Library
+        </a>
+    <a href="/console/media/editor">
+        <span class="material-symbols-outlined">add</span> Create Media
+    </a>
+  </nav>
+
+  <footer>
+    <div class="user-avatar">{{ user.initials | default('AD') }}</div>
+    <div class="user-info">
+      <p class="user-name">{{ user.name | default('Admin User') }}</p>
+    </div>
+  </footer>
+</aside>

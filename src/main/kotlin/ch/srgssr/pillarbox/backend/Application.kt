@@ -17,9 +17,12 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.netty.EngineMain
 import io.ktor.server.pebble.Pebble
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.forwardedheaders.ForwardedHeaders
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.routing.routing
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import org.koin.core.context.stopKoin
@@ -37,6 +40,10 @@ import org.koin.logger.slf4jLogger
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 fun Application.module() {
+  if (environment.config.enableProxyHeaders()) {
+    install(ForwardedHeaders)
+  }
+
   install(Pebble) {
     loader(
       ClasspathLoader().apply {
@@ -67,7 +74,6 @@ fun Application.module() {
   }
 
   installSession(get())
-
   install(ContentNegotiation) { json(this@module.get()) }
 
   configureDevelopmentDefaults()
@@ -84,3 +90,16 @@ fun Application.module() {
     stopKoin()
   }
 }
+
+/**
+ * Checks the application configuration to determine if proxy header support is enabled.
+ *
+ * This looks for the `ktor.deployment.enable_forwarded_headers` property.
+ *
+ * @return `true` if the property is explicitly set to "true", `false` otherwise
+ * (including if the property is missing).
+ */
+fun ApplicationConfig.enableProxyHeaders(): Boolean =
+  propertyOrNull("ktor.deployment.enable_forwarded_headers")
+    ?.getString()
+    ?.toBoolean() ?: false

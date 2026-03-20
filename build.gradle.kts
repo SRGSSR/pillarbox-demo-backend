@@ -144,6 +144,7 @@ tasks.named<JavaExec>("run") {
 
   val isDev = getEnv("DEVELOPMENT", "true").toBoolean()
   systemProperty("io.ktor.development", isDev)
+  environment("ENABLE_FORWARDED_HEADERS", getEnv("ENABLE_FORWARDED_HEADERS", "false"))
   environment("DATABASE_URL", getEnv("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox"))
   environment("DATABASE_USER", getEnv("DATABASE_USER", "dev_user"))
   environment("DATABASE_PASSWORD", getEnv("DATABASE_PASSWORD", "dev_password"))

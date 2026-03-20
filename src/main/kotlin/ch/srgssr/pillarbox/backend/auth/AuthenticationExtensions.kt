@@ -2,6 +2,7 @@ package ch.srgssr.pillarbox.backend.auth
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.Navigation
 import io.ktor.client.HttpClient
+import io.ktor.http.RequestConnectionPoint
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.AuthenticationConfig
@@ -60,14 +61,20 @@ fun AuthenticationConfig.configureOidc(
  * This ensures the redirect URI matches the protocol, host, and port used by the client,
  * which is critical for environments behind proxies or load balancers.
  *
- * @param path The relative path for the OAuth callback (default is "/callback").
+ * @param path The relative path for the OAuth callback (default is [Navigation.CALLBACK]).
  *
  * @return A fully qualified URL string.
  */
-fun ApplicationRequest.buildCallbackUrl(path: String = "/callback"): String {
+fun ApplicationRequest.buildCallbackUrl(path: String = Navigation.CALLBACK): String {
   val o = origin
-  return "${o.scheme}://${o.serverHost}:${o.serverPort}$path"
+  val port = o.serverPort.takeUnless { o.isDefaultPort() }?.let { ":$it" } ?: ""
+
+  return "${o.scheme}://${o.serverHost}$port$path"
 }
+
+fun RequestConnectionPoint.isDefaultPort(): Boolean =
+  (scheme == "http" && serverPort == 80) ||
+    (scheme == "https" && serverPort == 443)
 
 /**
  * Installs and configures the Ktor [Sessions] plugin with a signed cookie.

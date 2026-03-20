@@ -48,6 +48,7 @@ ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
 ktor-server-htmx = { module = "io.ktor:ktor-server-htmx ", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-server-pebble = { module = "io.ktor:ktor-server-pebble", version.ref = "ktor" }
@@ -105,6 +106,7 @@ ktor-server = [
   "ktor-server-auth-jwt",
   "ktor-server-content-negotiation",
   "ktor-server-core",
+  "ktor-server-forwarded-header",
   "ktor-server-htmx",
   "ktor-server-netty",
   "ktor-server-pebble"

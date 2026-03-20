@@ -81,6 +81,10 @@ application {
 }
 
 tasks.shadowJar {
+  mergeServiceFiles {
+    include("META-INF/services/**")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
   archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
   manifest { attributes["Main-Class"] = application.mainClass.get() }
 }

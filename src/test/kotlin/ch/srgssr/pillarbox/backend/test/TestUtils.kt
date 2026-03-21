@@ -35,7 +35,10 @@ import org.koin.core.context.GlobalContext
  * @param block The test logic to execute, provides access to the [ApplicationTestBuilder]
  *              and a pre-configured `client` with JSON support.
  */
-fun testApplicationContext(block: suspend ApplicationTestBuilder.() -> Unit) {
+fun testApplicationContext(
+  enableProxyHeaders: Boolean = false,
+  block: suspend ApplicationTestBuilder.() -> Unit,
+) {
   val oAuthServer =
     MockOAuth2Server(
       OAuth2Config(
@@ -61,9 +64,8 @@ fun testApplicationContext(block: suspend ApplicationTestBuilder.() -> Unit) {
 
   testApplication {
     configure("application.conf") {
-      val issuerUrl = oAuthServer.issuerUrl("pillarbox-realm").toString()
-
-      this["oidc.issuer"] = issuerUrl
+      this["ktor.deployment.enable_forwarded_headers"] = enableProxyHeaders.toString()
+      this["oidc.issuer"] = oAuthServer.issuerUrl("pillarbox-realm").toString()
       this["oidc.discovery_path"] = ".well-known/openid-configuration"
       this["oidc.client_id"] = "pillarbox-test-client"
       this["oidc.realm"] = "pillarbox-realm"

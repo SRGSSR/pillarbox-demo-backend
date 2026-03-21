@@ -41,7 +41,7 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 fun Application.module() {
   if (environment.config.enableProxyHeaders()) {
-    install(ForwardedHeaders)
+    install(XForwardedHeaders)
   }
 
   install(Pebble) {

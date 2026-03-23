@@ -37,7 +37,7 @@ fun Route.console(mediaRepository: MediaRepository) {
     route(Navigation.CONSOLE) {
       get {
         call.respond(
-          PebbleContent("modules//home/home.page.peb", emptyMap()),
+          PebbleContent("modules/home/home.page.peb", emptyMap()),
         )
       }
 

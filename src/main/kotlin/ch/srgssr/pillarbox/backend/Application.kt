@@ -20,8 +20,9 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.netty.EngineMain
 import io.ktor.server.pebble.Pebble
+import io.ktor.server.plugins.compression.Compression
+import io.ktor.server.plugins.compression.gzip
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.forwardedheaders.ForwardedHeaders
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.routing.routing
 import io.pebbletemplates.pebble.loader.ClasspathLoader
@@ -42,6 +43,10 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 fun Application.module() {
   if (environment.config.enableProxyHeaders()) {
     install(XForwardedHeaders)
+  }
+
+  install(Compression) {
+    gzip()
   }
 
   install(Pebble) {

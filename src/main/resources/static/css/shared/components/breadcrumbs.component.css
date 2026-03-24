@@ -1,8 +1,8 @@
 .breadcrumbs {
     display: grid;
     grid-auto-flow: column;
-    align-items: center;
     gap: var(--size-2);
+    align-items: center;
     font-size: var(--font-size-1);
 }
 

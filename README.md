@@ -10,9 +10,21 @@ media management within the [Pillarbox](https://pillarbox.ch) ecosystem.
 **Prerequisites and Requirements**
 
 - **JDK 24** or higher
+- **Node.js 24** or higher
 - **Docker & Docker Compose**: Required for running the local environment. On Linux, follow these
   [post-installation][docker-post-install] steps to allow your user to run Docker commands without
   relying on `sudo`.
+
+### Using `nvm`
+
+This project includes an `.nvmrc` file that specifies the recommended Node.js version.
+
+If you use `nvm`, you can automatically switch to the correct Node version by running: `nvm use`
+If the required version is not installed yet, run: `nvm install`. This will install the Node.js
+version defined in `.nvmrc` and switch your shell to use it.
+
+For more details on installing and using the `.nvmrc` file see the official
+[`.nvmrc` documentation][nvmrc-doc].
 
 ### Local Development
 
@@ -35,6 +47,19 @@ execute the steps separately:
 | **1** | **Start Infrastructure** | `docker compose up -d --wait` |
 | **2** | **Start Application**    | `./gradlew run`               |
 | **3** | **Cleanup**              | `docker compose down`         |
+
+To run the full stack as Docker containers only (e.g. for integration testing or CI), use the
+`full` profile, which additionally starts the backend service:
+
+```bash
+export NODE_VERSION=$(cat .nvmrc)
+docker compose --profile full up --build --wait
+```
+
+> [!NOTE]
+> By default, `docker compose up` only starts the infrastructure services (PostgreSQL and
+> Keycloak). The `full` profile is intended for scenarios where you want to validate the
+> containerized application without running it locally via Gradle.
 
 ### Environment Configuration
 
@@ -154,6 +179,29 @@ git config core.hooksPath .githooks/
 
 Refer to our [Contribution Guide](docs/CONTRIBUTING.md) for more detailed information.
 
+## Contributing
+
+Contributions are welcome! Please follow the project's code style and linting rules before
+submitting.
+
+| Tool      | Check                   | Fix                      |
+|-----------|-------------------------|--------------------------|
+| ktlint    | `./gradlew ktlintCheck` | `./gradlew ktlintFormat` |
+| detekt    | `./gradlew detekt`      | —                        |
+| eslint    | `npm run eslint`        | `npm run eslint:fix`     |
+| stylelint | `npm run stylelint`     | `npm run stylelint:fix`  |
+
+All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+format to ensure compatibility with our automated release system.
+
+To automate these checks via a pre-commit hook, update the Git hooks path:
+
+```bash
+git config core.hooksPath .githooks/
+```
+
+Refer to our [Contribution Guide](docs/CONTRIBUTING.md) for more detailed information.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
@@ -163,4 +211,5 @@ This project is licensed under the [MIT License](LICENSE).
 [flyway]: https://flywaydb.org/
 [koin]: https://insert-koin.io/
 [ktor]: https://ktor.io/
+[nvmrc-doc]: https://github.com/nvm-sh/nvm?tab=readme-ov-file#nvmrc
 [pillarbox-schema]: src/test/resources/schemas/pillarbox-standard-metadata-schema.json

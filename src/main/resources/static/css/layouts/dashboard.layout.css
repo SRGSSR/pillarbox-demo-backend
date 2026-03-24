@@ -1,7 +1,10 @@
-@import "_icons.css";
-@import "_button.css";
-@import "../shared/components/breadcrumbs.component.css";
-@import "../shared/components/sidebar.component.css";
+@import url("open-props/style");
+@import url("open-props/normalize");
+@import url("open-props/buttons");
+@import url("_icons.css");
+@import url("_button.css");
+@import url("../shared/components/breadcrumbs.component.css");
+@import url("../shared/components/sidebar.component.css");
 
 .app-container > * {
   padding-inline: var(--size-6);
@@ -9,11 +12,10 @@
 
 .app-container > header {
   display: flex;
-  align-items: center;
   gap: var(--size-3);
-
-  padding-block: var(--size-3);
+  align-items: center;
   border-bottom: var(--border-size-1) solid var(--surface-3);
+  padding-block: var(--size-3);
 }
 
 .app-container > main {
@@ -30,7 +32,7 @@ section {
   color: var(--red-5);
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .app-container > * {
     padding-inline: var(--size-3);
   }

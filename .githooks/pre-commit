@@ -14,7 +14,6 @@ if ! ./gradlew ktlintCheck; then
     echo "${RED}Commit aborted.${NC}"
     exit 1
 fi
-
 echo "${GREEN}ktlintCheck passed ✔${NC}"
 
 echo "${YELLOW}Running detekt...${NC}"
@@ -23,7 +22,24 @@ if ! ./gradlew detekt; then
     echo "${RED}Commit aborted.${NC}"
     exit 1
 fi
-
 echo "${GREEN}detekt passed ✔${NC}"
+
+echo "${YELLOW}Running stylelint...${NC}"
+if ! npm run stylelint; then
+    echo "${RED}stylelint failed ✘${NC}"
+    echo "${RED}Commit aborted.${NC}"
+    exit 1
+fi
+echo "${GREEN}stylelint passed ✔${NC}"
+
+
+echo "${YELLOW}Running eslint...${NC}"
+if ! npm run eslint; then
+    echo "${RED}eslint failed ✘${NC}"
+    echo "${RED}Commit aborted.${NC}"
+    exit 1
+fi
+echo "${GREEN}eslint passed ✔${NC}"
+
 
 exit 0

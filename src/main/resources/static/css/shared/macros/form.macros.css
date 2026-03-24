@@ -6,8 +6,8 @@ form {
 form footer {
     display: flex;
     flex-wrap: wrap;
-    justify-content: end;
     gap: var(--size-3);
+    justify-content: end;
 }
 
 form .field {
@@ -22,10 +22,10 @@ form .field label {
 
 form .field :is(input, textarea) {
     padding: var(--size-2) var(--size-3);
-    border-radius: var(--radius-2);
-    border: var(--border-size-1) solid var(--gray-7);
-    background: color-mix(in srgb, var(--gray-8), var(--gray-9));
     color: var(--text-1);
+    background: color-mix(in srgb, var(--gray-8), var(--gray-9));
+    border: var(--border-size-1) solid var(--gray-7);
+    border-radius: var(--radius-2);
     transition: all .2s var(--ease-out-3);
 }
 
@@ -44,8 +44,8 @@ fieldset {
 }
 
 fieldset legend {
-    font-weight: var(--font-weight-7);
     color: var(--gray-5);
+    font-weight: var(--font-weight-7);
 }
 
 label.checkbox {

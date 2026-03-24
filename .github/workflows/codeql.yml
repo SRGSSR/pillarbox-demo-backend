@@ -30,6 +30,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        if: ${{ matrix.language == 'java-kotlin' }}
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        if: ${{ matrix.language == 'java-kotlin' }}
+        env:
+          CI: true
+        run: |
+          npm ci
+
       - name: Set up JDK
         if: ${{ matrix.language == 'java-kotlin' }}
         uses: actions/setup-java@v5

@@ -8,14 +8,15 @@ details.entry-item summary {
   grid-template-columns: 1fr auto;
   align-items: center;
 }
+
 article header {
   font-size: var(--font-size-5);
 }
 
 article header h3, details.entry-item summary .item-label {
   display: flex;
-  align-items: center;
   gap: var(--size-2);
+  align-items: center;
 }
 
 article.entry-item {

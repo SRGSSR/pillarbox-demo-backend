@@ -1,5 +1,5 @@
-@import "../../layouts/dashboard.layout.css";
-@import "../../shared/fragments/media-grid.fragment.css";
+@import url("../../layouts/dashboard.layout.css");
+@import url("../../shared/fragments/media-grid.fragment.css");
 
 form[method="dialog"] {
   display: grid;
@@ -9,6 +9,6 @@ form[method="dialog"] {
 form[method="dialog"] footer {
   display: flex;
   flex-wrap: wrap;
-  justify-content: end;
   gap: var(--size-3);
+  justify-content: end;
 }

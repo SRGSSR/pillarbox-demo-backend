@@ -34,3 +34,6 @@ gradle-app.setting
 
 # Environment file
 .env
+
+### npm ###
+node_modules

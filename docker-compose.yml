@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev_user -d pillarbox"]
+      test: [ "CMD-SHELL", "pg_isready -U dev_user -d pillarbox" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -41,3 +41,23 @@ services:
       resources:
         limits:
           memory: 1024m
+
+  backend:
+    profiles: [full]
+    build:
+      context: .
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/pillarbox
+      - AUTH_ISSUER=http://keycloak:8081/realms/pillarbox
+      - DEVELOPMENT=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy

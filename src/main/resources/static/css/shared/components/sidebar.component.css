@@ -5,27 +5,18 @@
 body {
   display: grid;
   grid-template-columns: var(--sidebar-template-columns);
-  background: var(--gray-10);
   overflow-x: hidden;
-}
-
-body.sidebar-collapsed {
-  --sidebar-template-columns: 1fr;
-}
-
-body.sidebar-collapsed aside.sidebar {
-  display: none;
+  background: var(--gray-10);
 }
 
 aside.sidebar {
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
   gap: var(--size-4);
-  padding: var(--size-6);
-
   height: 100dvh;
-  position: sticky;
-  top: 0;
+  padding: var(--size-6);
   background: var(--surface-1);
   border-right: var(--border-size-1) solid var(--surface-3);
 }
@@ -45,40 +36,40 @@ aside.sidebar nav {
 
 aside.sidebar nav a {
   display: flex;
-  align-items: center;
   gap: var(--size-3);
+  align-items: center;
   padding: var(--size-2) var(--size-3);
-  text-decoration: none;
   color: var(--text-2);
+  text-decoration: none;
   border-radius: var(--radius-2);
   transition: all .2s var(--ease-out-3);
 }
 
 aside.sidebar nav :is(a:hover, a.is-active) {
-  background: var(--surface-2);
   color: var(--white);
+  background: var(--surface-2);
 }
 
 /* Footer & User Profile */
 aside.sidebar footer {
-  padding-top: var(--size-4);
-  border-block-start: var(--border-size-1) solid var(--surface-3);
   display: flex;
-  align-items: center;
   gap: var(--size-3);
+  align-items: center;
+  padding-top: var(--size-4);
   font-style: normal; /* Removes default italic from <address> */
+  border-block-start: var(--border-size-1) solid var(--surface-3);
 }
 
 aside.sidebar footer .user-avatar {
-  flex-shrink: 0;
-  inline-size: var(--size-7);
-  block-size: var(--size-7);
-  background: var(--gray-7);
-  border-radius: var(--radius-round);
   display: grid;
-  place-content: center;
+  flex-shrink: 0;
   font-weight: var(--font-weight-7);
   font-size: var(--font-size-0);
+  background: var(--gray-7);
+  border-radius: var(--radius-round);
+  inline-size: var(--size-7);
+  block-size: var(--size-7);
+  place-content: center;
 }
 
 aside.sidebar footer .user-info {
@@ -87,6 +78,14 @@ aside.sidebar footer .user-info {
 }
 
 aside.sidebar footer .user-name {
-  font-size: var(--font-size-1);
   font-weight: var(--font-weight-6);
+  font-size: var(--font-size-1);
+}
+
+body.sidebar-collapsed {
+  --sidebar-template-columns: 1fr;
+}
+
+body.sidebar-collapsed aside.sidebar {
+  display: none;
 }

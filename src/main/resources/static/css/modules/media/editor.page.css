@@ -1,4 +1,4 @@
-@import "../../layouts/dashboard.layout.css";
-@import "../../shared/macros/form.macros.css";
-@import "media-form.macros.css";
+@import url("../../layouts/dashboard.layout.css");
+@import url("../../shared/macros/form.macros.css");
+@import url("media-form.macros.css");
 

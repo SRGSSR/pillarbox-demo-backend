@@ -25,6 +25,7 @@ The console exposes several endpoints that return either full HTML pages or part
 | **GET**    | `/console/media/editor/{id?}`            | Page | Opens the media editor (empty for new, populated for existing).                                                         |
 | **GET**    | `/console/media/editor/{id}/duplicate`   | Page | Opens the editor with data from an existing ID (ID cleared) for duplication.                                            |
 | **GET**    | `/console/media/editor/fragments/{name}` | HTMX | Returns a set of input fields for a specific object type.                                                               |
+| **POST**   | `/console/media/{id}/restore`            | HTMX | Restores a deleted media entity from the repository.                                                                    |
 
 ## REST API
 
@@ -59,13 +60,15 @@ curl -v --request POST \
 All endpoints below require the `Authorization: Bearer $TOKEN` header. You can find all the
 definitions in [MediaRoute.kt][media-route-kt].
 
-| Method     | Endpoint              | Description                                             |
-|------------|-----------------------|---------------------------------------------------------|
-| **GET**    | `/v1/media`           | List all media (supports `limit` and `offset` queries). |
-| **GET**    | `/v1/media/{id}`      | Retrieve a specific media entity by ID.                 |
-| **POST**   | `/v1/media`           | Create or fully update a media entity.                  |
-| **PATCH**  | `/v1/media/{id}/tags` | Batch update tags for a specific media entity.          |
-| **DELETE** | `/v1/media/{id}`      | Remove a media entity from the repository.              |
+| Method     | Endpoint                 | Description                                             |
+|------------|--------------------------|---------------------------------------------------------|
+| **GET**    | `/v1/media`              | List all media (supports `limit` and `offset` queries). |
+| **GET**    | `/v1/media/{id}`         | Retrieve a specific media entity by ID.                 |
+| **POST**   | `/v1/media`              | Create or fully update a media entity.                  |
+| **PATCH**  | `/v1/media/{id}/tags`    | Batch update tags for a specific media entity.          |
+| **DELETE** | `/v1/media/{id}`         | Remove a media entity from the repository.              |
+| **POST**   | `/v1/media/{id}/restore` | Restores a deleted media entity from the repository.    |
+
 
 ### Player API (Public)
 

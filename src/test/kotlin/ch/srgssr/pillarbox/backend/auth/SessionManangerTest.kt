@@ -87,7 +87,6 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(session.sessionId))
 
       result.shouldBeNull()
-      // OPTIMIZATION: Should NOT call OIDC because we already know it's expired locally
       builder.engine.requestHistory.size shouldBe 0
       coVerify { builder.repository.delete(session.sessionId) }
     }

@@ -6,6 +6,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerResponse
 import ch.srgssr.pillarbox.backend.io.parseHeaderList
 import ch.srgssr.pillarbox.backend.io.parseParamList
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
+import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
@@ -13,6 +14,8 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import kotlinx.coroutines.flow.map
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Generic helper to register player-facing media endpoints.
@@ -28,14 +31,19 @@ inline fun <reified Res : Any> Route.playerMediaEndpoints(
   get {
     val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
     val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-    val mediaFlow = mediaRepository.getAll(limit, offset)
+    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
 
     call.respond(mediaFlow.map { toResponse(it, call) })
   }
 
   get("/{id}") {
     val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-    val media = mediaRepository.find(id) ?: return@get call.respond(HttpStatusCode.NotFound)
+
+    val media =
+      mediaRepository.findOne {
+        (MediaTable.id eq id) and (MediaTable.deleted eq false)
+      } ?: return@get call.respond(HttpStatusCode.NotFound)
+
     call.respond(toResponse(media, call))
   }
 }

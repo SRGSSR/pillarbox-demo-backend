@@ -33,6 +33,7 @@
       <span class="material-symbols-outlined">content_copy</span>
     </a>
 
+    {% if not media.deleted %}
     <button class="btn-icon danger"
             hx-delete="/console/media/{{ media.id }}"
             hx-target="[id='media-card-{{ media.id }}']"
@@ -41,6 +42,16 @@
           title="Delete {{ media.metadata.title }}">
       <span class="material-symbols-outlined">delete</span>
     </button>
+    {% else %}
+      <button class="btn-icon danger"
+              hx-post="/console/media/{{ media.id }}/restore"
+              hx-target="[id='media-card-{{ media.id }}']"
+              hx-swap="outerHTML"
+              hx-confirm="Are you sure you want to restore {{ media.metadata.title }} ?"
+              title="Restore {{ media.metadata.title }}">
+        <span class="material-symbols-outlined">restore_from_trash</span>
+      </button>
+    {% endif %}
   </footer>
 </article>
 {% endmacro %}
@@ -48,11 +59,9 @@
 {% macro mediaList(result, nextUrl = null) %}
 {# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
-<section>
-  <div class="media-list">
-  {% for item in result.items %}
-    {{ mediaCard(item, loop.last ? nextUrl : null) }}
-  {% endfor %}
-  </div>
+<section class="media-list">
+{%- for item in result.items -%}
+  {{ mediaCard(item, loop.last ? nextUrl : null) }}
+{%- endfor -%}
 </section>
 {% endmacro %}

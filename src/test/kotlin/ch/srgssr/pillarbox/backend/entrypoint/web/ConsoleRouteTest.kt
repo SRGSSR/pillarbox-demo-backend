@@ -13,7 +13,6 @@ import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.inspectors.shouldForAll
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -60,6 +59,15 @@ class ConsoleRouteTest :
         login()
 
         client.hxDelete("${Navigation.CONSOLE}/media/not-a-media") {
+        } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
+    should("return NOT_FOUND when restoring a non-existing media") {
+      testApplicationContext {
+        login()
+
+        client.hxPost("${Navigation.CONSOLE}/media/not-a-media/restore") {
         } shouldHaveStatus HttpStatusCode.NotFound
       }
     }
@@ -196,6 +204,50 @@ class ConsoleRouteTest :
 
           doc[".entry-item"].shouldNotBeEmpty()
         }
+      }
+    }
+
+    should("show media in the deleted grid and hide it from the active grid after delete") {
+      testApplicationContext {
+        login()
+        val media = mediaFixture()
+
+        client.hxPost("${Navigation.CONSOLE}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(media)
+        }
+
+        client.hxDelete("${Navigation.CONSOLE}/media/${media.id}") shouldHaveStatus HttpStatusCode.OK
+
+        val activeResponse = client.hxGet("${Navigation.CONSOLE}/media?deleted=false")
+        val activeDoc = Jsoup.parse(activeResponse.bodyAsText())
+        activeDoc.select("#media-card-${media.id}").size shouldBe 0
+
+        val deletedResponse = client.hxGet("${Navigation.CONSOLE}/media?deleted=true")
+        val deletedDoc = Jsoup.parse(deletedResponse.bodyAsText())
+        deletedDoc.select("#media-card-${media.id}").size shouldBe 1
+      }
+    }
+
+    should("show media in the active grid and hide it from the deleted grid after restoring") {
+      testApplicationContext {
+        login()
+        val media = mediaFixture()
+
+        client.hxPost("${Navigation.CONSOLE}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(media)
+        }
+        client.hxDelete("${Navigation.CONSOLE}/media/${media.id}")
+        client.hxPost("${Navigation.CONSOLE}/media/${media.id}/restore") shouldHaveStatus HttpStatusCode.OK
+
+        val activeResponse = client.hxGet("${Navigation.CONSOLE}/media?deleted=false")
+        val activeDoc = Jsoup.parse(activeResponse.bodyAsText())
+        activeDoc.select("#media-card-${media.id}").size shouldBe 1
+
+        val deletedResponse = client.hxGet("${Navigation.CONSOLE}/media?deleted=true")
+        val deletedDoc = Jsoup.parse(deletedResponse.bodyAsText())
+        deletedDoc.select("#media-card-${media.id}").size shouldBe 0
       }
     }
   })

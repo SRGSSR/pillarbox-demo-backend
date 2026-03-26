@@ -1,9 +1,10 @@
 {% import "../macros/media-card.macros.peb" %}
 
+{# @pebvariable name="deleted" type="java.lang.Boolean" #}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
 {# @pebvariable name="nextPage" type="java.lang.Integer" #}
 
 {% set hasMore = (nextPage * result.limit) < result.totalCount %}
-{% set nextUrl = hasMore ? "/console/media?page=" + nextPage + "&pageSize=" + result.limit : null %}
+{% set nextUrl = hasMore ? "/console/media?page=" + nextPage + "&pageSize=" + result.limit + "&deleted=" + deleted : null %}
 
 {{ mediaList(result, nextUrl) }}

@@ -6,6 +6,11 @@
 @import url("../shared/components/breadcrumbs.component.css");
 @import url("../shared/components/sidebar.component.css");
 
+.app-container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
 .app-container > * {
   padding-inline: var(--size-6);
 }

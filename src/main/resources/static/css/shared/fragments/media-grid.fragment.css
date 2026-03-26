@@ -1,6 +1,22 @@
-.media-list {
-  display: grid;
-  gap: var(--size-4);
+.media-list:empty {
+  gap: var(--size-1);
+  height: 100%;
+  opacity: 0.4;
+  place-items: center;
+  place-content: center;
+}
+
+.media-list:empty::before {
+  font-weight: var(--font-weight-6);
+  font-size: var(--font-size-8);
+  font-family: "Material Symbols Outlined", serif;
+  content: "block";
+}
+
+.media-list:empty::after {
+  font-weight: var(--font-weight-6);
+  font-size: var(--font-size-5);
+  content: "No media found";
 }
 
 .media-card {

@@ -12,9 +12,7 @@
       </button>
       {% include "../shared/components/breadcrumbs.component.peb" %}
     </header>
-    <main>
-      {% block mainContent %}{% endblock %}
-    </main>
+    {% block mainContent %}{% endblock %}
 </div>
 
 {% block footer %}{% endblock %}

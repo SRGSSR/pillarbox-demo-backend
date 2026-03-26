@@ -6,6 +6,7 @@ import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.log.trace
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
+import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.htmx.hx
@@ -20,6 +21,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.utils.io.ExperimentalKtorApi
+import org.jetbrains.exposed.v1.core.eq
 
 private object ConsoleRoute
 
@@ -29,7 +31,7 @@ private val logger = ConsoleRoute.logger()
  * Basic dashboard entry point protected by SSO session.
  */
 @OptIn(ExperimentalKtorApi::class)
-@SuppressWarnings("LongMethod")
+@SuppressWarnings("LongMethod", "CyclomaticComplexMethod")
 fun Route.console(mediaRepository: MediaRepository) {
   authenticate("pillarbox-session") {
     staticResources("/static", "static")
@@ -41,14 +43,31 @@ fun Route.console(mediaRepository: MediaRepository) {
         )
       }
 
+      get("bin") {
+        call.respond(
+          PebbleContent(
+            "modules/home/home.page.peb",
+            mapOf(
+              "deleted" to true,
+            ),
+          ),
+        )
+      }
+
       hx.get("media") {
         val page = call.parameters["page"]?.toIntOrNull() ?: 0
         val pageSize = call.parameters["pageSize"]?.toIntOrNull() ?: 15
+        val deleted = call.parameters["deleted"] == "true"
         val offset = (page * pageSize).toLong()
 
         logger.debug { "Fetching media grid: page=$page, pageSize=$pageSize, offset=$offset" }
 
-        val result = mediaRepository.getAllPaginated(limit = pageSize, offset = offset)
+        val result =
+          mediaRepository.getAllPaginated(
+            limit = pageSize,
+            offset = offset,
+            filter = { MediaTable.deleted eq deleted },
+          )
 
         call.respond(
           PebbleContent(
@@ -56,6 +75,7 @@ fun Route.console(mediaRepository: MediaRepository) {
             mapOf(
               "result" to result,
               "nextPage" to page + 1,
+              "deleted" to deleted,
             ),
           ),
         )
@@ -120,13 +140,23 @@ fun Route.console(mediaRepository: MediaRepository) {
 
         logger.info { "Attempting to delete media with ID: $id" }
 
-        val deleted = mediaRepository.delete(id)
+        mediaRepository
+          .softDelete(id)
+          .takeIf { it }
+          ?.let { call.respond(HttpStatusCode.OK) }
+          ?: call.respond(HttpStatusCode.NotFound)
+      }
 
-        if (deleted) {
-          call.respond(HttpStatusCode.OK)
-        } else {
-          call.respond(HttpStatusCode.NotFound)
-        }
+      hx.post("media/{id}/restore") {
+        val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.NotFound)
+
+        logger.info { "Attempting to restore media with ID: $id" }
+
+        mediaRepository
+          .restore(id)
+          .takeIf { it }
+          ?.let { call.respond(HttpStatusCode.OK) }
+          ?: call.respond(HttpStatusCode.NotFound)
       }
     }
   }

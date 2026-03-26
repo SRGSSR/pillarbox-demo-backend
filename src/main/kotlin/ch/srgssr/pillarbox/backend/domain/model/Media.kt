@@ -2,6 +2,8 @@ package ch.srgssr.pillarbox.backend.domain.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -12,6 +14,9 @@ import kotlin.uuid.Uuid
  * @property tags A list of labels or categories associated with the media.
  * @property sources The list of available playback sources (streams).
  * @property metadata Descriptive information for display and playback.
+ * @property deleted Whether the media has been deleted or not.
+ * @property createdAt The time when the media was created.
+ * @property lastModified The time when the media was last modified.
  */
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
@@ -20,6 +25,9 @@ data class Media(
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
   val metadata: MediaMetadata,
+  val deleted: Boolean = false,
+  val createdAt: Instant = Clock.System.now(),
+  val lastModified: Instant = Clock.System.now(),
 )
 
 /**

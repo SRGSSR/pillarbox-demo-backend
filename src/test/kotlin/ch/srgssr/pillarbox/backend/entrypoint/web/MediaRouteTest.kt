@@ -70,7 +70,6 @@ class MediaRouteTest :
           setBody(tagUpdate)
         } shouldHaveStatus HttpStatusCode.OK
 
-        // Verify tags
         val response =
           client.get("/v1/media/${fixture.id}") {
             bearerAuth(token)
@@ -144,6 +143,91 @@ class MediaRouteTest :
         client.delete("/v1/media/does-not-exist") {
           bearerAuth(token)
         } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
+    should("return NOT_FOUND when restoring a non-existent media") {
+      testApplicationContext {
+        client.post("/v1/media/does-not-exist/restore") {
+          bearerAuth(token)
+        } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
+    should("update lastModified but preserve createdAt when media is modified") {
+      testApplicationContext {
+        val fixture = mediaFixture()
+        val request = fixture.toMediaRequestV1()
+
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(request)
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val initialMedia =
+          client
+            .get("/v1/media/${fixture.id}") {
+              bearerAuth(token)
+            }.body<MediaResponseV1>()
+
+        val firstCreatedAt = initialMedia.createdAt
+        val firstLastModified = initialMedia.lastModified
+
+        val tagUpdate =
+          TagBatchUpdateRequestV1(
+            operations =
+              listOf(
+                TagOperationV1(TagActionV1.ADD, listOf("timestamp-change-tag")),
+              ),
+          )
+
+        client.patch("/v1/media/${fixture.id}/tags") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(tagUpdate)
+        } shouldHaveStatus HttpStatusCode.OK
+
+        val updatedMedia =
+          client
+            .get("/v1/media/${fixture.id}") {
+              bearerAuth(token)
+            }.body<MediaResponseV1>()
+
+        updatedMedia.createdAt shouldBe firstCreatedAt
+        (firstLastModified < updatedMedia.lastModified) shouldBe true
+      }
+    }
+    should("successfully restore a deleted media item") {
+      testApplicationContext {
+        val fixture = mediaFixture()
+        val request = fixture.toMediaRequestV1()
+
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(request)
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.delete("/v1/media/${fixture.id}") {
+          bearerAuth(token)
+        } shouldHaveStatus HttpStatusCode.NoContent
+
+        client.get("/v1/media/${fixture.id}") {
+          bearerAuth(token)
+        } shouldHaveStatus HttpStatusCode.NotFound
+
+        client.post("/v1/media/${fixture.id}/restore") {
+          bearerAuth(token)
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val restoredMedia =
+          client
+            .get("/v1/media/${fixture.id}") {
+              bearerAuth(token)
+            }.body<MediaResponseV1>()
+
+        restoredMedia.id shouldBe fixture.id
       }
     }
   })

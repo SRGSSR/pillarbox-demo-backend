@@ -4,6 +4,7 @@ import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * Data Transfer Object (V1) representing a media resource in the admin web entry point.
@@ -19,6 +20,9 @@ import kotlinx.serialization.Serializable
  * @property tags A list of keywords or labels used for categorization or filtering.
  * @property sources The complete collection of all available streaming endpoints.
  * @property metadata Detailed contextual information including titles, chapters, and markers.
+ * @property deleted Whether the media has been deleted or not.
+ * @property createdAt The time when the media was created.
+ * @property lastModified The time when the media was last modified.
  */
 @Serializable
 data class MediaResponseV1(
@@ -26,6 +30,9 @@ data class MediaResponseV1(
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
   val metadata: MediaMetadata,
+  val deleted: Boolean,
+  val createdAt: Instant,
+  val lastModified: Instant,
 )
 
 /**
@@ -41,4 +48,7 @@ fun Media.toMediaResponseV1() =
     tags = this.tags,
     sources = this.sources,
     metadata = this.metadata,
+    deleted = this.deleted,
+    createdAt = this.createdAt,
+    lastModified = this.lastModified,
   )

@@ -6,6 +6,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
+import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
@@ -18,6 +19,8 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Generic helper to register standard Media CRUD endpoints.
@@ -43,14 +46,18 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
   get {
     val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
     val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-    val mediaFlow = mediaRepository.getAll(limit, offset)
+    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
 
     call.respond(mediaFlow.map { toResponse(it) }.toList())
   }
 
   get("/{id}") {
     val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-    val media = mediaRepository.find(id) ?: return@get call.respond(HttpStatusCode.NotFound)
+
+    val media =
+      mediaRepository.findOne {
+        (MediaTable.id eq id) and (MediaTable.deleted eq false)
+      } ?: return@get call.respond(HttpStatusCode.NotFound)
 
     call.respond(toResponse(media))
   }
@@ -77,9 +84,19 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
 
     mediaRepository
-      .delete(id)
+      .softDelete(id)
       .takeIf { it }
       ?.let { call.respond(HttpStatusCode.NoContent) }
+      ?: call.respond(HttpStatusCode.NotFound)
+  }
+
+  post("/{id}/restore") {
+    val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+    mediaRepository
+      .restore(id)
+      .takeIf { it }
+      ?.let { call.respond(HttpStatusCode.Created) }
       ?: call.respond(HttpStatusCode.NotFound)
   }
 }
@@ -91,7 +108,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
  */
 fun Route.media(mediaRepository: MediaRepository) {
   // Entry point for the V1 media API.
-  authenticate("pillarbox-jwt") {
+  authenticate("pillarbox-jwt", "pillarbox-session") {
     route("v1/media") {
       mediaEndpoints<MediaRequestV1, MediaResponseV1, TagBatchUpdateRequestV1>(
         mediaRepository = mediaRepository,

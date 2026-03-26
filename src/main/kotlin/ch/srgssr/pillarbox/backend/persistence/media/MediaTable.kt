@@ -1,10 +1,11 @@
 package ch.srgssr.pillarbox.backend.persistence.media
 
-import ch.srgssr.pillarbox.backend.domain.model.DrmConfig
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
+import ch.srgssr.pillarbox.backend.persistence.media.MediaTable.id
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.json.jsonb
 
 /**
@@ -22,6 +23,21 @@ object MediaTable : Table("pb_media") {
    * A list of labels or categories associated with the media.
    */
   val tags = array<String>("tags")
+
+  /**
+   * The time when the media was deleted.
+   */
+  val deleted = bool("deleted")
+
+  /**
+   * The time when the media was created.
+   */
+  val createdAt = timestampWithTimeZone("created_at")
+
+  /**
+   * The time when the media was last modified.
+   */
+  val lastModified = timestampWithTimeZone("last_modified")
 
   /**
    * List of available delivery sources.

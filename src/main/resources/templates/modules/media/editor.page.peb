@@ -10,99 +10,101 @@
 {% endblock %}
 
 {% block mainContent %}
-{% if item.id is empty %}
-<h2>Create Media</h2>
-<p>Add a new media asset to the pillarbox demo backend</p>
-{% else %}
-<h2>Edit Media</h2>
-<p>Updating asset: <strong>{{ item.id }}</strong></p>
-{% endif %}
-<form class="media-form"
-      hx-post="/console/media"
-      hx-ext="dot-json">
-  <section class="form-row">
-    {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
-    {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma seperated, e.g. hls, block-segment, live") }}
-  </section>
+<main>
+    {% if item.id is empty %}
+    <h2>Create Media</h2>
+    <p>Add a new media asset to the pillarbox demo backend</p>
+    {% else %}
+    <h2>Edit Media</h2>
+    <p>Updating asset: <strong>{{ item.id }}</strong></p>
+    {% endif %}
+    <form class="media-form"
+          hx-post="/console/media"
+          hx-ext="dot-json">
+      <section class="form-row">
+        {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
+        {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma seperated, e.g. hls, block-segment, live") }}
+      </section>
 
-  <fieldset>
-    <legend>Metadata</legend>
-    <div class="form-row">
-      {{ inputText("metadata.title", "Title", item.metadata.title, required=true) }}
-      {{ inputText("metadata.subtitle", "Subtitle", item.metadata.subtitle) }}
-    </div>
-    {{ textarea("metadata.description", "Description", item.metadata.description) }}
-    {{ inputUrl("metadata.posterUrl", "Poster URL", item.metadata.posterUrl, placeholder = "https://placehold.co/400x225") }}
+      <fieldset>
+        <legend>Metadata</legend>
+        <div class="form-row">
+          {{ inputText("metadata.title", "Title", item.metadata.title, required=true) }}
+          {{ inputText("metadata.subtitle", "Subtitle", item.metadata.subtitle) }}
+        </div>
+        {{ textarea("metadata.description", "Description", item.metadata.description) }}
+        {{ inputUrl("metadata.posterUrl", "Poster URL", item.metadata.posterUrl, placeholder = "https://placehold.co/400x225") }}
 
-    <div class="form-row">
-      {{ inputNumber("metadata.seasonNumber", "Season", item.metadata.seasonNumber) }}
-      {{ inputNumber("metadata.episodeNumber", "Episode", item.metadata.episodeNumber) }}
-      {{ inputText("metadata.viewport", "Viewport", item.metadata.viewport, placeholder="e.g. 16:9") }}
-    </div>
-  </fieldset>
+        <div class="form-row">
+          {{ inputNumber("metadata.seasonNumber", "Season", item.metadata.seasonNumber) }}
+          {{ inputNumber("metadata.episodeNumber", "Episode", item.metadata.episodeNumber) }}
+          {{ inputText("metadata.viewport", "Viewport", item.metadata.viewport, placeholder="e.g. 16:9") }}
+        </div>
+      </fieldset>
 
-  <fieldset id="chapter-container">
-    <legend>Chapters</legend>
+      <fieldset id="chapter-container">
+        <legend>Chapters</legend>
 
-    {% for ch in item.metadata.chapters %}
-    {{ chapterRow(loop.index, ch, open = false) }}
-    {% endfor %}
+        {% for ch in item.metadata.chapters %}
+        {{ chapterRow(loop.index, ch, open = false) }}
+        {% endfor %}
 
-    <button type="button"
-            hx-get="/console/media/editor/fragments/chapter"
-            hx-swap="beforebegin"
-            data-index-selector="#chapter-container > .entry-item:last-of-type">
-      Add Chapter
-    </button>
-  </fieldset>
+        <button type="button"
+                hx-get="/console/media/editor/fragments/chapter"
+                hx-swap="beforebegin"
+                data-index-selector="#chapter-container > .entry-item:last-of-type">
+          Add Chapter
+        </button>
+      </fieldset>
 
-  <fieldset id="time-range-container">
-    <legend>Time Ranges</legend>
+      <fieldset id="time-range-container">
+        <legend>Time Ranges</legend>
 
-    {% for tr in item.metadata.timeRanges %}
-    {{ timeRangeRow(loop.index, tr, open = false) }}
-    {% endfor %}
+        {% for tr in item.metadata.timeRanges %}
+        {{ timeRangeRow(loop.index, tr, open = false) }}
+        {% endfor %}
 
-    <button type="button"
-            hx-get="/console/media/editor/fragments/time-range"
-            hx-swap="beforebegin"
-            data-index-selector="#time-range-container > .entry-item:last-of-type">
-      Add Time Range
-    </button>
-  </fieldset>
+        <button type="button"
+                hx-get="/console/media/editor/fragments/time-range"
+                hx-swap="beforebegin"
+                data-index-selector="#time-range-container > .entry-item:last-of-type">
+          Add Time Range
+        </button>
+      </fieldset>
 
-  <fieldset id="subtitle-container">
-    <legend>Subtitles</legend>
+      <fieldset id="subtitle-container">
+        <legend>Subtitles</legend>
 
-    {% for sub in item.metadata.subtitles %}
-    {{ subtitleRow(loop.index, sub, open = false) }}
-    {% endfor %}
+        {% for sub in item.metadata.subtitles %}
+        {{ subtitleRow(loop.index, sub, open = false) }}
+        {% endfor %}
 
-    <button type="button"
-            hx-get="/console/media/editor/fragments/subtitle"
-            hx-swap="beforebegin"
-            data-index-selector="#subtitle-container > .entry-item:last-of-type">
-      Add Subtitle
-    </button>
-  </fieldset>
+        <button type="button"
+                hx-get="/console/media/editor/fragments/subtitle"
+                hx-swap="beforebegin"
+                data-index-selector="#subtitle-container > .entry-item:last-of-type">
+          Add Subtitle
+        </button>
+      </fieldset>
 
-  <section id="source-container">
-    {% for src in item.sources %}
-    {{ sourceRow(loop.index, src, open = false) }}
-    {% endfor %}
+      <section id="source-container">
+        {% for src in item.sources %}
+        {{ sourceRow(loop.index, src, open = false) }}
+        {% endfor %}
 
-    <button type="button"
-            hx-get="/console/media/editor/fragments/source"
-            hx-swap="beforebegin"
-            data-index-selector="#source-container > .entry-item:last-of-type">
-      Add Source
-    </button>
-  </section>
+        <button type="button"
+                hx-get="/console/media/editor/fragments/source"
+                hx-swap="beforebegin"
+                data-index-selector="#source-container > .entry-item:last-of-type">
+          Add Source
+        </button>
+      </section>
 
-  {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=5) }}
+      {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=5) }}
 
-  <footer class="form-actions">
-    <button type="submit">{{ item.id is empty ? "Create Media" : "Save Media" }}</button>
-  </footer>
-</form>
+      <footer class="form-actions">
+        <button type="submit">{{ item.id is empty ? "Create Media" : "Save Media" }}</button>
+      </footer>
+    </form>
+</main>
 {% endblock %}

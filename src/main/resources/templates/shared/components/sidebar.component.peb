@@ -5,11 +5,14 @@
   </header>
 
   <nav>
+    <a href="/console/media/editor">
+      <span class="material-symbols-outlined">add</span> Create Media
+    </a>
     <a href="/console">
         <span class="material-symbols-outlined">folder</span> Media Library
-        </a>
-    <a href="/console/media/editor">
-        <span class="material-symbols-outlined">add</span> Create Media
+    </a>
+    <a href="/console/bin">
+      <span class="material-symbols-outlined">delete</span> Bin
     </a>
   </nav>
 

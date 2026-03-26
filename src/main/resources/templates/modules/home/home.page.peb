@@ -1,16 +1,18 @@
 {% extends "../../../layouts/dashboard.layout.peb" %}
+{# @pebvariable name="deleted" type="java.lang.Boolean" #}
+
 {% block head %}
 <link rel="stylesheet" href="/static/css/modules/home/home.page.css">
 <script src="/static/js/home.page.js" type="module" defer></script>
 {% endblock %}
-{% set breadcrumb_current = "Media Library" %}
+{% set breadcrumb_current = deleted ? "Bin" : "Media Library" %}
 {% block mainContent %}
 <main
   role="main"
   id="main-container"
-  hx-get="/console/media?page=0"
+  hx-get="/console/media?page=0&deleted={{ deleted | default(false) }}"
   hx-trigger="load">
-  <div class="loader">Loading initial media...</div>
+  <div class="loader">Loading{{ deleted ? " deleted" : ""}} media...</div>
 </main>
 {% endblock %}
 {% block footer %}

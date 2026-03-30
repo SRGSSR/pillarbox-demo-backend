@@ -22,12 +22,18 @@ updates:
       gradle-dependencies:
         patterns:
           - "*"
+        exclude-patterns:
+          - "org.jetbrains.kotlin.*"
+          - "org.gradle:gradle-wrapper"
         update-types:
           - "minor"
           - "patch"
-      gradle-wrapper:
+      gradle-kotlin:
         patterns:
-          - "org.gradle:gradle-wrapper"
+          - "org.jetbrains.kotlin.*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # --- NPM ---
   - package-ecosystem: "npm"

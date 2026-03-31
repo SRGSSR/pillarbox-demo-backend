@@ -2,28 +2,28 @@
 #Plugins
 detekt = "2.0.0-alpha.2"
 kotlin = "2.3.10"
-kover = "0.9.7"
-ktlint = "14.0.1"
+kover = "0.9.8"
+ktlint = "14.2.0"
 ktlint-cli = "1.8.0"
-shadow = "9.3.1"
+shadow = "9.4.1"
 versions-plugin = "0.53.0"
 
 # Libs
 exposed = "1.1.1"
-flyway = "12.0.0"
+flyway = "12.2.0"
 h2 = "2.4.240"
 hikaricp = "7.0.2"
-json-schema-validator = "3.0.0"
+json-schema-validator = "3.0.1"
 jsoup = "1.22.1"
-koin = "4.1.1"
-kotest = "6.1.3"
+koin = "4.2.0"
+kotest = "6.1.10"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization-json = "1.10.0"
 ktor = "3.4.0"
 logback = "1.5.32"
 mock-oauth2-server = "3.0.1"
 mockk = "1.14.9"
-postgresql = "42.7.9"
+postgresql = "42.7.10"
 
 [libraries]
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }

@@ -1,12 +1,15 @@
 .btn-icon {
   margin: 0;
   padding: var(--size-2);
-  color: var(--gray-5);
-  background: none;
   border: none;
-  box-shadow: none;
-  transition: all .2s var(--ease-out-3);
+
+  color: var(--gray-5);
+
   appearance: none;
+  background: none;
+  box-shadow: none;
+
+  transition: all .2s var(--ease-out-3);
 }
 
 .btn-icon:hover {

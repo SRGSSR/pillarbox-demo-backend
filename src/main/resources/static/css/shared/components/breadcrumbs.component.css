@@ -3,6 +3,7 @@
     grid-auto-flow: column;
     gap: var(--size-2);
     align-items: center;
+
     font-size: var(--font-size-1);
 }
 
@@ -15,6 +16,6 @@
 }
 
 .breadcrumbs .page {
-    color: var(--gray-3);
     font-weight: var(--font-weight-5);
+    color: var(--gray-3);
 }

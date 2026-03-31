@@ -1,22 +1,24 @@
 .media-list:empty {
   gap: var(--size-1);
-  height: 100%;
-  opacity: 0.4;
-  place-items: center;
   place-content: center;
+  place-items: center;
+
+  height: 100%;
+
+  opacity: 0.4;
 }
 
 .media-list:empty::before {
-  font-weight: var(--font-weight-6);
-  font-size: var(--font-size-8);
-  font-family: "Material Symbols Outlined", serif;
   content: "block";
+  font-family: "Material Symbols Outlined", serif;
+  font-size: var(--font-size-8);
+  font-weight: var(--font-weight-6);
 }
 
 .media-list:empty::after {
-  font-weight: var(--font-weight-6);
-  font-size: var(--font-size-5);
   content: "No media found";
+  font-size: var(--font-size-5);
+  font-weight: var(--font-weight-6);
 }
 
 .media-card {
@@ -24,10 +26,12 @@
   grid-template-columns: var(--size-12) 1fr auto;
   gap: var(--size-3);
   align-items: start;
+
   padding: var(--size-3);
-  background: var(--surface-1);
   border: 1px solid var(--surface-2);
   border-radius: var(--radius-2);
+
+  background: var(--surface-1);
   box-shadow: var(--shadow-2);
 }
 
@@ -36,12 +40,13 @@
 }
 
 .media-card figure img {
+  aspect-ratio: var(--ratio-widescreen);
   width: 100%;
+  border-radius: var(--radius-2);
+
   object-fit: contain;
   object-position: center;
   background: var(--gray-10);
-  border-radius: var(--radius-2);
-  aspect-ratio: var(--ratio-widescreen);
 }
 
 .media-card header {
@@ -50,37 +55,41 @@
 
 .media-card header h3 {
   margin: 0;
-  color: var(--text-1);
   font-size: var(--font-size-4);
   line-height: var(--font-lineheight-2);
+  color: var(--text-1);
 }
 
 .media-card header p {
-  color: var(--text-2);
   font-size: var(--font-size-0);
+  color: var(--text-2);
 }
 
 .media-card header :is(p, h3) {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .media-card header ul.tag-list {
+  overflow: scroll;
   display: flex;
   gap: var(--size-1);
+
   margin: 0;
   padding: var(--size-3) 0;
-  overflow: scroll;
+
   list-style: none;
 }
 
 .media-card header ul.tag-list li {
   padding: var(--size-1) var(--size-3);
-  color: var(--text-2);
-  font-size: var(--font-size-1);
-  background: var(--surface-2);
   border-radius: var(--radius-3);
+
+  font-size: var(--font-size-1);
+  color: var(--text-2);
+
+  background: var(--surface-2);
 }
 
 .media-card footer.actions {

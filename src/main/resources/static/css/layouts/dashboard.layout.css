@@ -19,8 +19,9 @@
   display: flex;
   gap: var(--size-3);
   align-items: center;
-  border-bottom: var(--border-size-1) solid var(--surface-3);
+
   padding-block: var(--size-3);
+  border-bottom: var(--border-size-1) solid var(--surface-3);
 }
 
 .app-container > main {
@@ -48,8 +49,8 @@ section {
   }
 
   section {
-    padding-block: var(--size-2);
     gap: var(--size-3);
+    padding-block: var(--size-2);
   }
 
   .app-container > header {

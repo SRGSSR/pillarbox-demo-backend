@@ -16,16 +16,19 @@ form .field {
 }
 
 form .field label {
-    font-weight: var(--font-weight-6);
     font-size: var(--font-size-1);
+    font-weight: var(--font-weight-6);
 }
 
 form .field :is(input, textarea) {
     padding: var(--size-2) var(--size-3);
-    color: var(--text-1);
-    background: color-mix(in srgb, var(--gray-8), var(--gray-9));
     border: var(--border-size-1) solid var(--gray-7);
     border-radius: var(--radius-2);
+
+    color: var(--text-1);
+
+    background: color-mix(in srgb, var(--gray-8), var(--gray-9));
+
     transition: all .2s var(--ease-out-3);
 }
 
@@ -37,21 +40,25 @@ form .field input:focus {
 fieldset {
     display: grid;
     gap: var(--size-3);
-    background: color-mix(in srgb, var(--gray-9), var(--gray-10));
-    border: var(--border-size-1) solid var(--gray-7);
+
     padding-block: var(--size-5);
     padding-inline: var(--size-5);
+    border: var(--border-size-1) solid var(--gray-7);
+
+    background: color-mix(in srgb, var(--gray-9), var(--gray-10));
 }
 
 fieldset legend {
-    color: var(--gray-5);
     font-weight: var(--font-weight-7);
+    color: var(--gray-5);
 }
 
 label.checkbox {
+  cursor: pointer;
+
   display: flex;
   gap: var(--size-3);
   align-items: center;
+
   height: var(--size-8);
-  cursor: pointer;
 }

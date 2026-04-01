@@ -2,6 +2,7 @@ package ch.srgssr.pillarbox.backend.entrypoint.web
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.PlayerMediaResponseV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerMediaSourceV1
 import ch.srgssr.pillarbox.backend.test.MediaLibrary
 import ch.srgssr.pillarbox.backend.test.mediaFixture
 import ch.srgssr.pillarbox.backend.test.shouldMatchSchema
@@ -39,10 +40,8 @@ class PlayerMediaRouteTest :
 
     should("serve a media matching the standard player specification") {
       testApplicationContext {
-        val mediaId = "test-player-media-id"
-        val mediaFixture =
+        val media =
           mediaFixture {
-            id = mediaId
             withDash(MediaLibrary.Widevine)
             withHls()
             withSubtitles()
@@ -53,11 +52,11 @@ class PlayerMediaRouteTest :
         client.post("/v1/media") {
           bearerAuth(token)
           contentType(ContentType.Application.Json)
-          setBody(mediaFixture.toMediaRequestV1())
+          setBody(media.toMediaRequestV1())
         } shouldHaveStatus HttpStatusCode.Created
 
         val response =
-          client.get("/v1/player/media/$mediaId") {
+          client.get("/v1/player/media/${media.id}") {
             header("X-Accept-Stream-Type", "application/x-mpegURL")
             header("X-Accept-DRM", "com.widevine.alpha")
           }
@@ -95,6 +94,113 @@ class PlayerMediaRouteTest :
         }
 
         client.getPlayerMediaPageV1(limit = 1, offset = 20).size shouldBe 0
+      }
+    }
+
+    should("select source and DRM via query parameters") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withMp4()
+            withDash(MediaLibrary.Widevine)
+            withHls()
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val csvResponse =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url {
+                parameters.append(
+                  "stream-type",
+                  "application/x-mpegURL,video/mp4",
+                )
+                parameters.append("drm", "com.widevine.alpha,com.apple.fps")
+              }
+            }.body<PlayerMediaResponseV1>()
+
+        csvResponse.source shouldBe MediaLibrary.Hls.toPlayerMediaSourceV1()
+        csvResponse.drm shouldBe null
+
+        val multiResponse =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url {
+                parameters.append("stream-type", "application/dash+xml")
+                parameters.append("stream-type", "application/x-mpegURL")
+                parameters.append("drm", "com.widevine.alpha")
+                parameters.append("drm", "com.apple.fps")
+              }
+            }.body<PlayerMediaResponseV1>()
+        multiResponse.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        multiResponse.drm shouldBe MediaLibrary.Widevine
+      }
+    }
+
+    should("fall back to headers when query parameters are absent") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withDash(MediaLibrary.Widevine)
+            withHls(MediaLibrary.FairPlay)
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        // Comma-separated headers
+        val csvResponse =
+          client
+            .get("/v1/player/media/${media.id}") {
+              header("X-Accept-Stream-Type", "application/dash+xml,application/x-mpegURL")
+              header("X-Accept-DRM", "com.widevine.alpha,com.apple.fps")
+            }.body<PlayerMediaResponseV1>()
+        csvResponse.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        csvResponse.drm shouldBe MediaLibrary.Widevine
+
+        // Repeated headers
+        val multiResponse =
+          client
+            .get("/v1/player/media/${media.id}") {
+              header("X-Accept-Stream-Type", "application/x-mpegURL")
+              header("X-Accept-Stream-Type", "application/dash+xml")
+              header("X-Accept-DRM", "com.apple.fps")
+            }.body<PlayerMediaResponseV1>()
+        multiResponse.source shouldBe MediaLibrary.Hls.toPlayerMediaSourceV1()
+        multiResponse.drm shouldBe MediaLibrary.FairPlay
+      }
+    }
+
+    should("prefer query parameters over headers for both stream-type and drm") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withDash(MediaLibrary.Widevine)
+            withHls(MediaLibrary.FairPlay)
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+        val response =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url {
+                parameters.append("stream-type", "application/dash+xml")
+                parameters.append("drm", "com.widevine.alpha")
+              }
+              header("X-Accept-Stream-Type", "application/x-mpegURL")
+              header("X-Accept-DRM", "com.apple.fps")
+            }.body<PlayerMediaResponseV1>()
+        response.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        response.drm shouldBe MediaLibrary.Widevine
       }
     }
   })

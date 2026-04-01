@@ -51,11 +51,15 @@ object MediaLibrary {
 class MediaBuilder {
   var id: String = Uuid.random().toString()
   private val sources = mutableListOf<MediaSource>()
-  private val drmConfigs = mutableListOf<DrmConfig>()
   private val subtitles = mutableListOf<SubtitleTrack>()
   private val chapters = mutableListOf<Chapter>()
   private val timeRanges = mutableListOf<TimeRange>()
   var metadata = MediaMetadata(title = "Default Test Title")
+
+  fun withSource(source: MediaSource) =
+    apply {
+      this.sources.add(source)
+    }
 
   fun withDash(vararg drm: DrmConfig) =
     apply {

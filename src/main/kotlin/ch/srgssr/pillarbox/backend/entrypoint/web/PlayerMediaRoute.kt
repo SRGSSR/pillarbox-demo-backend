@@ -3,6 +3,8 @@ package ch.srgssr.pillarbox.backend.entrypoint.web
 import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.PlayerMediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerResponse
+import ch.srgssr.pillarbox.backend.io.parseHeaderList
+import ch.srgssr.pillarbox.backend.io.parseParamList
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -47,18 +49,26 @@ fun Route.playerMedia(mediaRepository: MediaRepository) {
   route("v1/player/media") {
     playerMediaEndpoints<PlayerMediaResponseV1>(
       mediaRepository = mediaRepository,
-      // Supported Headers:
-      // - X-Accept-Stream-Type: Preferred Source MIME type
-      // - X-Accept-DRM: Preferred DRM key system
+      // Supported query parameters (take precedence over headers):
+      // - stream-type: Preferred source MIME type (e.g. "application/dash+xml,application/x-mpegURL")
+      // - drm:         Preferred DRM key system   (e.g. "com.widevine.alpha")
+      //
+      // Supported headers (fallback when query parameters are absent):
+      // - X-Accept-Stream-Type: Preferred source MIME type
+      // - X-Accept-DRM:         Preferred DRM key system
       toResponse = { media, call ->
-        val preferredStream = call.request.headers["X-Accept-Stream-Type"]
-        val preferredDRM = call.request.headers["X-Accept-DRM"]
-        // TODO Add a dummy "platform" header that retrieves a fixed config.
-        // TODO Add a "X-Accept-Security-Level" for DRM
+        val preferredStream =
+          call.request.queryParameters
+            .parseParamList("stream-type")
+            .ifEmpty { call.request.headers.parseHeaderList("X-Accept-Stream-Type") }
+        val preferredDRM =
+          call.request.queryParameters
+            .parseParamList("drm")
+            .ifEmpty { call.request.headers.parseHeaderList("X-Accept-DRM") }
 
         media.toPlayerResponse(
-          mimeType = preferredStream,
-          keySystem = preferredDRM,
+          mimeTypes = preferredStream,
+          keySystems = preferredDRM,
         )
       },
     )

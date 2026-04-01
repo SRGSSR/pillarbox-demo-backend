@@ -71,31 +71,51 @@ definitions in [MediaRoute.kt][media-route-kt].
 
 The playback endpoints do not require a token and are open to all clients.
 
-```bash
-curl --request GET \
-  --url http://localhost:8080/v1/player/media/urn:pillarbox:video:12345 \
-  --header 'X-Accept-Stream-Type: application/dash+xml' \
-  --header 'X-Accept-DRM: widevine'
-```
+Unlike the management API, these endpoints are **publicly accessible** (no Bearer token required).
+They support content negotiation via query parameters or custom headers.
 
-Unlike the management API, these endpoints are **publicly accessible** (no Bearer token required)
-They support content negotiation via custom headers. You can find all the definitions
-in [PlayerMediaRoute.kt][player-media-route-kt].
+You can find all the definitions in [PlayerMediaRoute.kt][player-media-route-kt].
 
 | Method  | Endpoint                | Description                                |
 |---------|-------------------------|--------------------------------------------|
 | **GET** | `/v1/player/media`      | List all available playback entities.      |
 | **GET** | `/v1/player/media/{id}` | Retrieve a specific playback entity by ID. |
 
-#### Content Negotiation Headers
+#### Content Negotiation
 
-The player API uses headers to filter the best source for a specific device. If these headers are
-omitted, the API returns a media item without a source.
+The player API filters the best source for a specific device using query parameters or headers.
+Query parameters take precedence over headers when both are provided.
+If neither is supplied, the API returns a media item without a source.
 
-| Header                 | Example Value          | Description                                                         |
-|------------------------|------------------------|---------------------------------------------------------------------|
-| `X-Accept-Stream-Type` | `application/dash+xml` | Filters for a specific MIME type (e.g., DASH, HLS).                 |
-| `X-Accept-DRM`         | `WIDEVINE`             | Filters for a specific DRM key system (e.g., WIDEVINE, PLAY_READY). |
+**Query Parameters**
+
+| Parameter     | Example Value          | Description                                          |
+|---------------|------------------------|------------------------------------------------------|
+| `stream-type` | `application/dash+xml` | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values. |
+| `drm`         | `com.widevine.alpha`   | Preferred DRM key system. Comma-separated for multiple values.              |
+
+Example:
+
+```bash
+curl --request GET \
+  --url 'http://localhost:8080/v1/player/media/urn:pillarbox:video:12345?stream-type=application/dash+xml&drm=com.widevine.alpha'
+```
+
+**Headers (fallback)**
+
+| Header                 | Example Value          | Description                                          |
+|------------------------|------------------------|------------------------------------------------------|
+| `X-Accept-Stream-Type` | `application/dash+xml` | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values. |
+| `X-Accept-DRM`         | `com.widevine.alpha`   | Preferred DRM key system. Comma-separated for multiple values.              |
+
+Example:
+
+```bash
+curl --request GET \
+  --url http://localhost:8080/v1/player/media/urn:pillarbox:video:12345 \
+  --header 'X-Accept-Stream-Type: application/dash+xml' \
+  --header 'X-Accept-DRM: com.widevine.alpha'
+```
 
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/MediaRoute.kt
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/PlayerMediaRoute.kt

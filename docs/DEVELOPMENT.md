@@ -92,24 +92,24 @@ If neither is supplied, the API returns a media item without a source.
 
 **Query Parameters**
 
-| Parameter     | Example Value          | Description                                          |
-|---------------|------------------------|------------------------------------------------------|
-| `stream-type` | `application/dash+xml` | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values. |
-| `drm`         | `com.widevine.alpha`   | Preferred DRM key system. Comma-separated for multiple values.              |
+| Parameter        | Example Value                        | Description                                                                                                                         |
+|------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `stream-type`    | `application/dash+xml`               | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
+| `drm`            | `com.widevine.alpha;HW_SECURE_ALL`   | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
 
 Example:
 
 ```bash
 curl --request GET \
-  --url 'http://localhost:8080/v1/player/media/urn:pillarbox:video:12345?stream-type=application/dash+xml&drm=com.widevine.alpha'
+  --url 'http://localhost:8080/v1/player/media/urn:pillarbox:video:12345?stream-type=application/dash+xml&drm=com.widevine.alpha;HW_SECURE_ALL'
 ```
 
 **Headers (fallback)**
 
-| Header                 | Example Value          | Description                                          |
-|------------------------|------------------------|------------------------------------------------------|
-| `X-Accept-Stream-Type` | `application/dash+xml` | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values. |
-| `X-Accept-DRM`         | `com.widevine.alpha`   | Preferred DRM key system. Comma-separated for multiple values.              |
+| Header                 | Example Value                        | Description                                                                                                                         |
+|------------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `X-Accept-Stream-Type` | `application/dash+xml`               | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
+| `X-Accept-DRM`         | `com.widevine.alpha;HW_SECURE_ALL`   | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
 
 Example:
 
@@ -117,8 +117,24 @@ Example:
 curl --request GET \
   --url http://localhost:8080/v1/player/media/urn:pillarbox:video:12345 \
   --header 'X-Accept-Stream-Type: application/dash+xml' \
-  --header 'X-Accept-DRM: com.widevine.alpha'
+  --header 'X-Accept-DRM: com.widevine.alpha;HW_SECURE_ALL'
 ```
+
+**Security Levels**
+
+The `drm` parameter and `X-Accept-DRM` header accept either DRM-native security levels or EME
+robustness levels. Robustness levels are automatically resolved to the corresponding DRM-native
+level.
+
+| EME Robustness Level | Widevine | PlayReady |
+|----------------------|----------|-----------|
+| `SW_SECURE_CRYPTO`   | L3       | SL2000    |
+| `SW_SECURE_DECODE`   | L3       | SL2000    |
+| `HW_SECURE_CRYPTO`   | L2       | SL2000    |
+| `HW_SECURE_DECODE`   | L2       | SL2000    |
+| `HW_SECURE_ALL`      | L1       | SL3000    |
+
+Native levels (`L1`, `L2`, `L3`, `SL2000`, `SL3000`) are still accepted and passed through unchanged.
 
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/MediaRoute.kt
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/PlayerMediaRoute.kt

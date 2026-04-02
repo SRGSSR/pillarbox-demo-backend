@@ -87,6 +87,7 @@ data class MediaMetadata(
  * @property licenseUrl The URL to fetch the decryption license.
  * @property certificateUrl The URL to fetch the device certificate, if required.
  * @property multisession Whether to enable DRM session sharing across requests.
+ * @property securityLevel The minimum security level required to use this DRM configuration.
  */
 @Serializable
 data class DrmConfig(
@@ -94,7 +95,7 @@ data class DrmConfig(
   val licenseUrl: String,
   val certificateUrl: String? = null,
   val multisession: Boolean? = null,
-  // TODO Add the security level
+  val securityLevel: String? = null,
 )
 
 /**

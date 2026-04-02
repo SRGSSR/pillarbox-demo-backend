@@ -6,6 +6,7 @@ import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack
 import ch.srgssr.pillarbox.backend.domain.model.TimeRange
+import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaSourceSelector
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
@@ -63,27 +64,15 @@ data class PlayerMediaResponseV1(
 /**
  * Transforms a [Media] domain model into a [PlayerMediaResponseV1].
  *
- * Implements source selection logic: filters by MIME type and DRM compatibility,
- * then picks the best match according to the caller's priority lists.
+ * Source selection is fully delegated to [selector]. This function only
+ * handles the mapping from the selected source to the response shape.
  *
- * @param mimeTypes Prioritized list of accepted MIME types (e.g. "application/dash+xml").
- *                  A source must match at least one entry to be considered.
- * @param keySystems Prioritized list of accepted DRM key systems (e.g. "com.widevine.alpha").
- *                   When empty, both protected and unprotected sources are eligible.
- *
+ * @param selector The [MediaSourceSelector] that encapsulates the client's stream-type and
+ *                 DRM capabilities.
  * @return A player-optimized response containing only the best-matching stream and DRM info.
  */
-fun Media.toPlayerResponse(
-  mimeTypes: List<String> = emptyList(),
-  keySystems: List<String> = emptyList(),
-): PlayerMediaResponseV1 {
-  val selectedSource =
-    sources
-      .filter { it.matchesMimeType(mimeTypes) && it.matchesAnyKeySystem(keySystems) }
-      .map { it.retainingOnlyMatchingDrm(keySystems) }
-      .sortedWith(preferredSourceOrder(mimeTypes, keySystems))
-      .firstOrNull()
-
+fun Media.toPlayerResponse(selector: MediaSourceSelector): PlayerMediaResponseV1 {
+  val selection = selector.select(sources)
   return PlayerMediaResponseV1(
     identifier = id,
     title = metadata.title,
@@ -93,8 +82,8 @@ fun Media.toPlayerResponse(
     seasonNumber = metadata.seasonNumber,
     episodeNumber = metadata.episodeNumber,
     viewport = metadata.viewport,
-    source = selectedSource?.toPlayerMediaSourceV1(),
-    drm = selectedSource?.preferredDrm(keySystems),
+    source = selection?.source?.toPlayerMediaSourceV1(),
+    drm = selection?.drm,
     subtitles = metadata.subtitles,
     chapters = metadata.chapters,
     timeRanges = metadata.timeRanges,
@@ -102,58 +91,8 @@ fun Media.toPlayerResponse(
   )
 }
 
-private fun MediaSource.matchesMimeType(mimeTypes: List<String>): Boolean =
-  mimeTypes.any { mimeType?.equals(it, ignoreCase = true) == true }
-
-private fun DrmConfig.matchesKeySystem(keySystems: List<String>): Boolean =
-  keySystems.any { this.keySystem.equals(it, ignoreCase = true) }
-
 /**
- * A source is DRM-compatible when:
- * - the source is unprotected, OR
- * - at least one of its DRM configs matches a requested key system.
- */
-private fun MediaSource.matchesAnyKeySystem(keySystems: List<String>): Boolean =
-  drmConfigs.isEmpty() || drmConfigs.any { it.matchesKeySystem(keySystems) }
-
-/** Returns a copy of this source keeping only DRM configs that match a requested key system. */
-private fun MediaSource.retainingOnlyMatchingDrm(keySystems: List<String>): MediaSource =
-  copy(drmConfigs = drmConfigs.filter { it.matchesKeySystem(keySystems) })
-
-/**
- * Ordering rules (ascending = more preferred):
- * 1. Protected sources before unprotected ones (when a key system was requested).
- * 2. Lower MIME type index = higher priority in [mimeTypes].
- * 3. Lower key system index = higher priority in [keySystems].
- */
-private fun preferredSourceOrder(
-  mimeTypes: List<String>,
-  keySystems: List<String>,
-): Comparator<MediaSource> =
-  compareBy(
-    { if (it.drmConfigs.isEmpty()) 1 else 0 },
-    { mimeTypes.indexOfFirst { mt -> it.mimeType?.equals(mt, ignoreCase = true) == true } },
-    { it.bestDrmPriority(keySystems) },
-  )
-
-/** Returns the best (lowest) key-system priority index across all DRM configs, or MAX if none. */
-private fun MediaSource.bestDrmPriority(keySystems: List<String>): Int =
-  drmConfigs.minOfOrNull { drm ->
-    keySystems.indexOfFirst { ks -> drm.keySystem.equals(ks, ignoreCase = true) }
-  } ?: Int.MAX_VALUE
-
-/** Returns the first DRM config whose key system appears in [keySystems], respecting their order. */
-private fun MediaSource.preferredDrm(keySystems: List<String>): DrmConfig? =
-  keySystems.firstNotNullOfOrNull { ks ->
-    drmConfigs.find { drm -> drm.keySystem.equals(ks, ignoreCase = true) }
-  }
-
-/**
- * Maps the internal [Media] domain model to the [MediaResponseV1] DTO.
- *
- * Use this extension to prepare domain data for the admin web entry point.
- *
- * @return A [MediaResponseV1] containing the domain model's data.
+ * Maps the domain [MediaSource] to the player-specific [PlayerMediaResponseV1.MediaSource] DTO.
  */
 fun MediaSource.toPlayerMediaSourceV1() =
   PlayerMediaResponseV1.MediaSource(

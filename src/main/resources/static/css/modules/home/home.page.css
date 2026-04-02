@@ -1,5 +1,6 @@
 @import url("../../layouts/dashboard.layout.css");
 @import url("../../shared/fragments/media-grid.fragment.css");
+@import url("../../shared/components/snackbar.component.css");
 
 form[method="dialog"] {
   display: grid;

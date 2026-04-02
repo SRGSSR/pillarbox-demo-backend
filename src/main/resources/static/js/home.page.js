@@ -1,4 +1,23 @@
 import "htmx.org";
+import { showSnackbar } from "./components/snackbar.component.js";
+
+/**
+ * Copies the Player API URL of a media card to the clipboard when the copy
+ * button is clicked.
+ *
+ * @listens document#click
+ * @param {MouseEvent} e - The click event.
+ */
+document.addEventListener("click", function(e) {
+  const button = e.target.closest("[data-copy-url]");
+
+  if (!button) return;
+
+  navigator.clipboard.writeText(
+    window.location.origin + button.dataset.copyUrl
+  );
+  showSnackbar("Link Copied!", button);
+});
 
 /**
  * Listens for htmx confirm events and displays a native modal dialog

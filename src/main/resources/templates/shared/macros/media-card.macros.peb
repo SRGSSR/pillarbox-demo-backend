@@ -15,7 +15,16 @@
 
   <header>
     <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
-    <p>{{ media.id }}</p>
+    <p>
+      {% if not media.deleted %}
+      <button class="btn-icon"
+              data-copy-url="/v1/player/media/{{ media.id }}"
+              title="Copy Player API URL">
+        <span class="material-symbols-outlined">link</span>
+      </button>
+      {% endif %}
+      {{ media.id }}
+    </p>
     <ul class="tag-list">
             {% for tag in media.tags %}
         <li>{{ tag }}</li>

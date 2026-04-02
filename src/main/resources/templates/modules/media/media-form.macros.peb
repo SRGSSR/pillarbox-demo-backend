@@ -87,8 +87,9 @@
 
     <div class="form-row">
       {{ inputText("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].keySystem", "Key System", item.keySystem) }}
-      {{ inputUrl("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].licenseUrl", "License URL", item.licenseUrl) }}
+      {{ inputText("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].securityLevel", "Security Level", item.securityLevel, placeholder = "e.g. L1") }}
     </div>
+    {{ inputUrl("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].licenseUrl", "License URL", item.licenseUrl) }}
     {{ inputUrl("sources[" + sourceIndex + "].drmConfigs[" + drmIndex + "].certificateUrl", "Certificate URL", item.certificateUrl) }}
   </div>
 </details>

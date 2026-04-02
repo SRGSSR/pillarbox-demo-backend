@@ -17,6 +17,7 @@
 {% endblock %}
 {% block footer %}
 {{ parent() }}
+{% include "../../shared/components/snackbar.component.peb" %}
 <template id="confirm-dialog-template">
   <dialog class="confirm-dialog">
     <form method="dialog">

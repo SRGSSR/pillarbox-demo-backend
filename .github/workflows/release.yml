@@ -112,6 +112,6 @@ jobs:
         run: >
           aws ecs update-service \
             --cluster pillarbox-demo-backend-cluster \
-            --service data-transfer-service \
+            --service demo-backend-service \
             --force-new-deployment \
             --region ${{ secrets.AWS_REGION }} >/dev/null

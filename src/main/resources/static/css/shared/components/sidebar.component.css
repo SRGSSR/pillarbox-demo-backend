@@ -70,7 +70,6 @@ aside.sidebar footer {
 
 aside.sidebar footer .user-avatar {
   display: grid;
-  flex-shrink: 0;
   place-content: center;
 
   inline-size: var(--size-7);

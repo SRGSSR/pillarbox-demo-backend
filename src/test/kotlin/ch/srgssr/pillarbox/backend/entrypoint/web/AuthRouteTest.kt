@@ -12,9 +12,8 @@ import io.ktor.client.plugins.cookies.cookies
 import io.ktor.client.request.get
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.parameters
 
-class LoginRouteTest :
+class AuthRouteTest :
   ShouldSpec({
     should("successfully perform OAuth callback and issue a session cookie") {
       testApplicationContext {
@@ -56,6 +55,33 @@ class LoginRouteTest :
         response shouldHaveStatus HttpStatusCode.Found
         response.headers[HttpHeaders.Location] shouldContain Navigation.LOGIN
         client.cookies("http://localhost").find { it.name == "PILLARBOX_SESSION_ID" } shouldBe null
+      }
+    }
+
+    should("clear session and redirect to end-session endpoint on logout") {
+      testApplicationContext {
+        login()
+        client
+          .cookies("http://localhost")
+          .find { it.name == "PILLARBOX_SESSION_ID" } shouldNotBe null
+
+        val response = client.get(Navigation.LOGOUT)
+
+        response shouldHaveStatus HttpStatusCode.Found
+        response.headers[HttpHeaders.Location] shouldContain
+          mockServer.endSessionEndpointUrl("pillarbox-realm").toString()
+        client
+          .cookies("http://localhost")
+          .find { it.name == "PILLARBOX_SESSION_ID" } shouldBe null
+      }
+    }
+
+    should("redirect to the login endpoint when there is no active session") {
+      testApplicationContext {
+        val response = client.get(Navigation.LOGOUT)
+
+        response shouldHaveStatus HttpStatusCode.Found
+        response.headers[HttpHeaders.Location] shouldContain Navigation.LOGIN
       }
     }
   })

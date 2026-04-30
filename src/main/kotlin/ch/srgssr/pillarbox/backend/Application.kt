@@ -4,8 +4,8 @@ import ch.srgssr.pillarbox.backend.auth.authenticationModule
 import ch.srgssr.pillarbox.backend.auth.configureOidc
 import ch.srgssr.pillarbox.backend.auth.installSession
 import ch.srgssr.pillarbox.backend.db.databaseModule
+import ch.srgssr.pillarbox.backend.entrypoint.web.auth
 import ch.srgssr.pillarbox.backend.entrypoint.web.console
-import ch.srgssr.pillarbox.backend.entrypoint.web.login
 import ch.srgssr.pillarbox.backend.entrypoint.web.media
 import ch.srgssr.pillarbox.backend.entrypoint.web.playerMedia
 import ch.srgssr.pillarbox.backend.io.httpClientModule
@@ -85,7 +85,7 @@ fun Application.module() {
 
   // Setup HTTP Routing
   routing {
-    login(get())
+    auth(get(), get())
     media(get())
     playerMedia(get())
     console(get())

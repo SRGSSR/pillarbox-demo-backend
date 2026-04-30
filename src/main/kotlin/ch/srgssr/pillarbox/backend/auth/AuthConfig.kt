@@ -33,6 +33,7 @@ data class OpenIDDiscovery(
   @SerialName("token_endpoint") val tokenEndpoint: String,
   @SerialName("jwks_uri") val jwksUri: String,
   @SerialName("userinfo_endpoint") val userInfoEndpoint: String,
+  @SerialName("end_session_endpoint") val endSessionEndpoint: String,
 )
 
 /**

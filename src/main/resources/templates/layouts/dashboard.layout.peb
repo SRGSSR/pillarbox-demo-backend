@@ -7,7 +7,7 @@
 <div class="app-container">
     <header>
       <button type="button" id="sidebar-toggle"
-            class="btn-icon" aria-label="Toggle Sidebar">
+            class="btn-icon" title="Toggle Sidebar">
         <span class="material-symbols-outlined">menu</span>
       </button>
       {% include "../shared/components/breadcrumbs.component.peb" %}

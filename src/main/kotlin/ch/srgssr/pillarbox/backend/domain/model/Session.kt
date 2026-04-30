@@ -22,6 +22,8 @@ import kotlin.uuid.Uuid
 data class Session(
   val sessionId: String = Uuid.random().toString(),
   val accessToken: String,
+  val refreshToken: String? = null,
+  val idToken: String? = null,
   val lastChecked: Instant = Clock.System.now(),
   val expiresAt: Instant = lastChecked + 24.hours,
 ) {

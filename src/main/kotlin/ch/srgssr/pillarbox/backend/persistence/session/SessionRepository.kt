@@ -27,6 +27,8 @@ class SessionRepository(
     Session(
       sessionId = this[SessionTable.sessionId],
       accessToken = this[SessionTable.accessToken],
+      refreshToken = this[SessionTable.refreshToken],
+      idToken = this[SessionTable.idToken],
       lastChecked = this[SessionTable.lastChecked].toKotlinInstant(),
       expiresAt = this[SessionTable.expiresAt].toKotlinInstant(),
     )
@@ -40,6 +42,8 @@ class SessionRepository(
   ) {
     builder[SessionTable.sessionId] = item.sessionId
     builder[SessionTable.accessToken] = item.accessToken
+    builder[SessionTable.refreshToken] = item.refreshToken
+    builder[SessionTable.idToken] = item.idToken
     builder[SessionTable.lastChecked] = item.lastChecked.toUtcOffsetDateTime()
     builder[SessionTable.expiresAt] = item.expiresAt.toUtcOffsetDateTime()
   }

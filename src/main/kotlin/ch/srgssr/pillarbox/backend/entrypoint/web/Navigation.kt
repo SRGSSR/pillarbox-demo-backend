@@ -24,4 +24,10 @@ object Navigation {
    * This route is responsible for session creation and redirection to the [CONSOLE].
    */
   const val CALLBACK = "/callback"
+
+  /**
+   * The endpoint that terminates the local session and redirects to the OIDC provider's
+   * end-session endpoint to also clear the SSO session.
+   */
+  const val LOGOUT = "/logout"
 }

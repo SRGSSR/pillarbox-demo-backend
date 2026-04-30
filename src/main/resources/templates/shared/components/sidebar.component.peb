@@ -21,5 +21,8 @@
     <div class="user-info">
       <p class="user-name">{{ user.name | default('Admin User') }}</p>
     </div>
+    <a href="/logout" class="btn btn-icon" title="Logout">
+      <span class="material-symbols-outlined">logout</span>
+    </a>
   </footer>
 </aside>

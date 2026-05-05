@@ -166,14 +166,9 @@ abstract class ExposedRepository<T, ID>(
   /**
    * Persists or overwrites a resource using an upsert operation.
    *
-   * @param idValue The unique identifier to associate with this entity.
-   *
    * @param item The entity to save.
    */
-  open suspend fun save(
-    idValue: ID,
-    item: T,
-  ): Unit =
+  open suspend fun save(item: T): Unit =
     query {
       table.upsert(onUpdate = encodeOnUpdate(item)) {
         encode(it, item)

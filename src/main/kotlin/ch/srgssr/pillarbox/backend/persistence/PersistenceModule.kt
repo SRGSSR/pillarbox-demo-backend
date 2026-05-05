@@ -4,6 +4,8 @@ import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
 import ch.srgssr.pillarbox.backend.persistence.session.SessionTable
+import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
+import ch.srgssr.pillarbox.backend.persistence.user.UserTable
 import org.jetbrains.exposed.v1.core.Table
 import org.koin.dsl.module
 
@@ -12,12 +14,15 @@ import org.koin.dsl.module
  * instances of repositories throughout the Pillarbox backend.
  *
  * @see MediaRepository
+ * @see SessionRepository
+ * @see UserRepository
  */
 fun persistenceModule() =
   module {
     single<List<Table>> {
-      listOf(MediaTable, SessionTable)
+      listOf(MediaTable, SessionTable, UserTable)
     }
     single { MediaRepository(get()) }
     single { SessionRepository(get()) }
+    single { UserRepository(get()) }
   }

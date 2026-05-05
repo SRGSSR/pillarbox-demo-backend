@@ -74,6 +74,7 @@ fun Application.module() {
       authConfig = this@module.get(),
       httpClient = this@module.get(),
       sessionManager = this@module.get(),
+      userRepository = this@module.get(),
       policy = this@module.get(),
     )
   }
@@ -85,7 +86,7 @@ fun Application.module() {
 
   // Setup HTTP Routing
   routing {
-    auth(get(), get())
+    auth(get(), get(), get())
     media(get())
     playerMedia(get())
     console(get())

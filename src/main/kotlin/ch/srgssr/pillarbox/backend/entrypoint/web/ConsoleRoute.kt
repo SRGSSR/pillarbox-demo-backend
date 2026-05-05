@@ -1,14 +1,19 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web
 
 import ch.srgssr.pillarbox.backend.domain.model.Media
+import ch.srgssr.pillarbox.backend.domain.model.Session
+import ch.srgssr.pillarbox.backend.domain.model.User
 import ch.srgssr.pillarbox.backend.log.debug
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.log.trace
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
 import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.pebble.PebbleContent
@@ -33,13 +38,19 @@ private val logger = ConsoleRoute.logger()
 @OptIn(ExperimentalKtorApi::class)
 @SuppressWarnings("LongMethod", "CyclomaticComplexMethod")
 fun Route.console(mediaRepository: MediaRepository) {
+  val buildContext: suspend ApplicationCall.() -> Map<String, Any> = {
+    principal<User>()
+      ?.let { mapOf("user" to mapOf("name" to it.displayName, "initials" to it.initials)) }
+      .orEmpty()
+  }
+
   authenticate("pillarbox-session") {
     staticResources("/static", "static")
 
     route(Navigation.CONSOLE) {
       get {
         call.respond(
-          PebbleContent("modules/home/home.page.peb", emptyMap()),
+          PebbleContent("modules/home/home.page.peb", call.buildContext()),
         )
       }
 
@@ -47,9 +58,10 @@ fun Route.console(mediaRepository: MediaRepository) {
         call.respond(
           PebbleContent(
             "modules/home/home.page.peb",
-            mapOf(
-              "deleted" to true,
-            ),
+            buildMap {
+              putAll(call.buildContext())
+              putAll(mapOf("deleted" to true))
+            },
           ),
         )
       }
@@ -84,7 +96,7 @@ fun Route.console(mediaRepository: MediaRepository) {
       hx.post("media") {
         val media = call.receive<Media>()
 
-        mediaRepository.save(media.id, media)
+        mediaRepository.save(media)
 
         call.response.headers.append("HX-Redirect", "/console")
         call.respond(HttpStatusCode.OK)
@@ -95,11 +107,13 @@ fun Route.console(mediaRepository: MediaRepository) {
           call.parameters["id"]
             ?.let { mediaRepository.find(it) }
             ?.also { logger.debug { "Opening editor for media: $it" } }
-
         call.respond(
           PebbleContent(
             "modules/media/editor.page.peb",
-            media?.let { mapOf("item" to media) } ?: emptyMap(),
+            buildMap {
+              putAll(call.buildContext())
+              putAll(media?.let { mapOf("item" to media) }.orEmpty())
+            },
           ),
         )
       }
@@ -116,7 +130,10 @@ fun Route.console(mediaRepository: MediaRepository) {
         call.respond(
           PebbleContent(
             "modules/media/editor.page.peb",
-            mapOf("item" to media.copy(id = "")),
+            buildMap {
+              putAll(call.buildContext())
+              putAll(mapOf("item" to media.copy(id = "")))
+            },
           ),
         )
       }

@@ -12,8 +12,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 /**
  * Repository responsible for the persistence and retrieval of [Session] entities using Exposed.
  *
- * This implementation maps the [Session] domain model to the [SessionTable] schema and
- * provides specialized methods for media-specific data manipulations.
+ * This implementation maps the [Session] domain model to the [SessionTable] schema.
  *
  * @param db The [Database] instance used for all transactions.
  */
@@ -29,8 +28,8 @@ class SessionRepository(
       accessToken = this[SessionTable.accessToken],
       refreshToken = this[SessionTable.refreshToken],
       idToken = this[SessionTable.idToken],
-      lastChecked = this[SessionTable.lastChecked].toKotlinInstant(),
       expiresAt = this[SessionTable.expiresAt].toKotlinInstant(),
+      oidcSub = this[SessionTable.oidcSub],
     )
 
   /**
@@ -44,7 +43,7 @@ class SessionRepository(
     builder[SessionTable.accessToken] = item.accessToken
     builder[SessionTable.refreshToken] = item.refreshToken
     builder[SessionTable.idToken] = item.idToken
-    builder[SessionTable.lastChecked] = item.lastChecked.toUtcOffsetDateTime()
     builder[SessionTable.expiresAt] = item.expiresAt.toUtcOffsetDateTime()
+    builder[SessionTable.oidcSub] = item.oidcSub
   }
 }

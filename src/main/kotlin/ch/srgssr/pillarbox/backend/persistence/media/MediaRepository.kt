@@ -42,7 +42,7 @@ class MediaRepository(
     )
 
   /**
-   * Encodes a [Media] domain object into an [UpdateBuilder] for inserts or upserts.
+   * Encodes a [Media] domain object into an [UpdateBuilder] for inserts.
    */
   override fun Table.encode(
     builder: UpdateBuilder<*>,
@@ -57,7 +57,10 @@ class MediaRepository(
     builder[MediaTable.lastModified] = Clock.System.now().toUtcOffsetDateTime()
   }
 
-  override fun encodeOnUpdate(item: Media): (UpsertBuilder.(UpdateStatement) -> Unit)? =
+  /**
+   * Encodes a [Media] domain object into an [UpdateBuilder] for updates.
+   */
+  override fun encodeOnUpdate(item: Media): (UpsertBuilder.(UpdateStatement) -> Unit) =
     {
       it[MediaTable.tags] = item.tags
       it[MediaTable.sources] = item.sources

@@ -3,6 +3,7 @@ package ch.srgssr.pillarbox.backend.domain.model
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -12,10 +13,9 @@ import kotlin.uuid.Uuid
  *
  * @property sessionId A unique identifier for the session. Defaults to a random UUID string.
  * @property accessToken The access token used for bearer authentication against downstream services.
- * @property lastChecked The [Instant] representing the last time this session was successfully
- *                       validated against the identity provider. Defaults to the current system time.
  * @property expiresAt The [Instant] representing the absolute hard expiration of the session.
- *                     Defaults to 24 hours after [lastChecked].
+ * @property oidcSub The OIDC sub that identifies the [ch.srgssr.pillarbox.backend.domain.model.User] associated
+ *                   with this session.
  */
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
@@ -24,8 +24,8 @@ data class Session(
   val accessToken: String,
   val refreshToken: String? = null,
   val idToken: String? = null,
-  val lastChecked: Instant = Clock.System.now(),
-  val expiresAt: Instant = lastChecked + 24.hours,
+  val expiresAt: Instant = Clock.System.now() + 5.minutes,
+  val oidcSub: String,
 ) {
   /**
    * Returns `true` if the current system time has surpassed the [expiresAt] threshold.

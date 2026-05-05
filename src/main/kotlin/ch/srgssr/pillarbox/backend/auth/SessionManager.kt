@@ -1,123 +1,89 @@
 package ch.srgssr.pillarbox.backend.auth
 
 import ch.srgssr.pillarbox.backend.domain.model.Session
-import ch.srgssr.pillarbox.backend.log.debug
-import ch.srgssr.pillarbox.backend.log.error
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
-import ch.srgssr.pillarbox.backend.log.warn
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
-import io.ktor.client.HttpClient
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.get
-import io.ktor.http.HttpStatusCode
-import kotlinx.io.IOException
+import com.auth0.jwt.JWT
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 /**
  * Manages the lifecycle of user sessions, providing validation logic optimized for performance with
  * periodic token verification.
  *
  * @property repository The persistent storage for session data.
- * @property httpClient The client used to perform back-channel validation against the OIDC provider.
- * @property userInfoUrl The OIDC endpoint used to verify if an access token is still active.
- * @property validationIntervalSeconds The frequency at which the access token must be re-verified
+ * @property tokenProvider Used to exchange an expired session's refresh token for new tokens.
  * against the identity provider.
  */
 class SessionManager(
   private val repository: SessionRepository,
-  private val httpClient: HttpClient,
-  private val userInfoUrl: String,
-  private val validationIntervalSeconds: Long,
+  private val userManager: UserManager,
+  private val tokenProvider: TokenProvider,
 ) {
   companion object {
     val logger = logger()
   }
 
-  /**
-   * Validates a session. If the session exists and has been checked recently (within [validationIntervalSeconds]),
-   * it is returned immediately. Otherwise, the associated access token is verified against the OIDC provider.
-   *
-   * @param sessionId The ID of the session to validate.
-   *
-   * @return The [Session] if valid; null if the session is expired, missing, or the token is revoked.
-   */
   suspend fun validate(sessionId: SessionId): Session? {
-    val session =
-      repository.find(sessionId.value) ?: run {
-        logger.info { "Session validation failed: Session ${sessionId.value} not found in repository." }
-        return null
+    val session = repository.find(sessionId.value)
+    return when {
+      session == null -> {
+        null.also { logger.info { "Session validation failed: Session ${sessionId.value} not found in repository." } }
       }
 
-    return if (session.expired) {
-      logger.warn { "Session $sessionId expired at ${session.expiresAt}" }
-      repository.delete(session.sessionId)
-      null
-    } else {
-      verifySession(session)
+      !session.expired -> {
+        session
+      }
+
+      else -> {
+        logger.info { "Session $sessionId expired at ${session.expiresAt}" }
+        refreshOrInvalidate(session)
+      }
     }
   }
 
   /**
-   * Verifies the integrity of a session by checking its local expiration and
-   * remote OIDC token validity.
+   * Attempts to renew an expired session using its stored refresh token.
+   * If no refresh token is present or the token endpoint rejects the request,
+   * the session is deleted and `null` is returned.
    *
-   * @param session The current session data retrieved from the repository.
-   * @return The valid (and potentially updated) [Session], or `null` if the session is invalid.
+   * @param session The expired session to renew.
+   * @return The refreshed [Session] with updated tokens and expiry, or `null` on failure.
    */
-  private suspend fun verifySession(session: Session): Session? {
-    if (session.valid) return session
-
-    logger.info { "Re-validating OIDC token for session: ${session.sessionId}" }
-
-    return if (session.isTokenValid()) {
-      session.copy(lastChecked = Clock.System.now()).also { updated ->
-        repository.save(session.sessionId, updated)
-        logger.info { "Session ${session.sessionId} successfully re-validated." }
+  private suspend fun refreshOrInvalidate(session: Session): Session? {
+    if (session.refreshToken == null) {
+      return null.also {
+        logger.info { "Session ${session.sessionId} has no refresh token. Deleting." }
+        repository.delete(session.sessionId)
       }
-    } else {
-      logger.warn { "Session ${session.sessionId} invalidated by OIDC provider." }
+    }
+
+    return tokenProvider.refresh(session.refreshToken)?.let { tokenResponse ->
+      session.refreshWithToken(tokenResponse).also {
+        userManager.upsert(JWT.decode(it.accessToken))
+        repository.save(it)
+        logger.info { "Session ${it.sessionId} successfully refreshed." }
+      }
+    } ?: run {
       repository.delete(session.sessionId)
       null
     }
   }
 
   /**
-   * Whether the session has not yet exceeded the [validationIntervalSeconds] threshold.
-   */
-  private val Session.valid: Boolean
-    get() {
-      val now = Clock.System.now()
-
-      val elapsed = now - lastChecked
-      val threshold = validationIntervalSeconds.seconds
-
-      return (elapsed < threshold).also { fresh ->
-        if (fresh) {
-          val remaining = threshold - elapsed
-          logger.debug {
-            "Session $sessionId is still valid. " +
-              "Elapsed: ${elapsed.inWholeSeconds}s, " +
-              "Next check in: ${remaining.inWholeSeconds}s"
-          }
-        }
-      }
-    }
-
-  /**
-   * Checks if the provided access token is still valid by calling the OIDC UserInfo endpoint.
-   *
-   * @return True if the provider returns 200 OK; false otherwise.
-   */
-  private suspend fun Session.isTokenValid(): Boolean =
-    try {
-      httpClient.get(userInfoUrl) { bearerAuth(accessToken) }.let {
-        logger.info { "Token validation check returned status: ${it.status}" }
-        it.status == HttpStatusCode.OK
-      }
-    } catch (e: IOException) {
-      logger.error(e) { "Failed to reach OIDC UserInfo endpoint at $userInfoUrl" }
-      false
-    }
+   * Creates an updated copy of the [Session] using the provided [tokenResponse].
+   **/
+  private fun Session.refreshWithToken(
+    tokenResponse: TokenRefreshResponse,
+    now: Instant = Clock.System.now(),
+  ): Session =
+    copy(
+      accessToken = tokenResponse.accessToken,
+      refreshToken = tokenResponse.refreshToken ?: refreshToken,
+      idToken = tokenResponse.idToken ?: idToken,
+      expiresAt = tokenResponse.expiresIn?.let { now + it.seconds } ?: (now + 5.minutes),
+    )
 }

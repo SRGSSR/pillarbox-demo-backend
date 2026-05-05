@@ -39,28 +39,7 @@ fun testApplicationContext(
   enableProxyHeaders: Boolean = false,
   block: suspend ApplicationTestBuilder.() -> Unit,
 ) {
-  val oAuthServer =
-    MockOAuth2Server(
-      OAuth2Config(
-        tokenCallbacks =
-          setOf(
-            object : OAuth2TokenCallback {
-              override fun issuerId() = "pillarbox-realm"
-
-              override fun tokenExpiry() = 3600L
-
-              override fun subject(tokenRequest: TokenRequest) = error("No callback enqueued")
-
-              override fun audience(tokenRequest: TokenRequest) = error("No callback enqueued")
-
-              override fun addClaims(tokenRequest: TokenRequest) = error("No callback enqueued")
-
-              override fun typeHeader(tokenRequest: TokenRequest) = error("No callback enqueued")
-            },
-          ),
-      ),
-    )
-  oAuthServer.start()
+  val oAuthServer = mockOAuth2Server().also { it.start() }
 
   testApplication {
     configure("application.conf") {

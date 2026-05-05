@@ -1,6 +1,7 @@
 package ch.srgssr.pillarbox.backend.auth
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.Navigation
+import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.client.HttpClient
 import io.ktor.http.RequestConnectionPoint
 import io.ktor.server.application.Application
@@ -35,6 +36,7 @@ fun AuthenticationConfig.configureOidc(
   authConfig: AuthConfig,
   httpClient: HttpClient,
   sessionManager: SessionManager,
+  userRepository: UserRepository,
   policy: AuthenticationPolicy,
 ) {
   jwt("$name-jwt") {
@@ -50,7 +52,11 @@ fun AuthenticationConfig.configureOidc(
   }
 
   session<SessionId>("$name-session") {
-    validate { sessionManager.validate(it) }
+    validate {
+      sessionManager.validate(it)?.let { session ->
+        userRepository.find(session.oidcSub)
+      }
+    }
     challenge { call.respondRedirect(Navigation.LOGIN) }
   }
 }

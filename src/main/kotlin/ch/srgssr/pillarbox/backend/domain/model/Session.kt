@@ -16,6 +16,8 @@ import kotlin.uuid.Uuid
  *                       validated against the identity provider. Defaults to the current system time.
  * @property expiresAt The [Instant] representing the absolute hard expiration of the session.
  *                     Defaults to 24 hours after [lastChecked].
+ * @property userId The identifier of the [ch.srgssr.pillarbox.backend.domain.model.User] associated
+ *                  with this session, or `null` if no user record has been linked yet.
  */
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
@@ -26,6 +28,7 @@ data class Session(
   val idToken: String? = null,
   val lastChecked: Instant = Clock.System.now(),
   val expiresAt: Instant = lastChecked + 24.hours,
+  val userId: String? = null,
 ) {
   /**
    * Returns `true` if the current system time has surpassed the [expiresAt] threshold.

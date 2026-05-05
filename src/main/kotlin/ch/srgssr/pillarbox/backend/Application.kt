@@ -85,10 +85,10 @@ fun Application.module() {
 
   // Setup HTTP Routing
   routing {
-    auth(get(), get())
+    auth(get(), get(), get())
     media(get())
     playerMedia(get())
-    console(get())
+    console(get(), get())
   }
 
   monitor.subscribe(ApplicationStopped) {

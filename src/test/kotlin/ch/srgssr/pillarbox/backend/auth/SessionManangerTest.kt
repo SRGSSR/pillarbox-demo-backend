@@ -1,18 +1,13 @@
 package ch.srgssr.pillarbox.backend.auth
 
 import ch.srgssr.pillarbox.backend.domain.model.Session
+import ch.srgssr.pillarbox.backend.domain.model.User
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -34,8 +29,8 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(session.sessionId))
 
       result.shouldNotBeNull() shouldBeEqual session
-      builder.engine.requestHistory.size shouldBe 0
-      coVerify(exactly = 0) { builder.repository.save(any(), any()) }
+      coVerify(exactly = 0) { builder.userInfoProvider.fetchAndSync(any()) }
+      coVerify(exactly = 0) { builder.repository.save(any()) }
     }
 
     should("return null immediately and skip network if session is not found in repository") {
@@ -47,12 +42,12 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(sessionId))
 
       result.shouldBeNull()
-      builder.engine.requestHistory.size shouldBe 0
-      coVerify(exactly = 0) { builder.repository.save(any(), any()) }
+      coVerify(exactly = 0) { builder.userInfoProvider.fetchAndSync(any()) }
+      coVerify(exactly = 0) { builder.repository.save(any()) }
     }
 
     should("perform network validation and update cache if session is stale") {
-      val builder = SessionManagerBuilder().withStatus(HttpStatusCode.OK)
+      val builder = SessionManagerBuilder().withValidToken()
       val session = SessionBuilder().lastCheckedOutsideInterval(builder.interval).build()
 
       coEvery { builder.repository.find(session.sessionId) } returns session
@@ -61,12 +56,12 @@ class SessionManagerTest :
 
       result.shouldNotBeNull()
       (result.lastChecked > session.lastChecked) shouldBe true
-      builder.engine.requestHistory.size shouldBe 1
-      coVerify { builder.repository.save(session.sessionId, any()) }
+      coVerify { builder.userInfoProvider.fetchAndSync(session.accessToken) }
+      coVerify { builder.repository.save(match { it.sessionId == session.sessionId }) }
     }
 
     should("delete session and return null if the OIDC provider revokes the token") {
-      val builder = SessionManagerBuilder().withStatus(HttpStatusCode.Unauthorized)
+      val builder = SessionManagerBuilder().withInvalidToken()
       val session = SessionBuilder().lastCheckedOutsideInterval(builder.interval).build()
 
       coEvery { builder.repository.find(session.sessionId) } returns session
@@ -74,7 +69,7 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(session.sessionId))
 
       result.shouldBeNull()
-      builder.engine.requestHistory.size shouldBe 1
+      coVerify { builder.userInfoProvider.fetchAndSync(session.accessToken) }
       coVerify { builder.repository.delete(session.sessionId) }
     }
 
@@ -87,7 +82,7 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(session.sessionId))
 
       result.shouldBeNull()
-      builder.engine.requestHistory.size shouldBe 0
+      coVerify(exactly = 0) { builder.userInfoProvider.fetchAndSync(any()) }
       coVerify { builder.repository.delete(session.sessionId) }
     }
 
@@ -100,30 +95,36 @@ class SessionManagerTest :
       val result = builder.build().validate(SessionId(session.sessionId))
 
       result.shouldBeNull()
-      builder.engine.requestHistory.size shouldBe 0
+      coVerify(exactly = 0) { builder.userInfoProvider.fetchAndSync(any()) }
       coVerify { builder.repository.delete(session.sessionId) }
     }
   })
 
 class SessionManagerBuilder {
   var repository = mockk<SessionRepository>(relaxed = true)
-  var userInfoUrl = "https://auth.example.com/userinfo"
+  var userInfoProvider = mockk<UserInfoProvider>(relaxed = true)
   var interval = 60L
 
-  // Captured state to verify external calls
-  private var statusCode = HttpStatusCode.OK
-  val engine =
-    MockEngine {
-      respond("", statusCode, headersOf(HttpHeaders.ContentType, "application/json"))
+  private val stubUser =
+    User(
+      oidcSub = "test-sub",
+      displayName = "Test User",
+    )
+
+  fun withValidToken() =
+    apply {
+      coEvery { userInfoProvider.fetchAndSync(any()) } returns stubUser
     }
 
-  fun withStatus(status: HttpStatusCode) = apply { this.statusCode = status }
+  fun withInvalidToken() =
+    apply {
+      coEvery { userInfoProvider.fetchAndSync(any()) } returns null
+    }
 
   fun build() =
     SessionManager(
       repository = repository,
-      httpClient = HttpClient(engine),
-      userInfoUrl = userInfoUrl,
+      userInfoProvider = userInfoProvider,
       validationIntervalSeconds = interval,
     )
 }

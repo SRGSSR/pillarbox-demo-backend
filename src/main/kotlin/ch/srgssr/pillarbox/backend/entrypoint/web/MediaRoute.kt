@@ -66,7 +66,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     val dto = call.receive<Req>()
     val media = toDomain(dto)
 
-    mediaRepository.save(media.id, media)
+    mediaRepository.save(media)
     call.respond(HttpStatusCode.Created, toResponse(media))
   }
 

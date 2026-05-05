@@ -14,8 +14,9 @@ import org.koin.dsl.module
  * 1. The [AuthConfig] and [SessionConfig] extracted from the application configuration.
  * 2. The [OpenIDDiscovery] document, fetched synchronously from the identity provider's
  * discovery URL. Note: This involves a [runBlocking] network call upon first resolution.
- * 3. A [SessionManager] to handle user session lifecycles and token validation.
- * 4. An [AuthenticationPolicy] used to configure OAuth2 settings and verify JWT credentials.
+ * 3. A [UserInfoProvider] for fetching and synchronising user profiles from the OIDC provider.
+ * 4. A [SessionManager] to handle user session lifecycles and token validation.
+ * 5. An [AuthenticationPolicy] used to configure OAuth2 settings and verify JWT credentials.
  *
  * @return A Koin [Module] containing the authentication infrastructure definitions.
  */
@@ -33,10 +34,17 @@ fun authenticationModule() =
     }
 
     single {
+      UserInfoProvider(
+        userRepository = get(),
+        httpClient = get(),
+        discovery = get(),
+      )
+    }
+
+    single {
       SessionManager(
         repository = get(),
-        httpClient = get(),
-        userInfoUrl = get<OpenIDDiscovery>().userInfoEndpoint,
+        userInfoProvider = get(),
         validationIntervalSeconds = get<SessionConfig>().validationIntervalSeconds,
       )
     }

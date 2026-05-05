@@ -2,16 +2,10 @@ package ch.srgssr.pillarbox.backend.auth
 
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.log.debug
-import ch.srgssr.pillarbox.backend.log.error
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.log.warn
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
-import io.ktor.client.HttpClient
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.get
-import io.ktor.http.HttpStatusCode
-import kotlinx.io.IOException
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
@@ -20,15 +14,14 @@ import kotlin.time.Duration.Companion.seconds
  * periodic token verification.
  *
  * @property repository The persistent storage for session data.
- * @property httpClient The client used to perform back-channel validation against the OIDC provider.
- * @property userInfoUrl The OIDC endpoint used to verify if an access token is still active.
+ * @property userInfoProvider Used to verify token validity and synchronise user profile data
+ * against the identity provider during periodic re-validation.
  * @property validationIntervalSeconds The frequency at which the access token must be re-verified
  * against the identity provider.
  */
 class SessionManager(
   private val repository: SessionRepository,
-  private val httpClient: HttpClient,
-  private val userInfoUrl: String,
+  private val userInfoProvider: UserInfoProvider,
   private val validationIntervalSeconds: Long,
 ) {
   companion object {
@@ -37,7 +30,8 @@ class SessionManager(
 
   /**
    * Validates a session. If the session exists and has been checked recently (within [validationIntervalSeconds]),
-   * it is returned immediately. Otherwise, the associated access token is verified against the OIDC provider.
+   * it is returned immediately. Otherwise, the associated access token is verified against the OIDC provider
+   * and the linked user's profile is synchronised.
    *
    * @param sessionId The ID of the session to validate.
    *
@@ -61,7 +55,8 @@ class SessionManager(
 
   /**
    * Verifies the integrity of a session by checking its local expiration and
-   * remote OIDC token validity.
+   * remote OIDC token validity. When a remote check is performed, the linked user's
+   * profile is also synchronised from the identity provider.
    *
    * @param session The current session data retrieved from the repository.
    * @return The valid (and potentially updated) [Session], or `null` if the session is invalid.
@@ -71,12 +66,12 @@ class SessionManager(
 
     logger.info { "Re-validating OIDC token for session: ${session.sessionId}" }
 
-    return if (session.isTokenValid()) {
+    return userInfoProvider.fetchAndSync(session.accessToken)?.let {
       session.copy(lastChecked = Clock.System.now()).also { updated ->
-        repository.save(session.sessionId, updated)
+        repository.save(updated)
         logger.info { "Session ${session.sessionId} successfully re-validated." }
       }
-    } else {
+    } ?: run {
       logger.warn { "Session ${session.sessionId} invalidated by OIDC provider." }
       repository.delete(session.sessionId)
       null
@@ -103,21 +98,5 @@ class SessionManager(
           }
         }
       }
-    }
-
-  /**
-   * Checks if the provided access token is still valid by calling the OIDC UserInfo endpoint.
-   *
-   * @return True if the provider returns 200 OK; false otherwise.
-   */
-  private suspend fun Session.isTokenValid(): Boolean =
-    try {
-      httpClient.get(userInfoUrl) { bearerAuth(accessToken) }.let {
-        logger.info { "Token validation check returned status: ${it.status}" }
-        it.status == HttpStatusCode.OK
-      }
-    } catch (e: IOException) {
-      logger.error(e) { "Failed to reach OIDC UserInfo endpoint at $userInfoUrl" }
-      false
     }
 }

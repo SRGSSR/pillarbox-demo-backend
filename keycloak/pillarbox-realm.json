@@ -1,10 +1,15 @@
 {
   "realm": "pillarbox",
   "enabled": true,
+  "defaultRole": {
+    "name": "PillarboxDemo.Read",
+    "description": "Default role assigned to all new users"
+  },
   "roles": {
     "realm": [
-      { "name": "user" },
-      { "name": "admin" }
+      { "name": "PillarboxDemo.Read", "description": "Read-only access" },
+      { "name": "PillarboxDemo.Write", "description": "Can create and modify content" },
+      { "name": "PillarboxDemo.Admin", "description": "Unrestricted access" }
     ]
   },
   "clients": [
@@ -27,26 +32,59 @@
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
+        },
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
         }
       ]
     }
   ],
   "users": [
     {
-      "username": "dev",
+      "username": "reader",
       "enabled": true,
-      "email": "dev@example.com",
-      "firstName": "Dev",
+      "email": "reader@example.com",
+      "firstName": "Reader",
       "lastName": "User",
       "emailVerified": true,
       "credentials": [
-        {
-          "type": "password",
-          "value": "password",
-          "temporary": false
-        }
+        { "type": "password", "value": "password", "temporary": false }
       ],
-      "realmRoles": ["user"]
+      "realmRoles": ["PillarboxDemo.Read"]
+    },
+    {
+      "username": "editor",
+      "enabled": true,
+      "email": "editor@example.com",
+      "firstName": "Editor",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        { "type": "password", "value": "password", "temporary": false }
+      ],
+      "realmRoles": ["PillarboxDemo.Read", "PillarboxDemo.Write"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@example.com",
+      "firstName": "Admin",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        { "type": "password", "value": "password", "temporary": false }
+      ],
+      "realmRoles": ["PillarboxDemo.Read", "PillarboxDemo.Write", "PillarboxDemo.Admin"]
     }
   ]
 }

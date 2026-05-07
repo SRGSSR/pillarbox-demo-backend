@@ -1,22 +1,23 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web
 
+import ch.srgssr.pillarbox.backend.auth.AuthenticatedUserPlugin
+import ch.srgssr.pillarbox.backend.auth.user
+import ch.srgssr.pillarbox.backend.auth.withRole
 import ch.srgssr.pillarbox.backend.domain.model.Media
-import ch.srgssr.pillarbox.backend.domain.model.Session
-import ch.srgssr.pillarbox.backend.domain.model.User
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.log.debug
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.log.trace
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
-import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.principal
 import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
-import io.ktor.server.pebble.PebbleContent
 import io.ktor.server.pebble.respondTemplate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -27,6 +28,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.utils.io.ExperimentalKtorApi
 import org.jetbrains.exposed.v1.core.eq
+import java.util.Locale
 
 private object ConsoleRoute
 
@@ -38,146 +40,154 @@ private val logger = ConsoleRoute.logger()
 @OptIn(ExperimentalKtorApi::class)
 @SuppressWarnings("LongMethod", "CyclomaticComplexMethod")
 fun Route.console(mediaRepository: MediaRepository) {
-  val buildContext: suspend ApplicationCall.() -> Map<String, Any> = {
-    principal<User>()
-      ?.let { mapOf("user" to mapOf("name" to it.displayName, "initials" to it.initials)) }
-      .orEmpty()
-  }
-
   authenticate("pillarbox-session") {
-    staticResources("/static", "static")
+    install(AuthenticatedUserPlugin)
+
+    withRole(Role.READ) {
+      staticResources("/static", "static")
+    }
 
     route(Navigation.CONSOLE) {
-      get {
-        call.respond(
-          PebbleContent("modules/home/home.page.peb", call.buildContext()),
-        )
-      }
+      withRole(Role.READ) {
+        get {
+          call.respondWithContext("modules/home/home.page.peb")
+        }
 
-      get("bin") {
-        call.respond(
-          PebbleContent(
+        get("bin") {
+          call.respondWithContext(
             "modules/home/home.page.peb",
-            buildMap {
-              putAll(call.buildContext())
-              putAll(mapOf("deleted" to true))
-            },
-          ),
-        )
-      }
-
-      hx.get("media") {
-        val page = call.parameters["page"]?.toIntOrNull() ?: 0
-        val pageSize = call.parameters["pageSize"]?.toIntOrNull() ?: 15
-        val deleted = call.parameters["deleted"] == "true"
-        val offset = (page * pageSize).toLong()
-
-        logger.debug { "Fetching media grid: page=$page, pageSize=$pageSize, offset=$offset" }
-
-        val result =
-          mediaRepository.getAllPaginated(
-            limit = pageSize,
-            offset = offset,
-            filter = { MediaTable.deleted eq deleted },
+            mapOf("deleted" to true),
           )
+        }
 
-        call.respond(
-          PebbleContent(
+        hx.get("media") {
+          val page = call.parameters["page"]?.toIntOrNull() ?: 0
+          val pageSize = call.parameters["pageSize"]?.toIntOrNull() ?: 15
+          val deleted = call.parameters["deleted"] == "true"
+          val offset = (page * pageSize).toLong()
+
+          logger.debug { "Fetching media grid: page=$page, pageSize=$pageSize, offset=$offset" }
+
+          val result =
+            mediaRepository.getAllPaginated(
+              limit = pageSize,
+              offset = offset,
+              filter = { MediaTable.deleted eq deleted },
+            )
+
+          call.respondWithContext(
             "shared/fragments/media-grid.fragment.peb",
             mapOf(
               "result" to result,
               "nextPage" to page + 1,
               "deleted" to deleted,
             ),
-          ),
-        )
-      }
+          )
+        }
 
-      hx.post("media") {
-        val media = call.receive<Media>()
+        get("media/editor/{id?}") {
+          val media =
+            call.parameters["id"]
+              ?.let { mediaRepository.find(it) }
+              ?.also { logger.debug { "Opening editor for media: $it" } }
 
-        mediaRepository.save(media)
-
-        call.response.headers.append("HX-Redirect", "/console")
-        call.respond(HttpStatusCode.OK)
-      }
-
-      get("media/editor/{id?}") {
-        val media =
-          call.parameters["id"]
-            ?.let { mediaRepository.find(it) }
-            ?.also { logger.debug { "Opening editor for media: $it" } }
-        call.respond(
-          PebbleContent(
+          call.respondWithContext(
             "modules/media/editor.page.peb",
-            buildMap {
-              putAll(call.buildContext())
-              putAll(media?.let { mapOf("item" to media) }.orEmpty())
-            },
-          ),
-        )
+            media?.let { mapOf("item" to media) }.orEmpty(),
+          )
+        }
       }
 
-      get("media/editor/{id}/duplicate") {
-        val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.NotFound)
+      withRole(Role.WRITE) {
+        hx.post("media") {
+          val media = call.receive<Media>()
 
-        val media =
+          mediaRepository.save(media)
+
+          call.response.headers.append("HX-Redirect", "/console")
+          call.respond(HttpStatusCode.OK)
+        }
+
+        get("media/editor/{id}/duplicate") {
+          val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.NotFound)
+
+          val media =
+            mediaRepository
+              .find(id)
+              ?.also { logger.debug { "Opening editor with duplicate data from original ID: $id" } }
+              ?: return@get call.respond(HttpStatusCode.NotFound)
+
+          call.respondWithContext(
+            "modules/media/editor.page.peb",
+            mapOf("item" to media.copy(id = "")),
+          )
+        }
+
+        hx.get("/media/editor/fragments/{fragment}") {
+          val fragment =
+            EditorFragment.find(call.parameters["fragment"])
+              ?: return@get call.respond(HttpStatusCode.NotFound)
+          val index = call.request.queryParameters["index"]?.toInt() ?: 0
+
+          logger.trace { "Rendering fragment: ${fragment.name} at index $index" }
+
+          call.respondWithContext(
+            fragment.template,
+            mapOf("index" to index),
+          )
+        }
+
+        hx.delete("media/{id}") {
+          val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.NotFound)
+
+          logger.info { "Attempting to delete media with ID: $id" }
+
           mediaRepository
-            .find(id)
-            ?.also { logger.debug { "Opening editor with duplicate data from original ID: $id" } }
-            ?: return@get call.respond(HttpStatusCode.NotFound)
+            .softDelete(id)
+            .takeIf { it }
+            ?.let { call.respond(HttpStatusCode.OK) }
+            ?: call.respond(HttpStatusCode.NotFound)
+        }
 
-        call.respond(
-          PebbleContent(
-            "modules/media/editor.page.peb",
-            buildMap {
-              putAll(call.buildContext())
-              putAll(mapOf("item" to media.copy(id = "")))
-            },
-          ),
-        )
-      }
+        hx.post("media/{id}/restore") {
+          val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.NotFound)
 
-      hx.get("/media/editor/fragments/{fragment}") {
-        val fragment =
-          EditorFragment.find(call.parameters["fragment"])
-            ?: return@get call.respond(HttpStatusCode.NotFound)
-        val index = call.request.queryParameters["index"]?.toInt() ?: 0
+          logger.info { "Attempting to restore media with ID: $id" }
 
-        logger.trace { "Rendering fragment: ${fragment.name} at index $index" }
-
-        call.respondTemplate(
-          fragment.template,
-          mapOf("index" to index),
-        )
-      }
-
-      hx.delete("media/{id}") {
-        val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.NotFound)
-
-        logger.info { "Attempting to delete media with ID: $id" }
-
-        mediaRepository
-          .softDelete(id)
-          .takeIf { it }
-          ?.let { call.respond(HttpStatusCode.OK) }
-          ?: call.respond(HttpStatusCode.NotFound)
-      }
-
-      hx.post("media/{id}/restore") {
-        val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.NotFound)
-
-        logger.info { "Attempting to restore media with ID: $id" }
-
-        mediaRepository
-          .restore(id)
-          .takeIf { it }
-          ?.let { call.respond(HttpStatusCode.OK) }
-          ?: call.respond(HttpStatusCode.NotFound)
+          mediaRepository
+            .restore(id)
+            .takeIf { it }
+            ?.let { call.respond(HttpStatusCode.OK) }
+            ?: call.respond(HttpStatusCode.NotFound)
+        }
       }
     }
   }
 }
+
+data class UserView(
+  val name: String,
+  val initials: String,
+  val roles: List<String>,
+)
+
+fun ApplicationCall.userContext(): Map<String, Any> =
+  mapOf(
+    "user" to
+      UserView(
+        name = user.displayName,
+        initials = user.initials,
+        roles = user.roles.map { it.name },
+      ),
+  )
+
+suspend fun ApplicationCall.respondWithContext(
+  template: String,
+  model: Map<String, Any> = emptyMap(),
+  locale: Locale? = null,
+  etag: String? = null,
+  contentType: ContentType = ContentType.Text.Html.withCharset(Charsets.UTF_8),
+) = respondTemplate(template, userContext() + model, locale, etag, contentType)
 
 /**
  * Represents the various dynamic UI components (fragments) that can be

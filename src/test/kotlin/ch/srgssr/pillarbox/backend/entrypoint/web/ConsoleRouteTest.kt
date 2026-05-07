@@ -1,6 +1,7 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web
 
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.test.MediaLibrary
 import ch.srgssr.pillarbox.backend.test.count
 import ch.srgssr.pillarbox.backend.test.get
@@ -9,6 +10,8 @@ import ch.srgssr.pillarbox.backend.test.hxGet
 import ch.srgssr.pillarbox.backend.test.hxPost
 import ch.srgssr.pillarbox.backend.test.login
 import ch.srgssr.pillarbox.backend.test.mediaFixture
+import ch.srgssr.pillarbox.backend.test.noRoles
+import ch.srgssr.pillarbox.backend.test.readOnlyRoles
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
@@ -27,6 +30,69 @@ import org.jsoup.Jsoup
 
 class ConsoleRouteTest :
   ShouldSpec({
+
+    should("redirect unauthenticated requests to login") {
+      testApplicationContext {
+        val response = client.get(Navigation.CONSOLE)
+        response shouldHaveStatus HttpStatusCode.Found
+      }
+    }
+
+    should("allow READ user to access read-only routes") {
+      testApplicationContext {
+        login(roles = readOnlyRoles)
+
+        client.get(Navigation.CONSOLE) shouldHaveStatus HttpStatusCode.OK
+        client.get("${Navigation.CONSOLE}/bin") shouldHaveStatus HttpStatusCode.OK
+        client.hxGet("${Navigation.CONSOLE}/media") shouldHaveStatus HttpStatusCode.OK
+        client.get("${Navigation.CONSOLE}/media/editor/") shouldHaveStatus HttpStatusCode.OK
+      }
+    }
+
+    should("forbid READ user from write routes") {
+      testApplicationContext {
+        login(roles = readOnlyRoles)
+
+        client.hxPost("${Navigation.CONSOLE}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(mediaFixture())
+        } shouldHaveStatus HttpStatusCode.Forbidden
+
+        client.hxDelete("${Navigation.CONSOLE}/media/any-id") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxPost("${Navigation.CONSOLE}/media/any-id/restore") shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("${Navigation.CONSOLE}/media/editor/any-id/duplicate") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxGet("${Navigation.CONSOLE}/media/editor/fragments/chapter") shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
+
+    should("allow READ+WRITE user to access all console routes") {
+      testApplicationContext {
+        login(roles = setOf(Role.READ, Role.WRITE))
+
+        client.get(Navigation.CONSOLE) shouldHaveStatus HttpStatusCode.OK
+        client.hxGet("${Navigation.CONSOLE}/media") shouldHaveStatus HttpStatusCode.OK
+        client.hxGet("${Navigation.CONSOLE}/media/editor/fragments/chapter") shouldHaveStatus HttpStatusCode.OK
+      }
+    }
+
+    should("forbid user with no roles from all console routes") {
+      testApplicationContext {
+        login(roles = noRoles)
+
+        client.get(Navigation.CONSOLE) shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("${Navigation.CONSOLE}/bin") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxGet("${Navigation.CONSOLE}/media") shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("${Navigation.CONSOLE}/media/editor/") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxPost("${Navigation.CONSOLE}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(mediaFixture())
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxDelete("${Navigation.CONSOLE}/media/any-id") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxPost("${Navigation.CONSOLE}/media/any-id/restore") shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("${Navigation.CONSOLE}/media/editor/any-id/duplicate") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxGet("${Navigation.CONSOLE}/media/editor/fragments/chapter") shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
 
     should("render home page when authenticated") {
       testApplicationContext {

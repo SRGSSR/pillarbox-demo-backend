@@ -25,15 +25,8 @@ class UserManager(
       User(
         oidcSub = payload.subject,
         displayName = payload.displayName,
+        roles = payload.roles,
       ),
     )
   }
-
-  /**
-   * Extracts the preferred username from the JWT [Payload].
-   * Usually contains the human-readable login name or display handle.
-   */
-  private val Payload.displayName: String
-    get() =
-      getClaim("name")?.asString() ?: subject
 }

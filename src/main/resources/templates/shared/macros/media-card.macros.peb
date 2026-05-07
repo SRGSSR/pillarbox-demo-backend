@@ -1,6 +1,7 @@
-{% macro mediaCard(media, nextUrl = null) %}
+{% macro mediaCard(media, nextUrl = null, readOnly = false) %}
 {# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="media" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
+{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
 <article class="media-card" id="media-card-{{ media.id }}"
     {% if nextUrl is not empty %}
          hx-get="{{ nextUrl }}"
@@ -33,6 +34,7 @@
   </header>
 
 
+  {% if not readOnly %}
   <footer class="actions">
     <a class="btn btn-icon" href="/console/media/editor/{{ media.id }}" title="Edit {{ media.metadata.title }}">
       <span class="material-symbols-outlined">edit</span>
@@ -62,15 +64,17 @@
       </button>
     {% endif %}
   </footer>
+  {% endif %}
 </article>
 {% endmacro %}
 
-{% macro mediaList(result, nextUrl = null) %}
-{# @pebvariable name="nextUrl" type="java.lang.String" #}
+{% macro mediaList(result, nextUrl = null, readOnly = false) %}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
+{# @pebvariable name="nextUrl" type="java.lang.String" #}
+{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
 <section class="media-list">
 {%- for item in result.items -%}
-  {{ mediaCard(item, loop.last ? nextUrl : null) }}
+  {{ mediaCard(item, loop.last ? nextUrl : null, readOnly) }}
 {%- endfor -%}
 </section>
 {% endmacro %}

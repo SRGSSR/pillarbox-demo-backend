@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.auth
 
+import ch.srgssr.pillarbox.backend.domain.model.User
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.log.warn
 import com.auth0.jwk.JwkProvider
@@ -57,19 +58,22 @@ class AuthenticationPolicy(
    *
    * @param credential The credential extracted from the JWT token.
    *
-   * @return A [JWTPrincipal] if validation passes; null if the audience is invalid.
+   * @return A [User] if validation passes; null if the audience is invalid.
    */
-  fun verifyJwt(credential: JWTCredential): JWTPrincipal? {
-    val audience = credential.payload.audience
-    return if (audience.contains(clientId)) {
-      JWTPrincipal(credential.payload)
-    } else {
+  fun verifyJwt(credential: JWTCredential): User? {
+    if (!credential.payload.audience.contains(clientId)) {
       logger.warn {
         "JWT verification failed: Audience mismatch. " +
-          "Expected: $clientId, Found: $audience. " +
+          "Expected: $clientId, Found: ${credential.payload.audience}. " +
           "Subject: ${credential.payload.subject}"
       }
-      null
+      return null
     }
+
+    return User(
+      oidcSub = credential.payload.subject,
+      displayName = credential.payload.displayName,
+      roles = credential.payload.roles,
+    )
   }
 }

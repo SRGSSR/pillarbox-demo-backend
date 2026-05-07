@@ -1,3 +1,5 @@
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.UserView" #}
+
 <aside class="sidebar" data-purpose="navigation-sidebar" id="sidebar">
   <header>
     <img src="/static/img/srgssr-logo.png" alt="SRG SSR Logo">
@@ -5,9 +7,11 @@
   </header>
 
   <nav>
+    {% if user.roles contains "WRITE" %}
     <a href="/console/media/editor">
       <span class="material-symbols-outlined">add</span> Create Media
     </a>
+    {% endif %}
     <a href="/console">
         <span class="material-symbols-outlined">folder</span> Media Library
     </a>

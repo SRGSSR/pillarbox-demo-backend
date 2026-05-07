@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.test
 
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.Navigation
 import com.nimbusds.oauth2.sdk.TokenRequest
 import io.ktor.client.HttpClient
@@ -21,6 +22,10 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.koin.core.context.GlobalContext
+
+val readOnlyRoles: Set<Role> = setOf(Role.READ)
+val readWriteRoles: Set<Role> = setOf(Role.READ, Role.WRITE)
+val noRoles: Set<Role> = emptySet()
 
 /**
  * Executes an integration test within a managed Ktor application environment.
@@ -90,18 +95,22 @@ val ApplicationTestBuilder.mockServer: MockOAuth2Server
       ?: error("MockOAuth2Server not found in application attributes.")
 
 val ApplicationTestBuilder.token: String
-  get() =
-    mockServer
-      .issueToken(
-        issuerId = "pillarbox-realm",
-        audience = "pillarbox-test-client",
-      ).serialize()
+  get() = tokenWithRoles(readWriteRoles)
 
-suspend fun ApplicationTestBuilder.login(): HttpResponse {
+fun ApplicationTestBuilder.tokenWithRoles(roles: Set<Role>): String =
+  mockServer
+    .issueToken(
+      issuerId = "pillarbox-realm",
+      audience = "pillarbox-test-client",
+      claims = mapOf("realm_access" to mapOf("roles" to roles.map { it.key })),
+    ).serialize()
+
+suspend fun ApplicationTestBuilder.login(roles: Set<Role> = readWriteRoles): HttpResponse {
   mockServer.enqueueCallback(
     DefaultOAuth2TokenCallback(
       issuerId = "pillarbox-realm",
       subject = "dev-user",
+      claims = mapOf("realm_access" to mapOf("roles" to roles.map { it.key })),
     ),
   )
 

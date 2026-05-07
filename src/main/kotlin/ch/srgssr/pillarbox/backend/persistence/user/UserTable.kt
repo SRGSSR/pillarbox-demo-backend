@@ -20,6 +20,11 @@ object UserTable : Table("pb_user") {
   val displayName = varchar("display_name", 255)
 
   /**
+   * A list of roles associated with the user.
+   */
+  val roles = array<String>("roles")
+
+  /**
    * The time when the user record was last updated.
    */
   val updatedAt = timestampWithTimeZone("updated_at")

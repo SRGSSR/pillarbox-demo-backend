@@ -1,6 +1,7 @@
 package ch.srgssr.pillarbox.backend.persistence.user
 
 import ch.srgssr.pillarbox.backend.db.ExposedRepository
+import ch.srgssr.pillarbox.backend.domain.model.Role.Companion.toRole
 import ch.srgssr.pillarbox.backend.domain.model.User
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
@@ -29,6 +30,7 @@ class UserRepository(
     User(
       oidcSub = this[UserTable.oidcSub],
       displayName = this[UserTable.displayName],
+      roles = this[UserTable.roles].mapNotNull { it.toRole() }.toSet(),
       createdAt = this[UserTable.createdAt].toKotlinInstant(),
       updatedAt = this[UserTable.updatedAt].toKotlinInstant(),
     )
@@ -42,6 +44,7 @@ class UserRepository(
   ) {
     builder[UserTable.oidcSub] = item.oidcSub
     builder[UserTable.displayName] = item.displayName
+    builder[UserTable.roles] = item.roles.map { it.key }
     builder[UserTable.createdAt] = Clock.System.now().toUtcOffsetDateTime()
     builder[UserTable.updatedAt] = Clock.System.now().toUtcOffsetDateTime()
   }
@@ -52,6 +55,7 @@ class UserRepository(
   override fun encodeOnUpdate(item: User): (UpsertBuilder.(UpdateStatement) -> Unit) =
     {
       it[UserTable.displayName] = item.displayName
+      it[UserTable.roles] = item.roles.map { role -> role.key }
       it[UserTable.updatedAt] = Clock.System.now().toUtcOffsetDateTime()
     }
 }

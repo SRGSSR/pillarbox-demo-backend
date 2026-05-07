@@ -3,8 +3,9 @@
 {# @pebvariable name="deleted" type="java.lang.Boolean" #}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
 {# @pebvariable name="nextPage" type="java.lang.Integer" #}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.UserView" #}
 
 {% set hasMore = (nextPage * result.limit) < result.totalCount %}
 {% set nextUrl = hasMore ? "/console/media?page=" + nextPage + "&pageSize=" + result.limit + "&deleted=" + deleted : null %}
 
-{{ mediaList(result, nextUrl) }}
+{{ mediaList(result, nextUrl, not (user.roles contains "WRITE")) }}

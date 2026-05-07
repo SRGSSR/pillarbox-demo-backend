@@ -88,8 +88,12 @@ aside.sidebar footer .user-info {
 }
 
 aside.sidebar footer .user-name {
+  overflow: hidden;
+
   font-size: var(--font-size-1);
   font-weight: var(--font-weight-6);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body.sidebar-collapsed {

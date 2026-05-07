@@ -2,7 +2,6 @@ package ch.srgssr.pillarbox.backend.domain.model
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi

@@ -1,6 +1,8 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web
 
+import ch.srgssr.pillarbox.backend.auth.withRole
 import ch.srgssr.pillarbox.backend.domain.model.Media
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
@@ -43,61 +45,64 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
   crossinline toResponse: (Media) -> Res,
   crossinline applyTags: (TagReq, List<String>) -> List<String>,
 ) {
-  get {
-    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
-    val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
+  withRole(Role.READ) {
+    get {
+      val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
+      val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
+      val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
 
-    call.respond(mediaFlow.map { toResponse(it) }.toList())
+      call.respond(mediaFlow.map { toResponse(it) }.toList())
+    }
+
+    get("/{id}") {
+      val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+      val media =
+        mediaRepository.findOne {
+          (MediaTable.id eq id) and (MediaTable.deleted eq false)
+        } ?: return@get call.respond(HttpStatusCode.NotFound)
+
+      call.respond(toResponse(media))
+    }
   }
+  withRole(Role.WRITE) {
+    post {
+      val dto = call.receive<Req>()
+      val media = toDomain(dto)
 
-  get("/{id}") {
-    val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+      mediaRepository.save(media)
+      call.respond(HttpStatusCode.Created, toResponse(media))
+    }
 
-    val media =
-      mediaRepository.findOne {
-        (MediaTable.id eq id) and (MediaTable.deleted eq false)
-      } ?: return@get call.respond(HttpStatusCode.NotFound)
+    patch("/{id}/tags") {
+      val id = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
+      val request = call.receive<TagReq>()
 
-    call.respond(toResponse(media))
-  }
+      mediaRepository
+        .updateTags(id) { applyTags(request, it) }
+        ?.let { call.respond(HttpStatusCode.OK, it) }
+        ?: call.respond(HttpStatusCode.NotFound)
+    }
 
-  post {
-    val dto = call.receive<Req>()
-    val media = toDomain(dto)
+    delete("/{id}") {
+      val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
 
-    mediaRepository.save(media)
-    call.respond(HttpStatusCode.Created, toResponse(media))
-  }
+      mediaRepository
+        .softDelete(id)
+        .takeIf { it }
+        ?.let { call.respond(HttpStatusCode.NoContent) }
+        ?: call.respond(HttpStatusCode.NotFound)
+    }
 
-  patch("/{id}/tags") {
-    val id = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
-    val request = call.receive<TagReq>()
+    post("/{id}/restore") {
+      val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest)
 
-    mediaRepository
-      .updateTags(id) { applyTags(request, it) }
-      ?.let { call.respond(HttpStatusCode.OK, it) }
-      ?: call.respond(HttpStatusCode.NotFound)
-  }
-
-  delete("/{id}") {
-    val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
-
-    mediaRepository
-      .softDelete(id)
-      .takeIf { it }
-      ?.let { call.respond(HttpStatusCode.NoContent) }
-      ?: call.respond(HttpStatusCode.NotFound)
-  }
-
-  post("/{id}/restore") {
-    val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-
-    mediaRepository
-      .restore(id)
-      .takeIf { it }
-      ?.let { call.respond(HttpStatusCode.Created) }
-      ?: call.respond(HttpStatusCode.NotFound)
+      mediaRepository
+        .restore(id)
+        .takeIf { it }
+        ?.let { call.respond(HttpStatusCode.Created) }
+        ?: call.respond(HttpStatusCode.NotFound)
+    }
   }
 }
 

@@ -5,9 +5,12 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagActionV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagOperationV1
 import ch.srgssr.pillarbox.backend.test.mediaFixture
+import ch.srgssr.pillarbox.backend.test.noRoles
+import ch.srgssr.pillarbox.backend.test.readOnlyRoles
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import ch.srgssr.pillarbox.backend.test.toMediaRequestV1
 import ch.srgssr.pillarbox.backend.test.token
+import ch.srgssr.pillarbox.backend.test.tokenWithRoles
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -198,6 +201,83 @@ class MediaRouteTest :
         (firstLastModified < updatedMedia.lastModified) shouldBe true
       }
     }
+    should("return 401 on all endpoints when no token is provided") {
+      testApplicationContext {
+        client.get("/v1/media") shouldHaveStatus HttpStatusCode.Unauthorized
+        client.get("/v1/media/any-id") shouldHaveStatus HttpStatusCode.Unauthorized
+        client.post("/v1/media") { contentType(ContentType.Application.Json) } shouldHaveStatus
+          HttpStatusCode.Unauthorized
+        client.patch("/v1/media/any-id/tags") { contentType(ContentType.Application.Json) } shouldHaveStatus
+          HttpStatusCode.Unauthorized
+        client.delete("/v1/media/any-id") shouldHaveStatus HttpStatusCode.Unauthorized
+        client.post("/v1/media/any-id/restore") shouldHaveStatus HttpStatusCode.Unauthorized
+      }
+    }
+
+    should("return 403 on all endpoints when token has no roles") {
+      testApplicationContext {
+        val t = tokenWithRoles(noRoles)
+
+        client.get("/v1/media") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/media") {
+          bearerAuth(t)
+          contentType(ContentType.Application.Json)
+          setBody(mediaFixture().toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.patch("/v1/media/any-id/tags") {
+          bearerAuth(t)
+          contentType(ContentType.Application.Json)
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.delete("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/media/any-id/restore") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
+
+    should("allow READ role to access GET endpoints") {
+      testApplicationContext {
+        val t = tokenWithRoles(readOnlyRoles)
+
+        client.get("/v1/media") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
+    should("return 403 on write endpoints when token has READ role only") {
+      testApplicationContext {
+        val t = tokenWithRoles(readOnlyRoles)
+
+        client.post("/v1/media") {
+          bearerAuth(t)
+          contentType(ContentType.Application.Json)
+          setBody(mediaFixture().toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.patch("/v1/media/any-id/tags") {
+          bearerAuth(t)
+          contentType(ContentType.Application.Json)
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.delete("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/media/any-id/restore") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
+
+    should("allow READ+WRITE token to access all endpoints") {
+      testApplicationContext {
+        val fixture = mediaFixture { id = "auth-test-id" }
+
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(fixture.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.delete("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
+        client.post("/v1/media/${fixture.id}/restore") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Created
+      }
+    }
+
     should("successfully restore a deleted media item") {
       testApplicationContext {
         val fixture = mediaFixture()

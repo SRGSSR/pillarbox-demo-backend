@@ -1,7 +1,6 @@
 # Development & API Usage Guide
 
 This document provides a comprehensive guide on how to interact with the Pillarbox Backend.
-
 Once the application is running, you can interact with it via the web console or the REST API.
 
 ## Web Console
@@ -10,7 +9,6 @@ The Web Console provides a visual interface for managing media assets. It is bui
 and **Pebble templates**, allowing for dynamic updates without full page reloads.
 
 * **URL**: [http://localhost:8080/console](http://localhost:8080/console)
-* **Username / Password**: `dev/password`
 
 ### Console Routes
 
@@ -36,18 +34,31 @@ The REST API is divided into two primary functional areas:
 
 ### Management API (Protected)
 
-To access protected endpoints, you must first authenticate with the Keycloak server
-(running on port `8081` by default).
+Protected endpoints require authentication via the Keycloak server (running on port `8081` by
+default) and are gated by role-based access control. A request without a valid token receives
+`401 Unauthorized`; a valid token that lacks the required role receives `403 Forbidden`.
+
+#### Test Users
+
+The development Keycloak realm is seeded with three users (all passwords are `password`):
+
+| Username   | Roles                        | Access                          |
+|------------|------------------------------|---------------------------------|
+| `reader`   | `Read`                       | Read-only                       |
+| `editor`   | `Read`, `Write`              | Read + create/modify content    |
+| `admin`    | `Read`, `Write`, `Admin`     | Unrestricted                    |
+
+#### Obtaining a Token
 
 ```bash
 TOKEN=$(curl -s -X POST "http://localhost:8081/realms/pillarbox/protocol/openid-connect/token" \
-  -d "username=dev" \
+  -d "username=editor" \
   -d "password=password" \
   -d "grant_type=password" \
   -d "client_id=pillarbox-api" | jq -r '.access_token')
 ```
 
-Use the `$TOKEN` to authorize POST requests to the management API.
+Use the `$TOKEN` to authorize requests to the management API.
 
 ```bash
 curl -v --request POST \
@@ -69,14 +80,11 @@ definitions in [MediaRoute.kt][media-route-kt].
 | **DELETE** | `/v1/media/{id}`         | Remove a media entity from the repository.              |
 | **POST**   | `/v1/media/{id}/restore` | Restores a deleted media entity from the repository.    |
 
-
 ### Player API (Public)
 
 The playback endpoints do not require a token and are open to all clients.
-
 Unlike the management API, these endpoints are **publicly accessible** (no Bearer token required).
 They support content negotiation via query parameters or custom headers.
-
 You can find all the definitions in [PlayerMediaRoute.kt][player-media-route-kt].
 
 | Method  | Endpoint                | Description                                |

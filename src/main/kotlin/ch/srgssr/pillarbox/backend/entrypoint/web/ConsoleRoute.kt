@@ -26,6 +26,7 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.util.getOrFail
 import io.ktor.utils.io.ExperimentalKtorApi
 import org.jetbrains.exposed.v1.core.eq
 import java.util.Locale
@@ -105,7 +106,7 @@ fun Route.console(mediaRepository: MediaRepository) {
         }
 
         get("media/editor/{id}/duplicate") {
-          val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.NotFound)
+          val id = call.parameters.getOrFail("id")
 
           val media =
             mediaRepository
@@ -134,7 +135,7 @@ fun Route.console(mediaRepository: MediaRepository) {
         }
 
         hx.delete("media/{id}") {
-          val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.NotFound)
+          val id = call.parameters.getOrFail("id")
 
           logger.info { "Attempting to delete media with ID: $id" }
 
@@ -146,7 +147,7 @@ fun Route.console(mediaRepository: MediaRepository) {
         }
 
         hx.post("media/{id}/restore") {
-          val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.NotFound)
+          val id = call.parameters.getOrFail("id")
 
           logger.info { "Attempting to restore media with ID: $id" }
 

@@ -3,8 +3,6 @@ package ch.srgssr.pillarbox.backend.auth
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
 import ch.srgssr.pillarbox.backend.test.buildJwt
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull

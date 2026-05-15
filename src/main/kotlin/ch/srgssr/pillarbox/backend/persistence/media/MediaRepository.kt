@@ -2,17 +2,27 @@ package ch.srgssr.pillarbox.backend.persistence.media
 
 import ch.srgssr.pillarbox.backend.db.ExposedRepository
 import ch.srgssr.pillarbox.backend.domain.model.Media
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderMediaTable
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import org.jetbrains.exposed.v1.core.Expression
+import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.time.Clock
 
@@ -115,5 +125,46 @@ class MediaRepository(
         it[deleted] = false
         it[lastModified] = Clock.System.now().toUtcOffsetDateTime()
       } > 0
+    }
+
+  fun findMediaInFolder(
+    folderId: String,
+    limit: Int = 100,
+    offset: Long = 0,
+    filter: (() -> Op<Boolean>)? = null,
+    sort: List<Pair<Expression<*>, SortOrder>>? = null,
+  ): Flow<Media> =
+    channelFlow {
+      query(readOnly = true) {
+        MediaTable
+          .join(FolderMediaTable, JoinType.INNER, MediaTable.id, FolderMediaTable.mediaId)
+          .selectAll()
+          .where { (FolderMediaTable.folderId eq folderId) and (MediaTable.deleted eq false) }
+          .apply { filter?.let { andWhere(it) } }
+          .apply { sort?.let { orderBy(*it.toTypedArray()) } }
+          .limit(limit)
+          .offset(offset)
+          .forEach { row -> send(row.decode()) }
+      }
+    }
+
+  private fun findMediaWithoutFolder(
+    limit: Int = 100,
+    offset: Long = 0,
+    filter: (() -> Op<Boolean>)? = null,
+    sort: List<Pair<Expression<*>, SortOrder>>? = null,
+  ): Flow<Media> =
+    channelFlow {
+      query(readOnly = true) {
+        MediaTable
+          .join(FolderMediaTable, JoinType.LEFT, MediaTable.id, FolderMediaTable.mediaId)
+          .selectAll()
+          .where { FolderMediaTable.mediaId.isNull() and (MediaTable.deleted eq false) }
+          .apply { filter?.let { andWhere(it) } }
+          .apply { sort?.let { orderBy(*it.toTypedArray()) } }
+          .limit(limit)
+          .offset(offset)
+          .forEach { row -> send(row.decode()) }
+      }
     }
 }

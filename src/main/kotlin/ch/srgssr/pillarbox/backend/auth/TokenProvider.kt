@@ -1,10 +1,8 @@
 package ch.srgssr.pillarbox.backend.auth
 
-import ch.srgssr.pillarbox.backend.domain.model.User
 import ch.srgssr.pillarbox.backend.log.error
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
-import com.auth0.jwt.interfaces.Payload
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm

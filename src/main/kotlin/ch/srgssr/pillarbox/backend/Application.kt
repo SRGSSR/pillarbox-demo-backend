@@ -6,6 +6,7 @@ import ch.srgssr.pillarbox.backend.auth.installSession
 import ch.srgssr.pillarbox.backend.db.databaseModule
 import ch.srgssr.pillarbox.backend.entrypoint.web.auth
 import ch.srgssr.pillarbox.backend.entrypoint.web.console
+import ch.srgssr.pillarbox.backend.entrypoint.web.folder
 import ch.srgssr.pillarbox.backend.entrypoint.web.media
 import ch.srgssr.pillarbox.backend.entrypoint.web.playerMedia
 import ch.srgssr.pillarbox.backend.io.httpClientModule
@@ -88,7 +89,8 @@ fun Application.module() {
   routing {
     auth(get(), get(), get())
     media(get())
-    playerMedia(get())
+    folder(get(), get())
+    playerMedia(get(), get())
     console(get())
   }
 

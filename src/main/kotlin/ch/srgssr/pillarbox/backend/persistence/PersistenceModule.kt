@@ -1,5 +1,8 @@
 package ch.srgssr.pillarbox.backend.persistence
 
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderMediaTable
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderTable
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
@@ -16,13 +19,15 @@ import org.koin.dsl.module
  * @see MediaRepository
  * @see SessionRepository
  * @see UserRepository
+ * @see FolderRepository
  */
 fun persistenceModule() =
   module {
     single<List<Table>> {
-      listOf(MediaTable, SessionTable, UserTable)
+      listOf(MediaTable, SessionTable, UserTable, FolderTable, FolderMediaTable)
     }
     single { MediaRepository(get()) }
     single { SessionRepository(get()) }
     single { UserRepository(get()) }
+    single { FolderRepository(get()) }
   }

@@ -7,6 +7,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
@@ -19,6 +20,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.util.getOrFail
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.and
@@ -46,15 +48,21 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
   crossinline applyTags: (TagReq, List<String>) -> List<String>,
 ) {
   get {
-    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
-    val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
-
-    call.respond(mediaFlow.map { toResponse(it) }.toList())
+    with(call.request.queryParameters.toPageRequest()) {
+      call.respond(
+        mediaRepository
+          .getAll(
+            limit,
+            offset,
+            filter = { MediaTable.deleted eq false },
+          ).map { toResponse(it) }
+          .toList(),
+      )
+    }
   }
 
   get("/{id}") {
-    val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+    val id = call.parameters.getOrFail("id")
 
     val media =
       mediaRepository.findOne {
@@ -74,7 +82,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     }
 
     patch("/{id}/tags") {
-      val id = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
+      val id = call.parameters.getOrFail("id")
       val request = call.receive<TagReq>()
 
       mediaRepository
@@ -84,7 +92,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     }
 
     delete("/{id}") {
-      val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+      val id = call.parameters.getOrFail("id")
 
       mediaRepository
         .softDelete(id)
@@ -94,7 +102,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
     }
 
     post("/{id}/restore") {
-      val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+      val id = call.parameters.getOrFail("id")
 
       mediaRepository
         .restore(id)

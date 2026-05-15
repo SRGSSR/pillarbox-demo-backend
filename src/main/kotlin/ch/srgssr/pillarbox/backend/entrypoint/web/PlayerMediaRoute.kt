@@ -1,86 +1,122 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web
 
-import ch.srgssr.pillarbox.backend.domain.model.Media
-import ch.srgssr.pillarbox.backend.entrypoint.web.dto.PlayerMediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerResponse
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaSourceSelector
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.toDrmPreferences
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
 import ch.srgssr.pillarbox.backend.io.parseHeaderList
 import ch.srgssr.pillarbox.backend.io.parseParamList
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+import io.ktor.server.util.getOrFail
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 
 /**
- * Generic helper to register player-facing media endpoints.
+ * Configures the versioned public player media routes under `v1/player/`.
  *
- * @param Res The Response DTO type.
- * @param mediaRepository The repository to fetch media from.
- * @param toResponse Mapping function that transforms the domain [Media] into [Res],
+ * These endpoints return player-optimized responses with media sources selected
+ * according to the client's stream-type and DRM preferences.
+ *
+ * @param mediaRepository The repository used to manage media entities.
+ * @param folderRepository The repository used to verify folder existence.
  */
-inline fun <reified Res : Any> Route.playerMediaEndpoints(
+fun Route.playerMedia(
   mediaRepository: MediaRepository,
-  crossinline toResponse: suspend (Media, ApplicationCall) -> Res,
+  folderRepository: FolderRepository,
 ) {
-  get {
-    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
-    val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
+  route("v1/player/") {
+    route("media") {
+      get {
+        with(call.request.queryParameters.toPageRequest()) {
+          val mediaSourceSelector = call.request.toMediaSourceSelector()
+          call.respond(
+            mediaRepository
+              .getAll(
+                limit,
+                offset,
+                filter = { MediaTable.deleted eq false },
+              ).map { it.toPlayerResponse(mediaSourceSelector) }
+              .toList(),
+          )
+        }
+      }
 
-    call.respond(mediaFlow.map { toResponse(it, call) })
-  }
+      get("/{id}") {
+        val id = call.parameters.getOrFail("id")
 
-  get("/{id}") {
-    val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+        val media =
+          mediaRepository.findOne {
+            (MediaTable.id eq id) and (MediaTable.deleted eq false)
+          } ?: return@get call.respond(HttpStatusCode.NotFound)
 
-    val media =
-      mediaRepository.findOne {
-        (MediaTable.id eq id) and (MediaTable.deleted eq false)
-      } ?: return@get call.respond(HttpStatusCode.NotFound)
+        call.respond(media.toPlayerResponse(call.request.toMediaSourceSelector()))
+      }
+    }
 
-    call.respond(toResponse(media, call))
+    route("folder") {
+      get("/{id}/media") {
+        val id = call.parameters.getOrFail("id")
+        if (!folderRepository.exists(id)) return@get call.respond(HttpStatusCode.NotFound)
+
+        with(call.request.queryParameters.toPageRequest()) {
+          val mediaSourceSelector = call.request.toMediaSourceSelector()
+          call.respond(
+            mediaRepository
+              .findMediaInFolder(
+                folderId = id,
+                limit,
+                offset,
+                filter = { MediaTable.deleted eq false },
+              ).map { it.toPlayerResponse(mediaSourceSelector) }
+              .toList(),
+          )
+        }
+      }
+    }
   }
 }
 
 /**
- * Configures the versioned player media routes.
+ * Builds a [MediaSourceSelector] from the current request's stream-type and DRM preferences.
  *
- * @param mediaRepository The repository used to manage media entities.
+ * @return A [MediaSourceSelector] configured with the client's preferences.
  */
-fun Route.playerMedia(mediaRepository: MediaRepository) {
-  route("v1/player/media") {
-    playerMediaEndpoints<PlayerMediaResponseV1>(
-      mediaRepository = mediaRepository,
-      // Supported query parameters (take precedence over headers):
-      // - stream-type:     Preferred source MIME type (e.g. "application/dash+xml,application/x-mpegURL")
-      // - drm:             Preferred DRM key system   (e.g. "com.widevine.alpha")
-      //
-      // Supported headers (fallback when query parameters are absent):
-      // - X-Accept-Stream-Type:     Preferred source MIME type
-      // - X-Accept-DRM:             Preferred DRM key system
-      toResponse = { media, call ->
-        val mimeTypes =
-          call.request.queryParameters
-            .parseParamList("stream-type")
-            .ifEmpty { call.request.headers.parseHeaderList("X-Accept-Stream-Type") }
-        val drmPreferences =
-          call.request.queryParameters
-            .parseParamList("drm")
-            .ifEmpty { call.request.headers.parseHeaderList("X-Accept-DRM") }
-            .toDrmPreferences()
+private fun ApplicationRequest.toMediaSourceSelector() =
+  MediaSourceSelector(
+    toMimeTypePreferences(),
+    toDrmPreferences(),
+  )
 
-        media.toPlayerResponse(
-          MediaSourceSelector(mimeTypes, drmPreferences),
-        )
-      },
-    )
-  }
-}
+/**
+ * Extracts the client's preferred MIME types from the `stream-type` query parameter,
+ * falling back to the `X-Accept-Stream-Type` header if the parameter is absent or empty.
+ *
+ * @return An ordered list of preferred stream types.
+ */
+private fun ApplicationRequest.toMimeTypePreferences() =
+  queryParameters
+    .parseParamList("stream-type")
+    .ifEmpty { call.request.headers.parseHeaderList("X-Accept-Stream-Type") }
+
+/**
+ * Extracts the client's DRM preferences from the `drm` query parameter,
+ * falling back to the `X-Accept-DRM` header if the parameter is absent or empty.
+ *
+ * @return list of parsed [DrmPreference][ch.srgssr.pillarbox.backend.entrypoint.web.service.DrmPreference]s,
+ *         preserving priority order.
+ */
+private fun ApplicationRequest.toDrmPreferences() =
+  call.request.queryParameters
+    .parseParamList("drm")
+    .ifEmpty { call.request.headers.parseHeaderList("X-Accept-DRM") }
+    .toDrmPreferences()

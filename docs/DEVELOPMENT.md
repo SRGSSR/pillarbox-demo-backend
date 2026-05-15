@@ -29,8 +29,10 @@ The console exposes several endpoints that return either full HTML pages or part
 
 The REST API is divided into two primary functional areas:
 
-1. [Management API (Protected)](#management-api-protected): Used for CRUD operations on media metadata, protected by OAuth2.
-2. [Player API (Public)](#player-api-public): Playback requests with support for dynamic stream and DRM negotiation.
+1. [Management API (Protected)](#management-api-protected): Used for CRUD operations on media
+   metadata, protected by OAuth2.
+2. [Player API (Public)](#player-api-public): Playback requests with support for dynamic stream and
+   DRM negotiation.
 
 ### Management API (Protected)
 
@@ -42,11 +44,11 @@ default) and are gated by role-based access control. A request without a valid t
 
 The development Keycloak realm is seeded with three users (all passwords are `password`):
 
-| Username   | Roles                        | Access                          |
-|------------|------------------------------|---------------------------------|
-| `reader`   | `Read`                       | Read-only                       |
-| `editor`   | `Read`, `Write`              | Read + create/modify content    |
-| `admin`    | `Read`, `Write`, `Admin`     | Unrestricted                    |
+| Username | Roles                    | Access                       |
+|----------|--------------------------|------------------------------|
+| `reader` | `Read`                   | Read-only                    |
+| `editor` | `Read`, `Write`          | Read + create/modify content |
+| `admin`  | `Read`, `Write`, `Admin` | Unrestricted                 |
 
 #### Obtaining a Token
 
@@ -80,6 +82,22 @@ definitions in [MediaRoute.kt][media-route-kt].
 | **DELETE** | `/v1/media/{id}`         | Remove a media entity from the repository.              |
 | **POST**   | `/v1/media/{id}/restore` | Restores a deleted media entity from the repository.    |
 
+#### Folder API
+
+Folders provide a hierarchical way to organise media items. They support nesting via a `parentId`
+field. You can find all the definitions in [FolderRoute.kt][folder-route-kt].
+
+| Method     | Endpoint                          | Description                                                                                |
+|------------|-----------------------------------|--------------------------------------------------------------------------------------------|
+| **GET**    | `/v1/folder`                      | List folders. Accepts `limit` and `offset` for pagination; `parentId` to filter by parent. |
+| **GET**    | `/v1/folder/{id}`                 | Retrieve a specific folder by ID.                                                          |
+| **GET**    | `/v1/folder/{id}/media`           | List media items assigned to a folder. Accepts `limit` and `offset`.                       |
+| **POST**   | `/v1/folder`                      | Create a new folder.                                                                       |
+| **PATCH**  | `/v1/folder/{id}`                 | Update an existing folder.                                                                 |
+| **DELETE** | `/v1/folder/{id}`                 | Delete a folder.                                                                           |
+| **POST**   | `/v1/folder/{id}/media`           | Assign a media item to a folder.                                                           |
+| **DELETE** | `/v1/folder/{id}/media/{mediaId}` | Remove a media item's assignment from a folder.                                            |
+
 ### Player API (Public)
 
 The playback endpoints do not require a token and are open to all clients.
@@ -87,10 +105,11 @@ Unlike the management API, these endpoints are **publicly accessible** (no Beare
 They support content negotiation via query parameters or custom headers.
 You can find all the definitions in [PlayerMediaRoute.kt][player-media-route-kt].
 
-| Method  | Endpoint                | Description                                |
-|---------|-------------------------|--------------------------------------------|
-| **GET** | `/v1/player/media`      | List all available playback entities.      |
-| **GET** | `/v1/player/media/{id}` | Retrieve a specific playback entity by ID. |
+| Method  | Endpoint                       | Description                                                          |
+|---------|--------------------------------|----------------------------------------------------------------------|
+| **GET** | `/v1/player/media`             | List all available playback entities. Accepts `limit` and `offset`.  |
+| **GET** | `/v1/player/media/{id}`        | Retrieve a specific playback entity by ID.                           |
+| **GET** | `/v1/player/folder/{id}/media` | List media items assigned to a folder. Accepts `limit` and `offset`. |
 
 #### Content Negotiation
 
@@ -100,10 +119,10 @@ If neither is supplied, the API returns a media item without a source.
 
 **Query Parameters**
 
-| Parameter        | Example Value                        | Description                                                                                                                         |
-|------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| `stream-type`    | `application/dash+xml`               | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
-| `drm`            | `com.widevine.alpha;HW_SECURE_ALL`   | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
+| Parameter     | Example Value                      | Description                                                                                                                         |
+|---------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `stream-type` | `application/dash+xml`             | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
+| `drm`         | `com.widevine.alpha;HW_SECURE_ALL` | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
 
 Example:
 
@@ -114,10 +133,10 @@ curl --request GET \
 
 **Headers (fallback)**
 
-| Header                 | Example Value                        | Description                                                                                                                         |
-|------------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| `X-Accept-Stream-Type` | `application/dash+xml`               | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
-| `X-Accept-DRM`         | `com.widevine.alpha;HW_SECURE_ALL`   | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
+| Header                 | Example Value                      | Description                                                                                                                         |
+|------------------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `X-Accept-Stream-Type` | `application/dash+xml`             | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
+| `X-Accept-DRM`         | `com.widevine.alpha;HW_SECURE_ALL` | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
 
 Example:
 
@@ -142,7 +161,11 @@ level.
 | `HW_SECURE_DECODE`   | L2       | SL2000    |
 | `HW_SECURE_ALL`      | L1       | SL3000    |
 
-Native levels (`L1`, `L2`, `L3`, `SL2000`, `SL3000`) are still accepted and passed through unchanged.
+Native levels (`L1`, `L2`, `L3`, `SL2000`, `SL3000`) are still accepted and passed through
+unchanged.
 
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/MediaRoute.kt
+
+[folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/FolderRoute.kt
+
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/PlayerMediaRoute.kt

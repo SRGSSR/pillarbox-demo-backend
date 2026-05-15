@@ -15,6 +15,7 @@ import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.upsert
@@ -78,6 +79,21 @@ abstract class ExposedRepository<T, ID>(
         .where { idColumn eq id }
         .map { it.decode() } // Uses the internal hook
         .singleOrNull()
+    }
+
+  /**
+   * Whether a specific resource exists with this unique identifier.
+   *
+   * @param id The unique identifier of the entity.
+   *
+   * @return true if it exists, false otherwise.
+   */
+  open suspend fun exists(id: ID): Boolean =
+    query(readOnly = true) {
+      table
+        .select(idColumn)
+        .where { idColumn eq id }
+        .count() > 0
     }
 
   /**
@@ -168,11 +184,18 @@ abstract class ExposedRepository<T, ID>(
    *
    * @param item The entity to save.
    */
-  open suspend fun save(item: T): Unit =
+  open suspend fun save(item: T): T =
     query {
-      table.upsert(onUpdate = encodeOnUpdate(item)) {
-        encode(it, item)
-      }
+      val stmt =
+        table.upsert(onUpdate = encodeOnUpdate(item)) {
+          encode(it, item)
+        }
+      val id = stmt[idColumn]
+      table
+        .selectAll()
+        .where { idColumn eq id }
+        .single()
+        .decode()
     }
 
   /**

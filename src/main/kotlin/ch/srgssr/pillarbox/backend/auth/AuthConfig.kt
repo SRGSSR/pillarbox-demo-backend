@@ -3,7 +3,6 @@ package ch.srgssr.pillarbox.backend.auth
 import io.ktor.server.config.ApplicationConfig
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 /**
  * Configuration parameters for the Authentication provider.

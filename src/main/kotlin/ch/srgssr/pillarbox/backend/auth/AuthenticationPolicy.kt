@@ -8,7 +8,6 @@ import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.http.HttpMethod
 import io.ktor.server.auth.OAuthServerSettings
 import io.ktor.server.auth.jwt.JWTCredential
-import io.ktor.server.auth.jwt.JWTPrincipal
 import java.net.URI
 
 /**

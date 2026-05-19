@@ -1,0 +1,8 @@
+{% import "../folder-card.macros.peb" %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="count" type="java.lang.Long" #}
+{# @pebvariable name="oob" type="java.lang.Boolean" #}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+
+{{ folderCard(folder, count, not (user.roles contains "WRITE"), oob | default(false)) }}
+

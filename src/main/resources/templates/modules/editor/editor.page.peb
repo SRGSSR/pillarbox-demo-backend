@@ -2,28 +2,29 @@
 {% import "../../shared/macros/forms.macros.peb" %}
 {%  import "./media-form.macros.peb" %}
 {# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
-{% set breadcrumb_current = item.id is null ? "Create Media" : "Edit Media" %}
+{# @pebvariable name="folderId" type="java.lang.String" #}
+{% set breadcrumb_current = item.id is empty ? "New Media" : "Edit Media" %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/modules/media/editor.page.css">
-<script src="/static/js/editor.page.js" type="module" defer></script>
+<script src="/static/js/modules/editor/editor.page.js" type="module" defer></script>
 {% endblock %}
 
 {% block mainContent %}
 <main>
     {% if item.id is empty %}
-    <h2>Create Media</h2>
-    <p>Add a new media asset to the pillarbox demo backend</p>
+    <h2>New Media</h2>
+    <p>Fill in the details below to publish a new media asset to the library.</p>
     {% else %}
-    <h2>Edit Media</h2>
-    <p>Updating asset: <strong>{{ item.id }}</strong></p>
+    <h2>{{ item.metadata.title | default(item.id) }}</h2>
+    <p>Editing <strong>{{ item.id }}</strong></p>
     {% endif %}
     <form class="media-form"
-          hx-post="/console/media"
+          hx-post="/console/actions/media{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
           hx-ext="dot-json">
       <section class="form-row">
         {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
-        {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma seperated, e.g. hls, block-segment, live") }}
+        {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma-separated, e.g. hls, block-segment, live") }}
       </section>
 
       <fieldset>
@@ -50,7 +51,7 @@
         {% endfor %}
 
         <button type="button"
-                hx-get="/console/media/editor/fragments/chapter"
+                hx-get="/console/fragments/editor/chapter"
                 hx-swap="beforebegin"
                 data-index-selector="#chapter-container > .entry-item:last-of-type">
           Add Chapter
@@ -65,7 +66,7 @@
         {% endfor %}
 
         <button type="button"
-                hx-get="/console/media/editor/fragments/time-range"
+                hx-get="/console/fragments/editor/time-range"
                 hx-swap="beforebegin"
                 data-index-selector="#time-range-container > .entry-item:last-of-type">
           Add Time Range
@@ -80,7 +81,7 @@
         {% endfor %}
 
         <button type="button"
-                hx-get="/console/media/editor/fragments/subtitle"
+                hx-get="/console/fragments/editor/subtitle"
                 hx-swap="beforebegin"
                 data-index-selector="#subtitle-container > .entry-item:last-of-type">
           Add Subtitle
@@ -93,7 +94,7 @@
         {% endfor %}
 
         <button type="button"
-                hx-get="/console/media/editor/fragments/source"
+                hx-get="/console/fragments/editor/source"
                 hx-swap="beforebegin"
                 data-index-selector="#source-container > .entry-item:last-of-type">
           Add Source
@@ -103,7 +104,7 @@
       {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=5) }}
 
       <footer class="form-actions">
-        <button type="submit">{{ item.id is empty ? "Create Media" : "Save Media" }}</button>
+        <button type="submit">{{ item.id is empty ? "Publish" : "Save Changes" }}</button>
       </footer>
     </form>
 </main>

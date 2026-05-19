@@ -1,6 +1,6 @@
 package ch.srgssr.pillarbox.backend.auth
 
-import ch.srgssr.pillarbox.backend.entrypoint.web.Navigation
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.nulls.shouldNotBeNull

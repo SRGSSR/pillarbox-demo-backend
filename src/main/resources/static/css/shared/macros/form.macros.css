@@ -1,56 +1,60 @@
 form {
-    display: grid;
-    gap: var(--size-3);
+  display: grid;
+  gap: var(--size-3);
 }
 
 form footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--size-3);
-    justify-content: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-3);
+  justify-content: end;
 }
 
 form .field {
-    display: grid;
-    gap: var(--size-2);
+  display: grid;
+  gap: var(--size-2);
 }
 
 form .field label {
-    font-size: var(--font-size-1);
-    font-weight: var(--font-weight-6);
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-5);
+  color: var(--text-2);
 }
 
 form .field :is(input, textarea) {
-    padding: var(--size-2) var(--size-3);
-    border: var(--border-size-1) solid var(--gray-7);
-    border-radius: var(--radius-2);
+  padding: var(--size-2) var(--size-3);
+  border: var(--border-size-1) solid var(--surface-3);
+  border-radius: var(--radius-2);
 
-    color: var(--text-1);
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text-1);
 
-    background: color-mix(in srgb, var(--gray-8), var(--gray-9));
+  background: var(--surface-2);
 
-    transition: all .2s var(--ease-out-3);
+  transition: border-color 0.2s var(--ease-out-3), box-shadow 0.2s var(--ease-out-3);
 }
 
-form .field input:focus {
-    border-color: var(--gray-2);
-    box-shadow: var(--shadow-3);
+form .field :is(input, textarea):focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-softer);
 }
 
 fieldset {
-    display: grid;
-    gap: var(--size-3);
+  display: grid;
+  gap: var(--size-3);
 
-    padding-block: var(--size-5);
-    padding-inline: var(--size-5);
-    border: var(--border-size-1) solid var(--gray-7);
+  padding-block: var(--size-5);
+  padding-inline: var(--size-5);
+  border: var(--border-size-1) solid var(--surface-3);
 
-    background: color-mix(in srgb, var(--gray-9), var(--gray-10));
+  background: var(--surface-1);
 }
 
 fieldset legend {
-    font-weight: var(--font-weight-7);
-    color: var(--gray-5);
+  font-weight: var(--font-weight-7);
+  color: var(--text-2);
 }
 
 label.checkbox {

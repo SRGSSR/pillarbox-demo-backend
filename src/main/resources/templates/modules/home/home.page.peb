@@ -1,32 +1,82 @@
 {% extends "../../../layouts/dashboard.layout.peb" %}
-{# @pebvariable name="deleted" type="java.lang.Boolean" #}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="ancestors" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/modules/home/home.page.css">
-<script src="/static/js/home.page.js" type="module" defer></script>
+<script src="/static/js/modules/home/home.page.js" type="module" defer></script>
 {% endblock %}
-{% set breadcrumb_current = deleted ? "Bin" : "Media Library" %}
+
 {% block mainContent %}
-<main
-  role="main"
-  id="main-container"
-  hx-get="/console/media?page=0&deleted={{ deleted | default(false) }}"
-  hx-trigger="load">
-  <div class="loader">Loading{{ deleted ? " deleted" : ""}} media...</div>
+<main role="main" id="main-container">
+
+  <div class="main-header">
+    <h2>{{ folder.name | default("Media Library") }}</h2>
+    {% if user.roles contains "WRITE" %}
+    <div class="main-header-actions">
+      <button class="btn" type="button"
+              onclick="document.getElementById('new-folder-dialog').showModal()">
+        <span class="material-symbols-outlined">create_new_folder</span>
+        New Folder
+      </button>
+      <a class="btn btn-primary" href="/console/editor{% if folder is not empty %}?folderId={{ folder.id }}{% endif %}">
+        <span class="material-symbols-outlined">add</span>
+        Add Media
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="section-label">Folders</div>
+  <div id="folder-section"
+       hx-get="/console/fragments/folder-grid?{% if folder is not empty %}&id={{ folder.id }}{% endif %}"
+       hx-trigger="load">
+    <div class="loader">Loading folders...</div>
+  </div>
+
+  <div class="section-label">Media</div>
+  <div id="media-section"
+       hx-get="/console/fragments/media-grid?{% if folder is not empty %}&folderId={{ folder.id }}{% endif %}"
+       hx-trigger="load">
+    <div class="loader">Loading media...</div>
+  </div>
 </main>
 {% endblock %}
+
 {% block footer %}
 {{ parent() }}
 {% include "../../shared/components/snackbar.component.peb" %}
+
 <template id="confirm-dialog-template">
   <dialog class="confirm-dialog">
     <form method="dialog">
       <p id="confirm-message"></p>
       <footer>
-        <button value="cancel">Cancel</button>
-        <button value="confirm" class="danger">Confirm</button>
+        <button value="cancel" class="btn">Cancel</button>
+        <button value="confirm" class="btn btn-primary">Confirm</button>
       </footer>
     </form>
   </dialog>
 </template>
+
+<dialog id="move-folder-dialog" class="move-folder-dialog"></dialog>
+<dialog id="new-folder-dialog" class="new-folder-dialog">
+  <form hx-post="/console/actions/folder"
+        hx-target="#folder-grid"
+        hx-swap="beforeend">
+    <h3>New Folder</h3>
+    <label>
+      Name
+      <input name="name" type="text" required placeholder="e.g. Shows" autocomplete="off">
+    </label>
+    <input type="hidden" name="parentId" value="{{ folder.id | default('') }}">
+    <footer>
+      <button type="button" onclick="document.getElementById('new-folder-dialog').close()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary">Create Folder</button>
+    </footer>
+  </form>
+</dialog>
 {% endblock %}

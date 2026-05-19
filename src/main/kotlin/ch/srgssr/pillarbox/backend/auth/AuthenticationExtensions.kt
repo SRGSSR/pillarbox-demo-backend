@@ -1,6 +1,6 @@
 package ch.srgssr.pillarbox.backend.auth
 
-import ch.srgssr.pillarbox.backend.entrypoint.web.Navigation
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
 import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.client.HttpClient
 import io.ktor.http.RequestConnectionPoint

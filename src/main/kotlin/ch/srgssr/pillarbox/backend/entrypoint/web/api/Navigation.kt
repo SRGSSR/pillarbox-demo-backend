@@ -1,4 +1,6 @@
-package ch.srgssr.pillarbox.backend.entrypoint.web
+package ch.srgssr.pillarbox.backend.entrypoint.web.api
+
+import io.ktor.client.request.get
 
 /**
  * Centralized registry for web-based navigation paths.

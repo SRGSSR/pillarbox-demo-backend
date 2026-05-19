@@ -1,12 +1,13 @@
 package ch.srgssr.pillarbox.backend.persistence.media
 
 import ch.srgssr.pillarbox.backend.db.ExposedRepository
+import ch.srgssr.pillarbox.backend.db.PaginatedResult
+import ch.srgssr.pillarbox.backend.db.map
+import ch.srgssr.pillarbox.backend.db.paginated
 import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderMediaTable
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import org.jetbrains.exposed.v1.core.Expression
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.Op
@@ -111,6 +112,12 @@ class MediaRepository(
       updatedTags
     }
 
+  /**
+   * Marks the media item with the given [id] as deleted without removing it from the database.
+   *
+   * @param id The unique identifier of the media to soft-delete.
+   * @return `true` if the media was found and marked as deleted, `false` if it was already deleted or does not exist.
+   */
   suspend fun softDelete(id: String): Boolean =
     query {
       MediaTable.update({ (MediaTable.id eq id) and (MediaTable.deleted eq false) }) {
@@ -119,6 +126,12 @@ class MediaRepository(
       } > 0
     }
 
+  /**
+   * Restores a previously soft-deleted media item, making it active again.
+   *
+   * @param id The unique identifier of the media to restore.
+   * @return `true` if the media was found and restored, `false` if it was not deleted or does not exist.
+   */
   suspend fun restore(id: String): Boolean =
     query {
       MediaTable.update({ (MediaTable.id eq id) and (MediaTable.deleted eq true) }) {
@@ -127,44 +140,57 @@ class MediaRepository(
       } > 0
     }
 
-  fun findMediaInFolder(
+  /**
+   * Retrieves a paginated list of non-deleted media items assigned to the given folder.
+   *
+   * @param folderId The ID of the folder to query.
+   * @param limit The maximum number of items to return.
+   * @param offset The number of items to skip before returning results.
+   * @param filter An optional additional filter predicate.
+   * @param sort An optional list of column/order pairs for sorting.
+   * @return A [PaginatedResult] containing the matching [Media] items and total count.
+   */
+  suspend fun findMediaInFolder(
     folderId: String,
     limit: Int = 100,
     offset: Long = 0,
     filter: (() -> Op<Boolean>)? = null,
     sort: List<Pair<Expression<*>, SortOrder>>? = null,
-  ): Flow<Media> =
-    channelFlow {
-      query(readOnly = true) {
-        MediaTable
-          .join(FolderMediaTable, JoinType.INNER, MediaTable.id, FolderMediaTable.mediaId)
-          .selectAll()
-          .where { (FolderMediaTable.folderId eq folderId) and (MediaTable.deleted eq false) }
-          .apply { filter?.let { andWhere(it) } }
-          .apply { sort?.let { orderBy(*it.toTypedArray()) } }
-          .limit(limit)
-          .offset(offset)
-          .forEach { row -> send(row.decode()) }
-      }
+  ): PaginatedResult<Media> =
+    query(readOnly = true) {
+      MediaTable
+        .join(FolderMediaTable, JoinType.INNER, MediaTable.id, FolderMediaTable.mediaId)
+        .selectAll()
+        .where { (FolderMediaTable.folderId eq folderId) and (MediaTable.deleted eq false) }
+        .apply { filter?.let { andWhere(it) } }
+        .apply { sort?.let { orderBy(*it.toTypedArray()) } }
+        .paginated(limit, offset)
+        .map { it.decode() }
     }
 
-  private fun findMediaWithoutFolder(
+  /**
+   * Retrieves a paginated list of non-deleted media items that are not assigned to any folder.
+   *
+   * @param limit The maximum number of items to return.
+   * @param offset The number of items to skip before returning results.
+   * @param filter An optional additional filter predicate.
+   * @param sort An optional list of column/order pairs for sorting.
+   * @return A [PaginatedResult] containing the matching [Media] items and total count.
+   */
+  suspend fun findMediaWithoutFolder(
     limit: Int = 100,
     offset: Long = 0,
     filter: (() -> Op<Boolean>)? = null,
     sort: List<Pair<Expression<*>, SortOrder>>? = null,
-  ): Flow<Media> =
-    channelFlow {
-      query(readOnly = true) {
-        MediaTable
-          .join(FolderMediaTable, JoinType.LEFT, MediaTable.id, FolderMediaTable.mediaId)
-          .selectAll()
-          .where { FolderMediaTable.mediaId.isNull() and (MediaTable.deleted eq false) }
-          .apply { filter?.let { andWhere(it) } }
-          .apply { sort?.let { orderBy(*it.toTypedArray()) } }
-          .limit(limit)
-          .offset(offset)
-          .forEach { row -> send(row.decode()) }
-      }
+  ): PaginatedResult<Media> =
+    query(readOnly = true) {
+      MediaTable
+        .join(FolderMediaTable, JoinType.LEFT, MediaTable.id, FolderMediaTable.mediaId)
+        .selectAll()
+        .where { FolderMediaTable.mediaId.isNull() and (MediaTable.deleted eq false) }
+        .apply { filter?.let { andWhere(it) } }
+        .apply { sort?.let { orderBy(*it.toTypedArray()) } }
+        .paginated(limit, offset)
+        .map { it.decode() }
     }
 }

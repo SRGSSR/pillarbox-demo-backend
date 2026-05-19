@@ -1,12 +1,13 @@
-package ch.srgssr.pillarbox.backend.entrypoint.web
+package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
 import ch.srgssr.pillarbox.backend.auth.withRole
+import ch.srgssr.pillarbox.backend.db.map
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.AssignMediaRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toFolderResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
-import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderTable
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
@@ -45,7 +46,7 @@ fun Route.folder(
             { FolderTable.parentId eq it }
           }
 
-        with(call.request.queryParameters.toPageRequest()) {
+        with(call.request.queryParameters.toQuerySlice()) {
           call.respond(
             folderRepository
               .getAll(
@@ -71,7 +72,7 @@ fun Route.folder(
         val id = call.parameters.getOrFail("id")
         if (!folderRepository.exists(id)) return@get call.respond(HttpStatusCode.NotFound)
 
-        with(call.request.queryParameters.toPageRequest()) {
+        with(call.request.queryParameters.toQuerySlice()) {
           call.respond(
             mediaRepository
               .findMediaInFolder(
@@ -80,6 +81,7 @@ fun Route.folder(
                 offset,
                 filter = { MediaTable.deleted eq false },
               ).map { it.toMediaResponseV1() }
+              .items
               .toList(),
           )
         }

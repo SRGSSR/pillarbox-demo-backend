@@ -1,9 +1,9 @@
-package ch.srgssr.pillarbox.backend.entrypoint.web
+package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerResponse
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaSourceSelector
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.toDrmPreferences
-import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
 import ch.srgssr.pillarbox.backend.io.parseHeaderList
 import ch.srgssr.pillarbox.backend.io.parseParamList
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
@@ -37,7 +37,7 @@ fun Route.playerMedia(
   route("v1/player/") {
     route("media") {
       get {
-        with(call.request.queryParameters.toPageRequest()) {
+        with(call.request.queryParameters.toQuerySlice()) {
           val mediaSourceSelector = call.request.toMediaSourceSelector()
           call.respond(
             mediaRepository
@@ -68,7 +68,7 @@ fun Route.playerMedia(
         val id = call.parameters.getOrFail("id")
         if (!folderRepository.exists(id)) return@get call.respond(HttpStatusCode.NotFound)
 
-        with(call.request.queryParameters.toPageRequest()) {
+        with(call.request.queryParameters.toQuerySlice()) {
           val mediaSourceSelector = call.request.toMediaSourceSelector()
           call.respond(
             mediaRepository
@@ -77,8 +77,8 @@ fun Route.playerMedia(
                 limit,
                 offset,
                 filter = { MediaTable.deleted eq false },
-              ).map { it.toPlayerResponse(mediaSourceSelector) }
-              .toList(),
+              ).items
+              .map { it.toPlayerResponse(mediaSourceSelector) },
           )
         }
       }

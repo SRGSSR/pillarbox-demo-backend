@@ -1,0 +1,34 @@
+{% macro folderPicker(folder = null, mediaId) %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="mediaId" type="java.lang.String" #}
+<h3>Move to Folder</h3>
+
+<input type="hidden" id="picker-media-id" name="mediaId" value="{{ mediaId }}">
+{% if folder is not empty %}
+<input type="hidden" id="picker-current-folder-id" value="{{ folder.id }}">
+{% endif %}
+
+<div class="folder-picker-list"
+     hx-get="/console/fragments/folder-picker-child?mediaId={{ mediaId }}{% if folder is not empty %}&currentFolderId={{ folder.id }}{% endif %}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+  <p>Loading…</p>
+</div>
+
+{% if folder is not empty %}
+<div class="folder-picker-remove">
+  <button type="button"
+          class="folder-picker-unassign"
+          hx-delete="/console/actions/folder/{{ folder.id }}/media/{{ mediaId }}"
+          hx-swap="none">
+    <span class="material-symbols-outlined" aria-hidden="true">folder_off</span>
+    Remove from "{{ folder.name }}"
+  </button>
+</div>
+{% endif %}
+
+<footer>
+  <button type="button" onclick="document.getElementById('move-folder-dialog').close()">Cancel</button>
+  <button type="button" class="btn-primary" data-move-confirm disabled>Move here</button>
+</footer>
+{% endmacro %}

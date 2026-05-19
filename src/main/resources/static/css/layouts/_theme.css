@@ -1,0 +1,26 @@
+@import url("open-props/style");
+@import url("open-props/normalize");
+@import url("open-props/buttons");
+@import url("_icons.css");
+@import url("_button.css");
+@import url("_dialog.css");
+
+:root {
+  --sidebar-width: var(--size-13);
+  --topbar-height: 56px;
+
+  /* ── Design-system palette (dark) ── */
+  --surface-0: #111113;
+  --surface-1: #19191d;
+  --surface-2: #222228;
+  --surface-3: #2c2c34;
+  --surface-4: #36363f;
+  --text-1: #ededef;
+  --text-2: #a1a1a8;
+  --text-3: #6e6e78;
+  --border: #2a2a32;
+  --accent: rgb(160 32 38);
+  --accent-soft: rgb(160 32 38 / 60%);
+  --accent-softer: rgb(160 32 38 / 20%);
+  --transition-quick: 150ms ease;
+}

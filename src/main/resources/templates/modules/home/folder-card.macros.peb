@@ -1,0 +1,40 @@
+{% macro folderCard(folder, mediaCount = 0, readOnly = false, oob = false) %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="mediaCount" type="java.lang.Long" #}
+{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+{# @pebvariable name="oob" type="java.lang.Boolean" #}
+
+<div class="folder-card" id="folder-card-{{ folder.id }}" {% if oob %} hx-swap-oob="outerHTML:#folder-card-{{ folder.id }}"{% endif %}>
+  <a href="/console?folderId={{ folder.id }}" class="folder-card-link">
+    <div class="folder-card-icon">
+      <span class="material-symbols-outlined">folder</span>
+    </div>
+    <div class="folder-card-info">
+      <div class="folder-card-name">{{ folder.name }}</div>
+      <div class="folder-card-count">{{ mediaCount }} item{{ mediaCount != 1 ? "s" : "" }}</div>
+    </div>
+  </a>
+    {% if not readOnly %}
+      <button class="btn-icon danger folder-card-delete"
+              hx-delete="/console/actions/folder/{{ folder.id }}"
+              hx-target="[id='folder-card-{{ folder.id }}']"
+              hx-swap="outerHTML"
+              hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned."
+              title="Delete folder">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro folderList(folders, folderCounts, readOnly = false) %}
+{# @pebvariable name="folders" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
+{# @pebvariable name="folderCounts" type="java.util.Map<java.lang.String, java.lang.Long>" #}
+{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+
+<section class="folder-grid" id="folder-grid">
+{%- for folder in folders -%}
+  {{ folderCard(folder, folderCounts[folder.id] | default(0), readOnly) }}
+{%- endfor -%}
+</section>
+{% endmacro %}

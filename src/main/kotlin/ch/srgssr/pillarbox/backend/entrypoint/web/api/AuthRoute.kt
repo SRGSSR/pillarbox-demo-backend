@@ -1,4 +1,4 @@
-package ch.srgssr.pillarbox.backend.entrypoint.web
+package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
 import ch.srgssr.pillarbox.backend.auth.OpenIDDiscovery
 import ch.srgssr.pillarbox.backend.auth.SessionId

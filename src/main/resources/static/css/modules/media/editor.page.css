@@ -2,3 +2,9 @@
 @import url("../../shared/macros/form.macros.css");
 @import url("media-form.macros.css");
 
+main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-3);
+  padding: var(--size-5);
+}

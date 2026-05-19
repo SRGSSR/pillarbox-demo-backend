@@ -1,0 +1,6 @@
+{% import "../folder-picker.macros.peb" %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="mediaId" type="java.lang.Long" #}
+
+{{ folderPicker(folder, mediaId) }}
+

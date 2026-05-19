@@ -1,4 +1,4 @@
-package ch.srgssr.pillarbox.backend.entrypoint.web
+package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
 import ch.srgssr.pillarbox.backend.auth.withRole
 import ch.srgssr.pillarbox.backend.domain.model.Media
@@ -7,7 +7,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
-import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
 import io.ktor.http.HttpStatusCode
@@ -48,7 +48,7 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
   crossinline applyTags: (TagReq, List<String>) -> List<String>,
 ) {
   get {
-    with(call.request.queryParameters.toPageRequest()) {
+    with(call.request.queryParameters.toQuerySlice()) {
       call.respond(
         mediaRepository
           .getAll(

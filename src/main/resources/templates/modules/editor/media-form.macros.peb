@@ -35,7 +35,7 @@
   <div class="item-body">
     <div class="form-row">
       {{ inputText("metadata.subtitles[" + index + "].label", "Label", item.label) }}
-      {{ inputText("metadata.subtitles[" + index + "].language", "ISO Lang", item.language) }}
+      {{ inputText("metadata.subtitles[" + index + "].language", "Language", item.language, placeholder = "e.g. en") }}
       {{ inputText("metadata.subtitles[" + index + "].kind", "Kind", item.kind) }}
     </div>
   {{ inputUrl("metadata.subtitles[" + index + "].url", "VTT URL", item.url) }}
@@ -60,10 +60,10 @@
       {{ inputText("metadata.chapters[" + index + "].title", "Title", item.title, required=true) }}
       {{ inputText("metadata.chapters[" + index + "].identifier", "Identifier", item.identifier) }}
     </div>
-    {{ inputUrl("metadata.chapters[" + index + "].posterUrl", "Poster Url", item.posterUrl) }}
+    {{ inputUrl("metadata.chapters[" + index + "].posterUrl", "Poster URL", item.posterUrl) }}
     <div class="form-row">
-      {{ inputNumber("metadata.chapters[" + index + "].startTime", "Start", item.startTime) }}
-      {{ inputNumber("metadata.chapters[" + index + "].endTime", "End", item.endTime) }}
+      {{ inputNumber("metadata.chapters[" + index + "].startTime", "Start (ms)", item.startTime) }}
+      {{ inputNumber("metadata.chapters[" + index + "].endTime", "End (ms)", item.endTime) }}
     </div>
   </div>
 </details>
@@ -78,7 +78,7 @@
   <summary>
     <span class="item-label">
       <span class="material-symbols-outlined">lock</span>
-      {{ item.keySystem | default("New DRM Config") }}
+      {{ item.keySystem | default("New DRM Configuration") }}
     </span>
     {{ removeButton() }}
   </summary>
@@ -127,7 +127,7 @@
     {% endfor %}
 
     <button type="button"
-            hx-get="/console/media/editor/fragments/drm?sourceIndex={{ index }}"
+            hx-get="/console/fragments/editor/drm?sourceIndex={{ index }}"
             hx-swap="beforebegin"
             data-index-selector="#drm-container[{{ index }}] > .entry-item:last-of-type">
       Add DRM Configuration

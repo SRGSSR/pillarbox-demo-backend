@@ -9,13 +9,16 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.count
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.time.Clock
@@ -91,6 +94,23 @@ class FolderRepository(
     }
 
   /**
+   * Returns `true` if the given media item is already assigned to the given folder.
+   *
+   * @param folderId The folder ID to check.
+   * @param mediaId The media ID to check.
+   */
+  suspend fun isMediaInFolder(
+    folderId: String,
+    mediaId: String,
+  ): Boolean =
+    query(readOnly = true) {
+      FolderMediaTable
+        .selectAll()
+        .where { (FolderMediaTable.folderId eq folderId) and (FolderMediaTable.mediaId eq mediaId) }
+        .count() > 0
+    }
+
+  /**
    * Assigns a media item to a folder. If the media is already assigned to another folder,
    * the assignment is moved to the specified folder.
    *
@@ -127,21 +147,6 @@ class FolderRepository(
     }
 
   /**
-   * Finds the folder that a media item is currently assigned to.
-   *
-   * @param mediaId The ID of the media item.
-   * @return The [Folder] containing the media, or `null` if the media is not assigned to any folder.
-   */
-  suspend fun findFolderOfMedia(mediaId: String): Folder? =
-    query(readOnly = true) {
-      (FolderTable innerJoin FolderMediaTable)
-        .selectAll()
-        .where { FolderMediaTable.mediaId eq mediaId }
-        .singleOrNull()
-        ?.decode()
-    }
-
-  /**
    * Counts the number of non-deleted media items in a folder, or unassigned media if [folderId] is `null`.
    *
    * @param folderId The folder ID to count media for, or `null` to count media not assigned to any folder.
@@ -150,13 +155,49 @@ class FolderRepository(
   suspend fun countMediaIn(folderId: String?): Long =
     query(readOnly = true) {
       if (folderId != null) {
-        FolderMediaTable.selectAll().where { FolderMediaTable.folderId eq folderId }.count()
+        (MediaTable leftJoin FolderMediaTable)
+          .selectAll()
+          .where { (MediaTable.deleted eq false) and (FolderMediaTable.mediaId eq folderId) }
+          .count()
       } else {
         (MediaTable leftJoin FolderMediaTable)
           .selectAll()
           .where { (MediaTable.deleted eq false) and FolderMediaTable.mediaId.isNull() }
           .count()
       }
+    }
+
+  /**
+   * Counts the number of non-deleted media items in each of the given folders,
+   * and optionally unassigned media if `null` is included.
+   *
+   * @param folderIds The folder IDs to count media for; include `null` to count unassigned media.
+   * @return A map of folder ID (or `null`) to media count.
+   */
+  suspend fun countMediaIn(vararg folderIds: String?): Map<String?, Long> =
+    query(readOnly = true) {
+      val named = folderIds.filterNotNull().distinct()
+      val results = named.associateWith { 0L }.toMutableMap<String?, Long>()
+      if (named.isNotEmpty()) {
+        val mediaCount = FolderMediaTable.mediaId.count()
+        (MediaTable innerJoin FolderMediaTable)
+          .select(FolderMediaTable.folderId, mediaCount)
+          .where { (MediaTable.deleted eq false) and (FolderMediaTable.folderId inList named) }
+          .groupBy(FolderMediaTable.folderId)
+          .forEach { row ->
+            results[row[FolderMediaTable.folderId]] = row[mediaCount]
+          }
+      }
+
+      if (null in folderIds) {
+        results[null] =
+          (MediaTable leftJoin FolderMediaTable)
+            .selectAll()
+            .where { (MediaTable.deleted eq false) and FolderMediaTable.mediaId.isNull() }
+            .count()
+      }
+
+      results
     }
 
   /**
@@ -171,5 +212,39 @@ class FolderRepository(
         .selectAll()
         .where { if (folderId == null) FolderTable.parentId.isNull() else FolderTable.parentId eq folderId }
         .count()
+    }
+
+  /**
+   * Counts the number of direct subfolders for each of the given parent folder IDs,
+   * and optionally root-level folders if `null` is included.
+   *
+   * @param folderIds The parent folder IDs to count subfolders for; include `null` to count root-level folders.
+   * @return A map of parent folder ID (or `null`) to subfolder count.
+   */
+  suspend fun countSubfoldersOf(vararg folderIds: String?): Map<String?, Long> =
+    query(readOnly = true) {
+      val named = folderIds.filterNotNull().distinct()
+      val results = named.associateWith { 0L }.toMutableMap<String?, Long>()
+
+      if (named.isNotEmpty()) {
+        val folderCount = FolderTable.id.count()
+        FolderTable
+          .select(FolderTable.parentId, folderCount)
+          .where { FolderTable.parentId inList named }
+          .groupBy(FolderTable.parentId)
+          .forEach { row ->
+            results[row[FolderTable.parentId]] = row[folderCount]
+          }
+      }
+
+      if (null in folderIds) {
+        results[null] =
+          FolderTable
+            .selectAll()
+            .where { FolderTable.parentId.isNull() }
+            .count()
+      }
+
+      results
     }
 }

@@ -1,13 +1,101 @@
 @import url("../../layouts/dashboard.layout.css");
 @import url("../../shared/fragments/media-grid.fragment.css");
 @import url("../../shared/components/snackbar.component.css");
+@import url("./folder-grid.fragment.css");
+@import url("./folder-picker.fragment.css");
 
-form[method="dialog"] {
+/* ── Main content layout ── */
+#main-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-3);
+  padding: var(--size-5);
+}
+
+/* ── Page header row ── */
+.main-header {
+  display: flex;
+  gap: var(--size-3);
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: var(--size-3);
+}
+
+.main-header h2 {
+  margin: 0;
+  font-size: var(--font-size-4);
+  font-weight: var(--font-weight-6);
+  color: var(--text-1);
+}
+
+.main-header-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--size-2);
+}
+
+/* ── Section labels ── */
+.section-label {
+  margin-top: var(--size-2);
+
+  font-size: 11px;
+  font-weight: var(--font-weight-7);
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── New-folder dialog ── */
+.new-folder-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+.new-folder-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2);
+
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-5);
+  color: var(--text-2);
+}
+
+.new-folder-dialog input {
+  padding: var(--size-2) var(--size-3);
+  border: var(--border-size-1) solid var(--surface-3);
+  border-radius: var(--radius-2);
+
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text-1);
+
+  background: var(--surface-2);
+
+  transition: border-color 0.2s var(--ease-out-3), box-shadow 0.2s var(--ease-out-3);
+}
+
+.new-folder-dialog input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-softer);
+}
+
+.new-folder-dialog footer {
+  display: flex;
+  gap: var(--size-2);
+  justify-content: flex-end;
+}
+
+/* ── Confirm dialog ── */
+.confirm-dialog form {
   display: grid;
   gap: var(--size-3);
 }
 
-form[method="dialog"] footer {
+.confirm-dialog footer {
   display: flex;
   flex-wrap: wrap;
   gap: var(--size-3);

@@ -1,0 +1,37 @@
+{% extends "../../../layouts/dashboard.layout.peb" %}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/modules/home/home.page.css">
+<script src="/static/js/modules/home/home.page.js" type="module" defer></script>
+{% endblock %}
+
+{% block mainContent %}
+<main role="main" id="main-container">
+
+  <div id="media-section"
+       hx-get="/console/fragments/media-grid?page=0&deleted=true"
+       hx-trigger="load">
+    <div class="loader">Loading media...</div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block footer %}
+{{ parent() }}
+{% include "../../shared/components/snackbar.component.peb" %}
+
+<template id="confirm-dialog-template">
+  <dialog class="confirm-dialog">
+    <form method="dialog">
+      <p id="confirm-message"></p>
+      <footer>
+        <button value="cancel" class="btn">Cancel</button>
+        <button value="confirm" class="btn btn-primary">Confirm</button>
+      </footer>
+    </form>
+  </dialog>
+</template>
+
+{% endblock %}

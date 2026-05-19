@@ -1,75 +1,124 @@
-:root {
-  --sidebar-template-columns: var(--size-13) 1fr; /* 260px */
-}
-
-body {
-  overflow-x: hidden;
-  display: grid;
-  grid-template-columns: var(--sidebar-template-columns);
-  background: var(--gray-10);
-}
-
+/* ── Sidebar ── */
 aside.sidebar {
-  position: sticky;
-  top: 0;
-
+  overflow-y: auto;
   display: flex;
+  grid-column: 1;
+  grid-row: 2;
   flex-direction: column;
-  gap: var(--size-4);
+  gap: var(--size-3);
 
-  height: 100dvh;
-  padding: var(--size-6);
+  height: 100%;
+  padding-block: var(--size-4);
   border-right: var(--border-size-1) solid var(--surface-3);
 
   background: var(--surface-1);
 }
 
-aside.sidebar header img {
+aside.sidebar > header {
+  padding-bottom: var(--size-4);
+  padding-inline: var(--size-5);
+  border-bottom: var(--border-size-1) solid var(--surface-3);
+}
+
+aside.sidebar > header img {
   height: var(--size-4);
   margin-bottom: var(--size-2);
 }
 
-aside.sidebar header h1 {
-  font-size: var(--font-size-3);
+aside.sidebar > header h1 {
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-6);
+  color: var(--text-1);
 }
 
+/* ── Sidebar nav ── */
 aside.sidebar nav {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-inline: var(--size-2);
 }
 
 aside.sidebar nav a {
   display: flex;
-  gap: var(--size-3);
+  gap: var(--size-2);
   align-items: center;
 
   padding: var(--size-2) var(--size-3);
   border-radius: var(--radius-2);
 
+  font-size: var(--font-size-1);
   color: var(--text-2);
   text-decoration: none;
 
-  transition: all .2s var(--ease-out-3);
+  transition: all 0.15s var(--ease-out-3);
 }
 
 aside.sidebar nav :is(a:hover, a.is-active) {
-  color: var(--white);
+  color: var(--text-1);
   background: var(--surface-2);
 }
 
-/* Footer & User Profile */
-aside.sidebar footer {
+/* ── Folder tree section ── */
+.sidebar-section-label {
+  padding-inline: var(--size-5);
+
+  font-size: 11px;
+  font-weight: var(--font-weight-7);
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.folder-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-inline: var(--size-2);
+}
+
+.folder-item {
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+
+  padding: var(--size-2) var(--size-3);
+  border-radius: var(--radius-2);
+
+  font-size: var(--font-size-0);
+  color: var(--text-2);
+  text-decoration: none;
+
+  transition: all 0.15s var(--ease-out-3);
+}
+
+.folder-item:hover {
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+
+.folder-item.is-active {
+  color: var(--red-5);
+  background: var(--red-12);
+}
+
+/* ── Sidebar footer ── */
+aside.sidebar > footer {
   display: flex;
   gap: var(--size-3);
   align-items: center;
 
+  margin-top: auto;
   padding-top: var(--size-4);
-  border-block-start: var(--border-size-1) solid var(--surface-3);
+  padding-inline: var(--size-5);
+  border-top: var(--border-size-1) solid var(--surface-3);
 
-  font-style: normal; /* Removes default italic from <address> */
+  font-style: normal;
 }
 
-aside.sidebar footer .user-avatar {
+aside.sidebar > footer .user-avatar {
   display: grid;
+  flex-shrink: 0;
   place-content: center;
 
   inline-size: var(--size-7);
@@ -82,24 +131,19 @@ aside.sidebar footer .user-avatar {
   background: var(--gray-7);
 }
 
-aside.sidebar footer .user-info {
+aside.sidebar > footer .user-info {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-width: 0;
 }
 
-aside.sidebar footer .user-name {
+aside.sidebar > footer .user-name {
   overflow: hidden;
 
   font-size: var(--font-size-1);
   font-weight: var(--font-weight-6);
+  color: var(--text-1);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-body.sidebar-collapsed {
-  --sidebar-template-columns: 1fr;
-}
-
-body.sidebar-collapsed aside.sidebar {
-  display: none;
 }

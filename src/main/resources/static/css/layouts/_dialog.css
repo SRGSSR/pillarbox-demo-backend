@@ -1,0 +1,32 @@
+dialog {
+  min-width: var(--size-15);
+  padding: var(--size-5);
+  border: var(--border-size-1) solid var(--surface-3);
+  border-radius: var(--radius-3);
+
+  color: var(--text-1);
+
+  background: var(--surface-1);
+}
+
+dialog[open] {
+  animation: dialog-in 0.2s ease-out;
+}
+
+@keyframes dialog-in {
+  from {
+    transform: scale(0.97) translateY(-6px);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+dialog h3 {
+  margin: 0;
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-6);
+}

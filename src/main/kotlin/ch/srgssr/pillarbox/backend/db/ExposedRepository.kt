@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -158,25 +159,12 @@ abstract class ExposedRepository<T, ID>(
     sort: List<Pair<Expression<*>, SortOrder>>? = null,
   ): PaginatedResult<T> =
     query(readOnly = true) {
-      val query =
-        table
-          .selectAll()
-          .apply { filter?.let { where(it) } }
-
-      val totalCount = query.count()
-      val items =
-        query
-          .apply { sort?.let { orderBy(*it.toTypedArray()) } }
-          .limit(limit)
-          .offset(offset)
-          .map { it.decode() }
-
-      PaginatedResult(
-        items = items,
-        totalCount = totalCount,
-        limit = limit,
-        offset = offset,
-      )
+      table
+        .selectAll()
+        .apply { filter?.let { where(it) } }
+        .apply { sort?.let { orderBy(*it.toTypedArray()) } }
+        .paginated(limit, offset)
+        .map { it.decode() }
     }
 
   /**
@@ -226,3 +214,32 @@ data class PaginatedResult<T>(
   val limit: Int,
   val offset: Long,
 )
+
+/**
+ * Executes this query as two statements within the current transaction:
+ * a `SELECT COUNT(*)` for the total matches, and a `SELECT … LIMIT/OFFSET`
+ * for the current page.
+ *
+ * @param limit Maximum number of rows to return.
+ * @param offset Number of rows to skip before the first result.
+ * @return A [PaginatedResult] containing the matched rows and total count.
+ */
+fun Query.paginated(
+  limit: Int,
+  offset: Long,
+): PaginatedResult<ResultRow> {
+  val totalCount = count()
+  val items = limit(limit).offset(offset).toList()
+  return PaginatedResult(items = items, totalCount = totalCount, limit = limit, offset = offset)
+}
+
+/**
+ * Transforms the items in this [PaginatedResult] while preserving pagination metadata.
+ */
+fun <T, R> PaginatedResult<T>.map(transform: (T) -> R) =
+  PaginatedResult(
+    items = items.map(transform),
+    totalCount = totalCount,
+    limit = limit,
+    offset = offset,
+  )

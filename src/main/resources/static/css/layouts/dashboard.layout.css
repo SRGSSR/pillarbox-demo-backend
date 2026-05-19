@@ -1,59 +1,54 @@
-@import url("open-props/style");
-@import url("open-props/normalize");
-@import url("open-props/buttons");
-@import url("_icons.css");
-@import url("_button.css");
+@import url("_theme.css");
 @import url("../shared/components/breadcrumbs.component.css");
 @import url("../shared/components/sidebar.component.css");
 
-.app-container {
+body {
+  overflow: hidden;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+
+  height: 100dvh;
+
+  background: var(--surface-0, var(--gray-10));
 }
 
-.app-container > * {
-  padding-inline: var(--size-6);
-}
-
-.app-container > header {
+/* ── Topbar ── */
+header.topbar {
   display: flex;
+  grid-column: 1 / -1;
+  grid-row: 1;
   gap: var(--size-3);
   align-items: center;
 
-  padding-block: var(--size-3);
-  border-bottom: var(--border-size-1) solid var(--surface-3);
+  padding-inline: var(--size-4);
+  border-bottom: var(--border-size-1) solid var(--border);
+
+  background: var(--surface-1);
 }
 
-.app-container > main {
-  padding-block: var(--size-3);
+/* ── App content area ── */
+.app-container {
+  overflow-y: auto;
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* ── Collapsed sidebar ── */
+body.sidebar-collapsed {
+  grid-template-columns: 1fr;
+}
+
+body.sidebar-collapsed aside.sidebar {
+  display: none;
+}
+
+body.sidebar-collapsed .app-container {
+  grid-column: 1 / -1;
 }
 
 section {
   display: grid;
   gap: var(--size-4);
   padding-block: var(--size-4);
-}
-
-.danger {
-  color: var(--red-5);
-}
-
-@media (width <= 768px) {
-  .app-container > * {
-    padding-inline: var(--size-3);
-  }
-
-  .app-container > main {
-    padding-block: var(--size-3);
-    padding-inline: var(--size-3);
-  }
-
-  section {
-    gap: var(--size-3);
-    padding-block: var(--size-2);
-  }
-
-  .app-container > header {
-    padding-block: var(--size-2);
-  }
 }

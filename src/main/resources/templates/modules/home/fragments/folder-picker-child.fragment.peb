@@ -1,0 +1,36 @@
+{# @pebvariable name="folders" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
+{# @pebvariable name="currentFolderId" type="java.lang.String" #}
+{# @pebvariable name="subFoldersCount" type="java.util.Map<java.lang.String, java.lang.Long>" #}
+
+{% if folders is not empty %}
+{% for folder in folders %}
+{% set hasChildren = subFoldersCount[folder.id] is not empty and subFoldersCount[folder.id] > 0 %}
+<div class="folder-row">
+  {% if hasChildren %}
+  <button type="button" class="folder-expand"
+          data-children-id="children-{{ folder.id }}"
+          hx-get="/console/fragments/folder-picker-child?id={{ folder.id }}{% if currentFolderId is not empty %}&currentFolderId={{ currentFolderId }}{% endif %}"
+          hx-target="#children-{{ folder.id }}"
+          hx-trigger="click once"
+          hx-swap="innerHTML">
+    <span class="material-symbols-outlined" aria-hidden="true">folder</span>
+  </button>
+  {% else %}
+  <span class="folder-expand folder-leaf" aria-hidden="true">
+    <span class="material-symbols-outlined">folder_open</span>
+  </span>
+  {% endif %}
+  <button type="button" class="folder-select"
+          data-folder-id="{{ folder.id }}"
+          data-folder-name="{{ folder.name }}">
+    {{ folder.name }}
+    {% if currentFolderId is not empty and currentFolderId == folder.id %}
+      <span class="current-badge">current</span>
+    {% endif %}
+  </button>
+</div>
+{% if hasChildren %}
+<div id="children-{{ folder.id }}" class="folder-children"></div>
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -2,17 +2,17 @@
 
 {% block content %}
 
+<header class="topbar">
+  <button type="button" id="sidebar-toggle" class="btn-icon" title="Toggle Sidebar">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+  {% include "../shared/components/breadcrumbs.component.peb" %}
+</header>
+
 {% include "../shared/components/sidebar.component.peb" %}
 
 <div class="app-container">
-    <header>
-      <button type="button" id="sidebar-toggle"
-            class="btn-icon" title="Toggle Sidebar">
-        <span class="material-symbols-outlined">menu</span>
-      </button>
-      {% include "../shared/components/breadcrumbs.component.peb" %}
-    </header>
-    {% block mainContent %}{% endblock %}
+  {% block mainContent %}{% endblock %}
 </div>
 
 {% block footer %}{% endblock %}

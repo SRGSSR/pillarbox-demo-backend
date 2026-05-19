@@ -4,11 +4,11 @@ import ch.srgssr.pillarbox.backend.auth.authenticationModule
 import ch.srgssr.pillarbox.backend.auth.configureOidc
 import ch.srgssr.pillarbox.backend.auth.installSession
 import ch.srgssr.pillarbox.backend.db.databaseModule
-import ch.srgssr.pillarbox.backend.entrypoint.web.auth
-import ch.srgssr.pillarbox.backend.entrypoint.web.console
-import ch.srgssr.pillarbox.backend.entrypoint.web.folder
-import ch.srgssr.pillarbox.backend.entrypoint.web.media
-import ch.srgssr.pillarbox.backend.entrypoint.web.playerMedia
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.auth
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.folder
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.media
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.playerMedia
+import ch.srgssr.pillarbox.backend.entrypoint.web.console.console
 import ch.srgssr.pillarbox.backend.io.httpClientModule
 import ch.srgssr.pillarbox.backend.io.jsonModule
 import ch.srgssr.pillarbox.backend.ktor.plugins.configureDevelopmentDefaults
@@ -90,8 +90,8 @@ fun Application.module() {
     auth(get(), get(), get())
     media(get())
     folder(get(), get())
+    console(get(), get())
     playerMedia(get(), get())
-    console(get())
   }
 
   monitor.subscribe(ApplicationStopped) {

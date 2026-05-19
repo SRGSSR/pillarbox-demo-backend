@@ -1,17 +1,21 @@
-{% macro mediaCard(media, nextUrl = null, readOnly = false) %}
+{% macro mediaCard(media, nextUrl = null, readOnly = false, folderId = null) %}
 {# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="media" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
 {# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+{# @pebvariable name="folderId" type="java.lang.String" #}
 <article class="media-card" id="media-card-{{ media.id }}"
+    {% if not readOnly %}draggable="true" data-media-id="{{ media.id }}"{% endif %}
     {% if nextUrl is not empty %}
          hx-get="{{ nextUrl }}"
          hx-trigger="revealed"
          hx-swap="afterend"
          hx-select=".media-card"
     {% endif %}>
+
   <figure>
-    <img src="{{ media.metadata.posterUrl | default("https://placehold.co/400x225") }}"
-         alt="{{ media.metadata.title | default('Media Poster') }}">
+    <img src="{{ media.metadata.posterUrl | default("https://placehold.co/160x96/222228/6e6e78?text=No+image") }}"
+         alt="{{ media.metadata.title | default('Media Poster') }}"
+         loading="lazy">
   </figure>
 
   <header>
@@ -27,54 +31,63 @@
       {{ media.id }}
     </p>
     <ul class="tag-list">
-            {% for tag in media.tags %}
-        <li>{{ tag }}</li>
-            {% endfor %}
+      {% for tag in media.tags %}
+      <li>{{ tag }}</li>
+      {% endfor %}
     </ul>
   </header>
 
-
   {% if not readOnly %}
   <footer class="actions">
-    <a class="btn btn-icon" href="/console/media/editor/{{ media.id }}" title="Edit {{ media.metadata.title }}">
+    <a class="btn btn-icon" href="/console/editor/{{ media.id }}" title="Edit">
       <span class="material-symbols-outlined">edit</span>
     </a>
 
-    <a class="btn btn-icon" href="/console/media/editor/{{ media.id }}/duplicate" title="Duplicate {{ media.metadata.title }}">
+    <a class="btn btn-icon" href="/console/editor/{{ media.id }}/duplicate" title="Duplicate">
       <span class="material-symbols-outlined">content_copy</span>
     </a>
 
     {% if not media.deleted %}
+    <button class="btn-icon"
+            data-open-move-dialog
+            data-media-id="{{ media.id }}"
+            hx-get="/console/fragments/folder-picker?mediaId={{ media.id }}{% if folderId is not empty %}&folderId={{ folderId }}{% endif %}"
+            hx-target="#move-folder-dialog"
+            hx-swap="innerHTML"
+            title="Move to folder">
+      <span class="material-symbols-outlined">drive_file_move</span>
+    </button>
+
     <button class="btn-icon danger"
-            hx-delete="/console/media/{{ media.id }}"
+            hx-delete="/console/actions/media/{{ media.id }}"
             hx-target="[id='media-card-{{ media.id }}']"
             hx-swap="outerHTML"
-            hx-confirm="Are you sure you want to delete {{ media.metadata.title }} ?"
-          title="Delete {{ media.metadata.title }}">
+            hx-confirm="Move '{{ media.metadata.title }}' to the Bin? It can be restored later."
+            title="Delete">
       <span class="material-symbols-outlined">delete</span>
     </button>
     {% else %}
-      <button class="btn-icon danger"
-              hx-post="/console/media/{{ media.id }}/restore"
-              hx-target="[id='media-card-{{ media.id }}']"
-              hx-swap="outerHTML"
-              hx-confirm="Are you sure you want to restore {{ media.metadata.title }} ?"
-              title="Restore {{ media.metadata.title }}">
-        <span class="material-symbols-outlined">restore_from_trash</span>
-      </button>
+    <button class="btn-icon danger"
+            hx-post="/console/actions/media/{{ media.id }}/restore"
+            hx-target="[id='media-card-{{ media.id }}']"
+            hx-swap="outerHTML"
+            hx-confirm="Restore '{{ media.metadata.title }}' to the library?"
+            title="Restore">
+      <span class="material-symbols-outlined">restore_from_trash</span>
+    </button>
     {% endif %}
   </footer>
   {% endif %}
 </article>
 {% endmacro %}
 
-{% macro mediaList(result, nextUrl = null, readOnly = false) %}
+{% macro mediaList(result, nextUrl = null, readOnly = false, folderId = null) %}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
-{# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+{# @pebvariable name="folderId" type="java.lang.String" #}
 <section class="media-list">
 {%- for item in result.items -%}
-  {{ mediaCard(item, loop.last ? nextUrl : null, readOnly) }}
+  {{ mediaCard(item, loop.last ? nextUrl : null, readOnly, folderId) }}
 {%- endfor -%}
 </section>
 {% endmacro %}

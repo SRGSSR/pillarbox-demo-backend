@@ -1,29 +1,33 @@
-{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.UserView" #}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
 
-<aside class="sidebar" data-purpose="navigation-sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar">
   <header>
     <img src="/static/img/srgssr-logo.png" alt="SRG SSR Logo">
     <h1>Pillarbox Console</h1>
   </header>
 
   <nav>
-    {% if user.roles contains "WRITE" %}
-    <a href="/console/media/editor">
-      <span class="material-symbols-outlined">add</span> Create Media
+    <a href="/console" class="{{ folder is empty and not deleted ? 'is-active' : '' }}">
+      <span class="material-symbols-outlined">folder_open</span> Media Library
     </a>
-    {% endif %}
-    <a href="/console">
-        <span class="material-symbols-outlined">folder</span> Media Library
-    </a>
-    <a href="/console/bin">
+    <a href="/console/bin" class="{{ deleted ? 'is-active' : '' }}">
       <span class="material-symbols-outlined">delete</span> Bin
     </a>
   </nav>
 
+  <!--
+  <div class="sidebar-section-label">Folders</div>
+  <div class="folder-tree"
+       hx-get="/console/folders/tree?active={{ folder.id | default('') }}"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+  </div> -->
+
   <footer>
-    <div class="user-avatar">{{ user.initials | default('AD') }}</div>
+    <div class="user-avatar">{{ user.initials | default('?') }}</div>
     <div class="user-info">
-      <p class="user-name">{{ user.name | default('Admin User') }}</p>
+      <span class="user-name">{{ user.name | default('User') }}</span>
     </div>
     <a href="/logout" class="btn btn-icon" title="Logout">
       <span class="material-symbols-outlined">logout</span>

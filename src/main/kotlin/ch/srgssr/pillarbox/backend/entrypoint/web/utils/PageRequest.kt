@@ -4,23 +4,32 @@ import io.ktor.http.Parameters
 import kotlinx.serialization.Serializable
 
 /**
- * Pagination parameters extracted from query strings.
+ * A page-based cursor into a collection.
  *
- * @property limit Maximum number of items to return. Defaults to 20.
- * @property offset Number of items to skip before the first result. Defaults to 0.
+ * @property page Zero-based page index.
+ * @property pageSize Number of items per page.
+ * @property limit Alias for [pageSize], for use with repository calls that accept a limit.
+ * @property offset Absolute item offset derived from [page] and [pageSize].
+ * @property nextPage Convenience value for the following page index, ready to embed in a response.
  */
 @Serializable
 data class PageRequest(
-  val limit: Int = 20,
-  val offset: Long = 0L,
-)
+  val page: Int = 0,
+  val pageSize: Int = 15,
+) {
+  val limit: Int get() = pageSize
+  val offset: Long get() = (page * pageSize).toLong()
+  val nextPage: Int get() = page + 1
+}
 
 /**
- * Extracts pagination parameters from the query string, falling back to
- * [PageRequest] defaults for missing or malformed values.
+ * Parses `page` and `pageSize` query parameters into a [PageRequest],
+ * falling back to defaults on missing or invalid values.
+ *
+ * @return A [PageRequest] derived from the `page` and `pageSize` query parameters.
  */
 fun Parameters.toPageRequest() =
   PageRequest(
-    limit = get("limit")?.toIntOrNull() ?: 20,
-    offset = get("offset")?.toLongOrNull() ?: 0L,
+    page = get("page")?.toIntOrNull() ?: 0,
+    pageSize = get("pageSize")?.toIntOrNull() ?: 15,
   )

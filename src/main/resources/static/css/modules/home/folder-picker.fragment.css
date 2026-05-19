@@ -1,0 +1,167 @@
+/* ── Move-to-folder dialog ── */
+.move-folder-dialog {
+  height: min(var(--size-15), 70dvh);
+}
+
+dialog[open].move-folder-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+.move-folder-dialog footer {
+  display: flex;
+  gap: var(--size-2);
+  justify-content: flex-end;
+}
+
+/* ── Folder picker list ── */
+.folder-picker-list {
+  scrollbar-gutter: stable;
+
+  overflow-y: auto;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.folder-picker-list .folder-row {
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+}
+
+.folder-picker-list .folder-expand {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-2);
+
+  color: var(--red-5);
+
+  appearance: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.folder-picker-list .folder-expand:hover {
+  background: var(--surface-3);
+}
+
+.folder-picker-list .folder-leaf {
+  pointer-events: none;
+  color: var(--text-3);
+}
+
+.folder-picker-list .folder-expand span {
+  font-size: 18px;
+}
+
+.folder-picker-list .folder-select {
+  display: block;
+  flex: 1;
+
+  padding: var(--size-2);
+  border: none;
+  border-radius: var(--radius-2);
+
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text-1);
+  text-align: left;
+
+  appearance: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.folder-picker-list .folder-select:hover {
+  background: var(--surface-3);
+}
+
+.folder-picker-list .folder-row.is-selected .folder-select {
+  font-weight: var(--font-weight-5);
+  color: var(--accent);
+  background: var(--accent-softer);
+}
+
+.current-badge {
+  margin-left: var(--size-2);
+  padding: 2px 8px;
+  border-radius: 99px;
+
+  font-size: 11px;
+  font-weight: var(--font-weight-6);
+  color: var(--text-3);
+
+  background: var(--surface-3);
+}
+
+.folder-picker-list .folder-children {
+  display: none;
+  padding-left: var(--size-5);
+}
+
+.folder-picker-list .folder-children.is-open {
+  display: block;
+  animation: picker-reveal 0.18s ease-out;
+}
+
+@keyframes picker-reveal {
+  from {
+    translate: 0 -4px;
+    opacity: 0;
+  }
+
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+.folder-picker-list p {
+  padding: var(--size-3) var(--size-5);
+  font-size: var(--font-size-1);
+  color: var(--text-3);
+}
+
+/* ── Remove-from-folder section ── */
+.folder-picker-remove {
+  padding-top: var(--size-3);
+  border-top: 1px solid var(--border);
+}
+
+.folder-picker-unassign {
+  cursor: pointer;
+
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+
+  width: 100%;
+  padding: var(--size-2) var(--size-3);
+  border: none;
+  border-radius: var(--radius-2);
+
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text-3);
+
+  appearance: none;
+  background: transparent;
+  box-shadow: none;
+
+  transition: background var(--transition-quick), color var(--transition-quick);
+}
+
+.folder-picker-unassign:hover {
+  color: var(--accent);
+  background: var(--accent-softer);
+}

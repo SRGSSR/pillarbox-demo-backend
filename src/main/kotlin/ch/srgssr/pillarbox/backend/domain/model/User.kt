@@ -37,26 +37,40 @@ data class User(
         .mapNotNull { it.firstOrNull()?.uppercaseChar() }
         .joinToString("")
 
-  fun hasAnyRole(required: Set<Role>): Boolean = roles.any { it in required }
+  /**
+   * Returns `true` if this user holds, directly or through role
+   * hierarchy, at least one of the [required] roles.
+   *
+   * @param required The set of roles that grant access to a resource.
+   */
+  fun hasAnyRole(required: Set<Role>): Boolean = roles.any { role -> role.effectiveRoles.any { it in required } }
 }
 
 /**
  * Defines the access roles for the Pillarbox Demo backend.
  *
- * Each entry maps to an app role using the `PillarboxDemo.{Level}` naming convention
- * (e.g., `PillarboxDemo.Read`).
+ * Roles form a directed hierarchy: each role may imply one or more
+ * lower-level roles. Use [effectiveRoles] to obtain the full set
+ * of permissions a role grants.
+ *
+ * Each entry maps to an app role using the `PillarboxDemo.{Level}`
+ * naming convention (e.g., `PillarboxDemo.Write`).
  */
-enum class Role {
-  /** Read-only access. */
-  READ,
-
+enum class Role(
+  impliedRoles: Set<Role> = emptySet(),
+) {
   /** Read and write access. */
   WRITE,
 
-  /** Full administrative access. */
-  ADMIN,
-
+  /** Full administrative access; implies [WRITE]. */
+  ADMIN(impliedRoles = setOf(WRITE)),
   ;
+
+  /**
+   * The complete set of roles granted by holding this role,
+   * including this role itself and all implied roles.
+   */
+  val effectiveRoles: Set<Role> = setOf(this) + impliedRoles
 
   /** The app role key, following the `PillarboxDemo.{Level}` convention. */
   val key = "PillarboxDemo.${name.lowercase().replaceFirstChar { it.uppercase() }}"
@@ -65,7 +79,7 @@ enum class Role {
     /**
      * Finds a [Role] entry matching the given app role [key].
      *
-     * @param key The app role key (e.g., `PillarboxDemo.Read`).
+     * @param key The app role key (e.g., `PillarboxDemo.Write`).
      *
      * @return The matching [Role], or `null` if no match is found.
      */

@@ -28,16 +28,16 @@ class UserManagerTest :
       coVerify { repository.save(match { it.oidcSub == "test-sub" && it.displayName == "test-sub" }) }
     }
 
-    should("parse roles from realm_access claim") {
+    should("parse roles from roles claim") {
       val repository = mockk<UserRepository>(relaxed = true)
-      val payload = JWT.decode(buildJwt(subject = "test-sub", roles = setOf(Role.READ, Role.WRITE)))
+      val payload = JWT.decode(buildJwt(subject = "test-sub", roles = setOf(Role.ADMIN)))
 
       UserManager(repository).upsert(payload)
 
-      coVerify { repository.save(match { it.roles == setOf(Role.READ, Role.WRITE) }) }
+      coVerify { repository.save(match { it.roles == setOf(Role.ADMIN) }) }
     }
 
-    should("produce empty role set when realm_access claim is absent") {
+    should("produce empty role set when roles claim is absent") {
       val repository = mockk<UserRepository>(relaxed = true)
       val payload = JWT.decode(buildJwt(subject = "test-sub"))
 

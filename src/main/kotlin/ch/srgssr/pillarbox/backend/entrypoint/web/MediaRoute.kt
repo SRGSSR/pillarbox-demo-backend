@@ -45,26 +45,25 @@ inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.me
   crossinline toResponse: (Media) -> Res,
   crossinline applyTags: (TagReq, List<String>) -> List<String>,
 ) {
-  withRole(Role.READ) {
-    get {
-      val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
-      val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-      val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
+  get {
+    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
+    val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
+    val mediaFlow = mediaRepository.getAll(limit, offset, filter = { MediaTable.deleted eq false })
 
-      call.respond(mediaFlow.map { toResponse(it) }.toList())
-    }
-
-    get("/{id}") {
-      val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-      val media =
-        mediaRepository.findOne {
-          (MediaTable.id eq id) and (MediaTable.deleted eq false)
-        } ?: return@get call.respond(HttpStatusCode.NotFound)
-
-      call.respond(toResponse(media))
-    }
+    call.respond(mediaFlow.map { toResponse(it) }.toList())
   }
+
+  get("/{id}") {
+    val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+    val media =
+      mediaRepository.findOne {
+        (MediaTable.id eq id) and (MediaTable.deleted eq false)
+      } ?: return@get call.respond(HttpStatusCode.NotFound)
+
+    call.respond(toResponse(media))
+  }
+
   withRole(Role.WRITE) {
     post {
       val dto = call.receive<Req>()

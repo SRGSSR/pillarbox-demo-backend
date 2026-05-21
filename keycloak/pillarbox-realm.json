@@ -1,13 +1,8 @@
 {
   "realm": "pillarbox",
   "enabled": true,
-  "defaultRole": {
-    "name": "PillarboxDemo.Read",
-    "description": "Default role assigned to all new users"
-  },
   "roles": {
     "realm": [
-      { "name": "PillarboxDemo.Read", "description": "Read-only access" },
       { "name": "PillarboxDemo.Write", "description": "Can create and modify content" },
       { "name": "PillarboxDemo.Admin", "description": "Unrestricted access" }
     ]
@@ -38,7 +33,7 @@
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-realm-role-mapper",
           "config": {
-            "claim.name": "realm_access.roles",
+            "claim.name": "roles",
             "jsonType.label": "String",
             "multivalued": "true",
             "id.token.claim": "false",
@@ -60,7 +55,7 @@
       "credentials": [
         { "type": "password", "value": "password", "temporary": false }
       ],
-      "realmRoles": ["PillarboxDemo.Read"]
+      "realmRoles": []
     },
     {
       "username": "editor",
@@ -72,7 +67,7 @@
       "credentials": [
         { "type": "password", "value": "password", "temporary": false }
       ],
-      "realmRoles": ["PillarboxDemo.Read", "PillarboxDemo.Write"]
+      "realmRoles": ["PillarboxDemo.Write"]
     },
     {
       "username": "admin",
@@ -84,7 +79,7 @@
       "credentials": [
         { "type": "password", "value": "password", "temporary": false }
       ],
-      "realmRoles": ["PillarboxDemo.Read", "PillarboxDemo.Write", "PillarboxDemo.Admin"]
+      "realmRoles": ["PillarboxDemo.Admin"]
     }
   ]
 }

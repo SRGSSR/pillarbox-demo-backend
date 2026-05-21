@@ -19,7 +19,7 @@ fun buildJwtWithRoleList(
     .let { if (name != null) it.withClaim("name", name) else it }
     .let {
       if (roles.isNotEmpty()) {
-        it.withClaim("realm_access", mapOf("roles" to roles))
+        it.withClaim("roles", roles)
       } else {
         it
       }

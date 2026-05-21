@@ -13,16 +13,13 @@ val Payload.displayName: String
     getClaim("name")?.asString() ?: subject
 
 /**
- * Extracts Pillarbox [Role]s from a JWT [Payload] by reading the `realm_access.roles` claim.
+ * Extracts Pillarbox [Role]s from a JWT [Payload] by reading the `roles` claim.
  *
  * @return an empty set when the claim is absent or contains no recognisable role names.
  */
-@Suppress("UNCHECKED_CAST")
 val Payload.roles: Set<Role>
   get() =
-    (
-      getClaim("realm_access")
-        ?.asMap()
-        ?.get("roles") as? List<String>
-    )?.mapNotNull { it.toRole() }
+    getClaim("roles")
+      ?.asList(String::class.java)
+      ?.mapNotNull { it.toRole() }
       ?.toSet() ?: emptySet()

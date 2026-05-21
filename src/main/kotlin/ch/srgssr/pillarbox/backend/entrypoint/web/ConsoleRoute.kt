@@ -43,59 +43,55 @@ fun Route.console(mediaRepository: MediaRepository) {
   authenticate("pillarbox-session") {
     install(AuthenticatedUserPlugin)
 
-    withRole(Role.READ) {
-      staticResources("/static", "static")
-    }
+    staticResources("/static", "static")
 
     route(Navigation.CONSOLE) {
-      withRole(Role.READ) {
-        get {
-          call.respondWithContext("modules/home/home.page.peb")
-        }
+      get {
+        call.respondWithContext("modules/home/home.page.peb")
+      }
 
-        get("bin") {
-          call.respondWithContext(
-            "modules/home/home.page.peb",
-            mapOf("deleted" to true),
+      get("bin") {
+        call.respondWithContext(
+          "modules/home/home.page.peb",
+          mapOf("deleted" to true),
+        )
+      }
+
+      hx.get("media") {
+        val page = call.parameters["page"]?.toIntOrNull() ?: 0
+        val pageSize = call.parameters["pageSize"]?.toIntOrNull() ?: 15
+        val deleted = call.parameters["deleted"] == "true"
+        val offset = (page * pageSize).toLong()
+
+        logger.debug { "Fetching media grid: page=$page, pageSize=$pageSize, offset=$offset" }
+
+        val result =
+          mediaRepository.getAllPaginated(
+            limit = pageSize,
+            offset = offset,
+            filter = { MediaTable.deleted eq deleted },
           )
-        }
 
-        hx.get("media") {
-          val page = call.parameters["page"]?.toIntOrNull() ?: 0
-          val pageSize = call.parameters["pageSize"]?.toIntOrNull() ?: 15
-          val deleted = call.parameters["deleted"] == "true"
-          val offset = (page * pageSize).toLong()
+        call.respondWithContext(
+          "shared/fragments/media-grid.fragment.peb",
+          mapOf(
+            "result" to result,
+            "nextPage" to page + 1,
+            "deleted" to deleted,
+          ),
+        )
+      }
 
-          logger.debug { "Fetching media grid: page=$page, pageSize=$pageSize, offset=$offset" }
+      get("media/editor/{id?}") {
+        val media =
+          call.parameters["id"]
+            ?.let { mediaRepository.find(it) }
+            ?.also { logger.debug { "Opening editor for media: $it" } }
 
-          val result =
-            mediaRepository.getAllPaginated(
-              limit = pageSize,
-              offset = offset,
-              filter = { MediaTable.deleted eq deleted },
-            )
-
-          call.respondWithContext(
-            "shared/fragments/media-grid.fragment.peb",
-            mapOf(
-              "result" to result,
-              "nextPage" to page + 1,
-              "deleted" to deleted,
-            ),
-          )
-        }
-
-        get("media/editor/{id?}") {
-          val media =
-            call.parameters["id"]
-              ?.let { mediaRepository.find(it) }
-              ?.also { logger.debug { "Opening editor for media: $it" } }
-
-          call.respondWithContext(
-            "modules/media/editor.page.peb",
-            media?.let { mapOf("item" to media) }.orEmpty(),
-          )
-        }
+        call.respondWithContext(
+          "modules/media/editor.page.peb",
+          media?.let { mapOf("item" to media) }.orEmpty(),
+        )
       }
 
       withRole(Role.WRITE) {

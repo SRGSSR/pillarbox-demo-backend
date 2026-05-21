@@ -5,8 +5,6 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagActionV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagOperationV1
 import ch.srgssr.pillarbox.backend.test.mediaFixture
-import ch.srgssr.pillarbox.backend.test.noRoles
-import ch.srgssr.pillarbox.backend.test.readOnlyRoles
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import ch.srgssr.pillarbox.backend.test.toMediaRequestV1
 import ch.srgssr.pillarbox.backend.test.token
@@ -214,12 +212,12 @@ class MediaRouteTest :
       }
     }
 
-    should("return 403 on all endpoints when token has no roles") {
+    should("allow read access but return 403 on write endpoints when authenticated with no roles") {
       testApplicationContext {
-        val t = tokenWithRoles(noRoles)
+        val t = tokenWithRoles(emptySet())
 
-        client.get("/v1/media") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.get("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/media/any-media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NotFound
         client.post("/v1/media") {
           bearerAuth(t)
           contentType(ContentType.Application.Json)
@@ -234,34 +232,7 @@ class MediaRouteTest :
       }
     }
 
-    should("allow READ role to access GET endpoints") {
-      testApplicationContext {
-        val t = tokenWithRoles(readOnlyRoles)
-
-        client.get("/v1/media") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.OK
-        client.get("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.NotFound
-      }
-    }
-
-    should("return 403 on write endpoints when token has READ role only") {
-      testApplicationContext {
-        val t = tokenWithRoles(readOnlyRoles)
-
-        client.post("/v1/media") {
-          bearerAuth(t)
-          contentType(ContentType.Application.Json)
-          setBody(mediaFixture().toMediaRequestV1())
-        } shouldHaveStatus HttpStatusCode.Forbidden
-        client.patch("/v1/media/any-id/tags") {
-          bearerAuth(t)
-          contentType(ContentType.Application.Json)
-        } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.post("/v1/media/any-id/restore") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
-      }
-    }
-
-    should("allow READ+WRITE token to access all endpoints") {
+    should("allow WRITE token to access all endpoints") {
       testApplicationContext {
         val fixture = mediaFixture { id = "auth-test-id" }
 

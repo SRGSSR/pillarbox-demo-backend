@@ -11,13 +11,13 @@ import io.kotest.matchers.shouldBe
 
 class PayloadExtensionsTest :
   ShouldSpec({
-    should("parse READ and WRITE roles from realm_access claim") {
-      val payload = JWT.decode(buildJwt(subject = "sub", roles = setOf(Role.READ, Role.WRITE)))
+    should("parse WRITE role from roles claim") {
+      val payload = JWT.decode(buildJwt(subject = "sub", roles = setOf(Role.WRITE)))
 
-      payload.roles shouldBe setOf(Role.READ, Role.WRITE)
+      payload.roles shouldBe setOf(Role.WRITE)
     }
 
-    should("produce empty role set when realm_access claim is absent") {
+    should("produce empty role set when roles claim is absent") {
       val payload = JWT.decode(buildJwt(subject = "sub"))
 
       payload.roles.shouldBeEmpty()

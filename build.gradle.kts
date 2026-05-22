@@ -205,6 +205,7 @@ tasks.named<JavaExec>("run") {
   environment("AUTH_DISCOVERY_PATH", getEnv("AUTH_DISCOVERY_PATH", ".well-known/openid-configuration"))
   environment("AUTH_CLIENT_ID", getEnv("AUTH_CLIENT_ID", "pillarbox-api"))
   environment("AUTH_CLIENT_SECRET", getEnv("AUTH_CLIENT_SECRET", ""))
+  environment("AUTH_SCOPES", getEnv("AUTH_SCOPES", "openid,profile,email"))
 
   // --- Session ---
   environment("SESSION_COOKIE_SECRET", getEnv("SESSION_COOKIE_SECRET", "dev-secret-at-least-32-chars-long-!!!"))

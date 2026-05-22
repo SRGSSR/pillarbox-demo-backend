@@ -13,6 +13,7 @@ import kotlinx.serialization.Transient
  * @property clientId The unique identifier for the application (audience).
  * @property clientSecret The secret key used for server-side token exchange.
  * @property realm The authentication realm used in the challenge header.
+ * @property scopes The OIDC scopes requested during authorization. Defaults to `openid`, `profile`, and `email`
  */
 data class AuthConfig(
   val issuer: String,
@@ -20,6 +21,7 @@ data class AuthConfig(
   val clientId: String,
   val clientSecret: String,
   val realm: String,
+  val scopes: List<String> = listOf("openid", "profile", "email"),
 ) {
   val discoveryUrl: String = "$issuer/$discoveryPath"
 }
@@ -50,5 +52,13 @@ fun ApplicationConfig.toAuthConfig(): AuthConfig {
     clientId = auth.property("client_id").getString(),
     clientSecret = auth.propertyOrNull("secret")?.getString() ?: "",
     realm = auth.property("realm").getString(),
+    scopes =
+      auth
+        .propertyOrNull("scopes")
+        ?.getString()
+        ?.split(",")
+        ?.map { it.trim() }
+        ?.filter { it.isNotEmpty() }
+        ?: listOf("openid", "profile", "email"),
   )
 }

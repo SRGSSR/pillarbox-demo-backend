@@ -173,7 +173,11 @@ fun ApplicationCall.userContext(): Map<String, Any> =
       UserView(
         name = user.displayName,
         initials = user.initials,
-        roles = user.roles.map { it.name },
+        roles =
+          user.roles
+            .flatMap { it.effectiveRoles }
+            .map { it.name }
+            .distinct(),
       ),
   )
 

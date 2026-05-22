@@ -52,12 +52,6 @@ fun authenticationModule() =
     }
 
     single {
-      val auth = get<AuthConfig>()
-
-      AuthenticationPolicy(
-        clientId = auth.clientId,
-        clientSecret = auth.clientSecret,
-        discovery = get(),
-      )
+      AuthenticationPolicy(authConfig = get(), discovery = get())
     }
   }

@@ -13,8 +13,12 @@
 
   <div class="main-header">
     <h2>{{ folder.name | default("Media Library") }}</h2>
-    {% if user.roles contains "WRITE" %}
     <div class="main-header-actions">
+      <a class="btn" href="/console/bin">
+        <span class="material-symbols-outlined">delete</span>
+        Recently Deleted
+      </a>
+      {% if user.roles contains "WRITE" %}
       <details class="dropdown-menu">
         <summary class="btn btn-primary">
           <span class="material-symbols-outlined">add</span>
@@ -34,8 +38,8 @@
           </button>
         </div>
       </details>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 
   <div class="section-label">Folders</div>

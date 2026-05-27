@@ -11,9 +11,6 @@
     <a href="/console" class="{{ folder is empty and not deleted ? 'is-active' : '' }}">
       <span class="material-symbols-outlined">folder_open</span> Media Library
     </a>
-    <a href="/console/bin" class="{{ deleted ? 'is-active' : '' }}">
-      <span class="material-symbols-outlined">delete</span> Bin
-    </a>
   </nav>
 
   <!--

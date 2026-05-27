@@ -9,6 +9,10 @@
 {% block mainContent %}
 <main role="main" id="main-container">
 
+  <div class="main-header">
+    <h2>Recently Deleted</h2>
+  </div>
+
   <div id="media-section"
        hx-get="/console/fragments/media-grid?page=0&deleted=true"
        hx-trigger="load">

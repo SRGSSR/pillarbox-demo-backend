@@ -15,15 +15,25 @@
     <h2>{{ folder.name | default("Media Library") }}</h2>
     {% if user.roles contains "WRITE" %}
     <div class="main-header-actions">
-      <button class="btn" type="button"
-              onclick="document.getElementById('new-folder-dialog').showModal()">
-        <span class="material-symbols-outlined">create_new_folder</span>
-        New Folder
-      </button>
-      <a class="btn btn-primary" href="/console/editor{% if folder is not empty %}?folderId={{ folder.id }}{% endif %}">
-        <span class="material-symbols-outlined">add</span>
-        Add Media
-      </a>
+      <details class="dropdown-menu">
+        <summary class="btn btn-primary">
+          <span class="material-symbols-outlined">add</span>
+          New
+          <span class="material-symbols-outlined dropdown-chevron">expand_more</span>
+        </summary>
+        <div class="dropdown">
+          <a class="btn dropdown-item"
+             href="/console/editor{% if folder is not empty %}?folderId={{ folder.id }}{% endif %}">
+            <span class="material-symbols-outlined">add_circle</span>
+            Add Media
+          </a>
+          <button class="btn dropdown-item" type="button"
+                  onclick="this.closest('details').removeAttribute('open'); document.getElementById('new-folder-dialog').showModal()">
+            <span class="material-symbols-outlined">create_new_folder</span>
+            New Folder
+          </button>
+        </div>
+      </details>
     </div>
     {% endif %}
   </div>

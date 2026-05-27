@@ -3,6 +3,12 @@ import "./fragments/folder-grid.fragment.js";
 import "./fragments/folder-picker.fragment.js";
 import "../../shared/fragments/media-grid.fragment.js";
 
+document.addEventListener("click", (e) => {
+  document.querySelectorAll("details.dropdown-menu[open]").forEach((d) => {
+    if (!d.contains(e.target)) d.removeAttribute("open");
+  });
+});
+
 /**
  * Copies the media player API URL to the clipboard when a copy button is clicked.
  * @listens document#click

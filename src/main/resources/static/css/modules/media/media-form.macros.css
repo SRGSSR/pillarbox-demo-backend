@@ -1,3 +1,7 @@
+.entry-item {
+  animation: var(--animation-reveal);
+}
+
 details.entry-item .item-body, article.entry-item, .drm-container, .form-row {
   display: grid;
   gap: var(--size-3);

@@ -6,9 +6,39 @@
 @import url("_dialog.css");
 @import url("_dropdown.css");
 
+@keyframes loader-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.loader {
+  padding: var(--size-3);
+
+  font-size: var(--font-size-1);
+  color: var(--text-3);
+
+  opacity: 0;
+
+  animation: loader-in 0.2s var(--ease-out-3) 0.3s forwards;
+}
+
+@keyframes reveal {
+  from {
+    translate: 0 calc(-1 * var(--size-2));
+    opacity: 0;
+  }
+
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
 :root {
   --sidebar-width: var(--size-13);
   --topbar-height: 56px;
+  --animation-reveal: reveal 0.2s var(--ease-out-3) both;
 
   /* ── Design-system palette (dark) ── */
   --surface-0: #111113;

@@ -38,6 +38,7 @@
   background: var(--surface-1);
 
   transition: border-color var(--transition-quick), box-shadow var(--transition-quick);
+  animation: var(--animation-reveal);
 }
 
 .media-card:hover {

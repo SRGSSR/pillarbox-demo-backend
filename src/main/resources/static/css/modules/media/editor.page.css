@@ -8,3 +8,8 @@ main {
   gap: var(--size-3);
   padding: var(--size-5);
 }
+
+main > form > fieldset,
+main > form > section {
+  animation: var(--animation-reveal);
+}

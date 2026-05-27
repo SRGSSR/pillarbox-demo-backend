@@ -42,6 +42,7 @@
   background: var(--surface-1);
 
   transition: all 0.15s var(--ease-out-3);
+  animation: var(--animation-reveal);
 }
 
 .folder-card:hover {

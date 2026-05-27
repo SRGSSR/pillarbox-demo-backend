@@ -4,6 +4,7 @@
 @import url("_icons.css");
 @import url("_button.css");
 @import url("_dialog.css");
+@import url("_dropdown.css");
 
 :root {
   --sidebar-width: var(--size-13);

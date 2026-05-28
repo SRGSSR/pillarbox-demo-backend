@@ -21,13 +21,4 @@
        hx-swap="innerHTML">
   </div> -->
 
-  <footer>
-    <div class="user-avatar">{{ user.initials | default('?') }}</div>
-    <div class="user-info">
-      <span class="user-name">{{ user.name | default('User') }}</span>
-    </div>
-    <a href="/logout" class="btn btn-icon" title="Logout">
-      <span class="material-symbols-outlined">logout</span>
-    </a>
-  </footer>
 </aside>

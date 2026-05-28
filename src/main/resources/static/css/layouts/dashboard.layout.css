@@ -5,7 +5,7 @@
 body {
   overflow: hidden;
   display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: var(--topbar-height) 1fr;
 
   height: 100dvh;
@@ -30,21 +30,8 @@ header.topbar {
 /* ── App content area ── */
 .app-container {
   overflow-y: auto;
-  grid-column: 2;
+  grid-column: 1;
   grid-row: 2;
-}
-
-/* ── Collapsed sidebar ── */
-body.sidebar-collapsed {
-  grid-template-columns: 1fr;
-}
-
-body.sidebar-collapsed aside.sidebar {
-  display: none;
-}
-
-body.sidebar-collapsed .app-container {
-  grid-column: 1 / -1;
 }
 
 section {

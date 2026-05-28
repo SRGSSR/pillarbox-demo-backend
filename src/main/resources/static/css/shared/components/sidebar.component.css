@@ -1,19 +1,62 @@
-/* ── Sidebar ── */
+/* ── Sidebar overlay drawer ── */
 aside.sidebar {
+  position: fixed;
+  z-index: var(--layer-1);
+  inset: 0 auto 0 0;
+  translate: -100% 0;
+
   overflow-y: auto;
   display: flex;
-  grid-column: 1;
-  grid-row: 2;
   flex-direction: column;
   gap: var(--size-3);
 
-  height: 100%;
+  width: var(--sidebar-width);
+  height: 100dvh;
+  margin: 0;
   padding-block: var(--size-4);
+  border: none;
   border-right: var(--border-size-1) solid var(--surface-3);
 
   background: var(--surface-1);
+  box-shadow: var(--shadow-4);
+
+  transition:
+    translate 0.2s var(--ease-out-3),
+    display 0.2s allow-discrete,
+    overlay 0.2s allow-discrete;
 }
 
+aside.sidebar:popover-open {
+  translate: 0 0;
+  display: flex;
+}
+
+@starting-style {
+  aside.sidebar:popover-open {
+    translate: -100% 0;
+  }
+}
+
+/* ── Backdrop ── */
+aside.sidebar::backdrop {
+  background: rgb(0 0 0 / 0%);
+  transition:
+    background 0.2s var(--ease-out-3),
+    display 0.2s allow-discrete,
+    overlay 0.2s allow-discrete;
+}
+
+aside.sidebar:popover-open::backdrop {
+  background: rgb(0 0 0 / 50%);
+}
+
+@starting-style {
+  aside.sidebar::backdrop {
+    background: rgb(0 0 0 / 0%);
+  }
+}
+
+/* ── Sidebar header ── */
 aside.sidebar > header {
   padding-bottom: var(--size-4);
   padding-inline: var(--size-5);

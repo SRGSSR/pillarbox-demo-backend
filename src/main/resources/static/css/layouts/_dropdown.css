@@ -34,30 +34,32 @@
   z-index: var(--layer-4);
   top: 100%;
   right: 0;
+  translate: 0 0;
 
   min-width: var(--size-13);
   margin-top: var(--size-1);
   border: var(--border-size-1) solid var(--surface-3);
   border-radius: var(--radius-2);
 
+  opacity: 1;
   background: var(--surface-2);
   box-shadow: var(--shadow-3);
+
+  transition:
+    opacity 0.15s var(--ease-out-3),
+    translate 0.15s var(--ease-out-3),
+    display 0.15s var(--ease-out-3) allow-discrete;
 }
 
-.dropdown-menu[open] .dropdown {
-  animation: dropdown-in 0.15s var(--ease-out-3);
-}
-
-@keyframes dropdown-in {
-  from {
+@starting-style {
+  .dropdown-menu[open] .dropdown {
     translate: 0 calc(-1 * var(--size-2));
     opacity: 0;
   }
+}
 
-  to {
-    translate: 0 0;
-    opacity: 1;
-  }
+.dropdown-menu:not([open]) .dropdown {
+  display: none;
 }
 
 .dropdown-item {

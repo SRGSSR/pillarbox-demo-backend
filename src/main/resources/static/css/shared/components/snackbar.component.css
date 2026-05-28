@@ -7,6 +7,20 @@
   border: var(--border-size-1) solid var(--surface-3);
   border-radius: var(--radius-2);
 
+  opacity: 1;
   background: var(--surface-2);
   box-shadow: var(--shadow-2);
+
+  transition:
+    opacity 0.2s var(--ease-out-3),
+    translate 0.2s var(--ease-out-3),
+    display 0.2s allow-discrete,
+    overlay 0.2s allow-discrete;
+}
+
+@starting-style {
+  #snackbar:popover-open {
+    translate: -50% -100%;
+    opacity: 0;
+  }
 }

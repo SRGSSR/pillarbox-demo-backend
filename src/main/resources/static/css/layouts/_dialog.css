@@ -1,4 +1,6 @@
 dialog {
+  transform: scale(1) translateY(0);
+
   min-width: var(--size-15);
   padding: var(--size-5);
   border: var(--border-size-1) solid var(--surface-3);
@@ -6,22 +8,20 @@ dialog {
 
   color: var(--text-1);
 
+  opacity: 1;
   background: var(--surface-1);
+
+  transition:
+    opacity 0.2s var(--ease-out-3),
+    transform 0.2s var(--ease-out-3),
+    display 0.2s var(--ease-out-3) allow-discrete,
+    overlay 0.2s var(--ease-out-3) allow-discrete;
 }
 
-dialog[open] {
-  animation: dialog-in 0.2s ease-out;
-}
-
-@keyframes dialog-in {
-  from {
-    transform: scale(0.97) translateY(-6px);
+@starting-style {
+  dialog[open] {
+    transform: scale(0.97) translateY(calc(-1 * var(--size-2)));
     opacity: 0;
-  }
-
-  to {
-    transform: scale(1) translateY(0);
-    opacity: 1;
   }
 }
 

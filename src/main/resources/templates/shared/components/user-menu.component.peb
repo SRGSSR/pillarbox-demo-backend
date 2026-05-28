@@ -1,0 +1,21 @@
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+<details class="dropdown-menu" id="user-menu">
+  <summary class="user-avatar" title="{{ user.name | default('User') }}">
+    {{ user.initials | default('?') }}
+  </summary>
+  <div class="dropdown user-dropdown">
+    <div class="user-dropdown-info">
+      <span class="user-dropdown-name">{{ user.name | default('User') }}</span>
+      <span class="user-dropdown-role">
+        {%- if user.roles contains "ADMIN" -%}Administrator
+        {%- elseif user.roles contains "WRITE" -%}Editor
+        {%- else -%}Viewer
+        {%- endif -%}
+      </span>
+    </div>
+    <a class="btn dropdown-item" href="/logout">
+      <span class="material-symbols-outlined">logout</span>
+      Sign out
+    </a>
+  </div>
+</details>

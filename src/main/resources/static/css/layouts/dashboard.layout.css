@@ -1,6 +1,7 @@
 @import url("_theme.css");
 @import url("../shared/components/breadcrumbs.component.css");
 @import url("../shared/components/sidebar.component.css");
+@import url("../shared/components/user-menu.component.css");
 
 body {
   overflow: hidden;
@@ -15,9 +16,10 @@ body {
 
 /* ── Topbar ── */
 header.topbar {
-  display: flex;
+  display: grid;
   grid-column: 1 / -1;
   grid-row: 1;
+  grid-template-columns: auto 1fr auto;
   gap: var(--size-3);
   align-items: center;
 

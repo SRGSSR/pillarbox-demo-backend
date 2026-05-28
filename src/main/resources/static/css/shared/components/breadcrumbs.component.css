@@ -1,21 +1,31 @@
 .breadcrumbs {
-    display: grid;
-    grid-auto-flow: column;
-    gap: var(--size-2);
-    align-items: center;
+  overflow: hidden;
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+  justify-content: left;
 
-    font-size: var(--font-size-1);
-}
+  min-width: 0;
 
-.breadcrumbs .root {
-    color: var(--gray-6);
+  font-size: var(--font-size-1);
 }
 
 .breadcrumbs .sep {
-    color: var(--gray-8);
+  flex-shrink: 0;
+  color: var(--gray-8);
 }
 
 .breadcrumbs .page {
-    font-weight: var(--font-weight-5);
-    color: var(--gray-3);
+  overflow: hidden;
+
+  min-width: 0;
+
+  font-weight: var(--font-weight-5);
+  color: var(--gray-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breadcrumbs .page.current {
+  color: var(--gray-1);
 }

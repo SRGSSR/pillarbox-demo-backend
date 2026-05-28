@@ -1,0 +1,49 @@
+.user-avatar {
+  cursor: pointer;
+
+  display: grid;
+  place-content: center;
+
+  inline-size: var(--size-6);
+  block-size: var(--size-6);
+  border-radius: var(--radius-round);
+
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-7);
+  color: var(--text-1);
+  list-style: none;
+
+  background: var(--gray-7);
+}
+
+.user-avatar::-webkit-details-marker {
+  display: none;
+}
+
+.user-dropdown {
+  right: 0;
+  min-width: var(--size-14);
+}
+
+.user-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--size-2) var(--size-3);
+}
+
+.user-dropdown-name {
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-6);
+  color: var(--text-1);
+}
+
+.user-dropdown-role {
+  font-size: var(--font-size-0);
+  color: var(--text-3);
+}
+
+.user-dropdown .dropdown-item {
+  border-top: var(--border-size-1) solid var(--surface-3);
+  border-radius: 0 0 var(--radius-2) var(--radius-2);
+}

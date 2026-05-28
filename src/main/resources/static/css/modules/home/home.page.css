@@ -14,25 +14,35 @@
 
 /* ── Page header row ── */
 .main-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: var(--size-3);
   align-items: center;
-  justify-content: space-between;
 
   padding-bottom: var(--size-3);
 }
 
 .main-header h2 {
+  overflow: hidden;
+
   margin: 0;
+
   font-size: var(--font-size-4);
   font-weight: var(--font-weight-6);
   color: var(--text-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .main-header-actions {
   display: flex;
-  flex-shrink: 0;
   gap: var(--size-2);
+}
+
+@media (width <= 768px) {
+  .main-header {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Section labels ── */

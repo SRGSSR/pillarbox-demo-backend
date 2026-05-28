@@ -3,6 +3,8 @@
 {# @pebvariable name="deleted" type="java.lang.Boolean" #}
 {# @pebvariable name="breadcrumb_current" type="java.lang.String" #}
 
+{% set collapse = (ancestors | length) + (folder is not empty ? 1 : 0) + (breadcrumb_current is not empty ? 1 : 0) > 2 %}
+
 <nav class="breadcrumbs">
   {% if deleted %}
     <span class="page current">Bin</span>
@@ -13,23 +15,38 @@
   {% else %}
     <a href="/console" class="page">Media Library</a>
 
-    {% for ancestor in ancestors %}
+    {% if collapse %}
       <span class="sep">/</span>
-      <a href="/console?folderId={{ ancestor.id }}" class="page">{{ ancestor.name }}</a>
-    {% endfor %}
-
-    {% if folder is not empty %}
-      <span class="sep">/</span>
+      <a href="/console?folderId={{ ancestors[0].id }}" class="page">{{ ancestors[0].name }}</a>
+      <span class="sep">/ ... /</span>
       {% if breadcrumb_current is not empty %}
-        <a href="/console?folderId={{ folder.id }}" class="page">{{ folder.name }}</a>
-      {% else %}
+        <span class="page current">{{ breadcrumb_current }}</span>
+      {% elseif folder is not empty %}
         <span class="page current">{{ folder.name }}</span>
+      {% else %}
+        {% set lastIndex = (ancestors | length) - 1 %}
+        <span class="page current">{{ ancestors[lastIndex].name }}</span>
       {% endif %}
-    {% endif %}
 
-    {% if breadcrumb_current is not empty %}
-      <span class="sep">/</span>
-      <span class="page current">{{ breadcrumb_current }}</span>
+    {% else %}
+      {% for ancestor in ancestors %}
+        <span class="sep">/</span>
+        <a href="/console?folderId={{ ancestor.id }}" class="page">{{ ancestor.name }}</a>
+      {% endfor %}
+
+      {% if folder is not empty %}
+        <span class="sep">/</span>
+        {% if breadcrumb_current is not empty %}
+          <a href="/console?folderId={{ folder.id }}" class="page">{{ folder.name }}</a>
+        {% else %}
+          <span class="page current">{{ folder.name }}</span>
+        {% endif %}
+      {% endif %}
+
+      {% if breadcrumb_current is not empty %}
+        <span class="sep">/</span>
+        <span class="page current">{{ breadcrumb_current }}</span>
+      {% endif %}
     {% endif %}
   {% endif %}
 </nav>

@@ -3,7 +3,7 @@
 {% block content %}
 
 <header class="topbar">
-  <button type="button" id="sidebar-toggle" class="btn-icon" title="Toggle Sidebar">
+  <button type="button" class="btn-icon" popovertarget="sidebar" title="Toggle Sidebar">
     <span class="material-symbols-outlined">menu</span>
   </button>
   {% include "../shared/components/breadcrumbs.component.peb" %}
@@ -17,10 +17,5 @@
 
 {% block footer %}{% endblock %}
 
-<script>
-document.getElementById('sidebar-toggle').addEventListener('click', () => {
-    document.body.classList.toggle('sidebar-collapsed');
-});
-</script>
 
 {% endblock %}

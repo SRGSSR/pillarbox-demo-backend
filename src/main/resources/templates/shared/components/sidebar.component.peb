@@ -1,7 +1,7 @@
 {# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
 {# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
 
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar" popover>
   <header>
     <img src="/static/img/srgssr-logo.png" alt="SRG SSR Logo">
     <h1>Pillarbox Console</h1>

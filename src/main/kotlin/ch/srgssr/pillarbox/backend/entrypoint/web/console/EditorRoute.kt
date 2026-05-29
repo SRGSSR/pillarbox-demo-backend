@@ -30,7 +30,7 @@ private val logger = ConsoleEditorRoute.logger()
  * @param folderRepository Repository used to look up folders and assign media to them.
  */
 @OptIn(ExperimentalKtorApi::class)
-@SuppressWarnings("LongMethod")
+@SuppressWarnings("LongMethod", "CyclomaticComplexMethod")
 fun Route.editorPage(
   mediaRepository: MediaRepository,
   folderRepository: FolderRepository,
@@ -81,10 +81,14 @@ fun Route.editorPage(
         EditorFragment.find(call.parameters["fragment"])
           ?: return@get call.respond(HttpStatusCode.NotFound)
       val index = call.request.queryParameters["index"]?.toInt() ?: 0
+      val sourceIndex = call.request.queryParameters["sourceIndex"]?.toInt()
       logger.trace { "Rendering fragment: ${fragment.name} at index $index" }
       call.respondWithContext(
         fragment.template,
-        mapOf("index" to index),
+        buildMap {
+          put("index", index)
+          sourceIndex?.let { put("sourceIndex", it) }
+        },
       )
     }
 

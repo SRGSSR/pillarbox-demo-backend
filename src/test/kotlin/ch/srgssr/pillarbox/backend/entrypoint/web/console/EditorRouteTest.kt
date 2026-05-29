@@ -113,6 +113,28 @@ class EditorRouteTest :
       }
     }
 
+    should("render DRM fragment with sourceIndex and drmIndex in all field names") {
+      testApplicationContext {
+        login()
+
+        val sourceIndex = 2
+        val drmIndex = 1
+        val response =
+          client.hxGet(
+            "${Navigation.CONSOLE}/fragments/editor/drm?sourceIndex=$sourceIndex&index=$drmIndex",
+          )
+
+        response shouldHaveStatus HttpStatusCode.OK
+
+        val doc = Jsoup.parse(response.bodyAsText())
+
+        doc["[name]"].shouldForAll { el ->
+          val name = el.attributes()["name"]
+          name.contains("sources[$sourceIndex]") && name.contains("drmConfigs[$drmIndex]")
+        }
+      }
+    }
+
     should("return NOT_FOUND for invalid editor fragment") {
       testApplicationContext {
         login()

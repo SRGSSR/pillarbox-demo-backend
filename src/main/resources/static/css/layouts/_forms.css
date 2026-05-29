@@ -1,0 +1,150 @@
+/* ── Field wrapper ── */
+
+.field {
+  display: grid;
+  gap: var(--size-1);
+}
+
+.field label {
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-5);
+  color: var(--text-2);
+}
+
+/* ── Base inputs ── */
+
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select) {
+  width: 100%;
+  padding: var(--size-2) var(--size-3);
+  border: var(--border-size-1) solid transparent;
+  border-radius: var(--radius-2);
+
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text-1);
+
+  background: var(--surface-2);
+  outline: none;
+
+  transition:
+    border-color 0.2s var(--ease-out-3),
+    background 0.15s var(--ease-out-3),
+    box-shadow 0.2s var(--ease-out-3);
+}
+
+.field :is(input, textarea, select)::placeholder {
+  color: var(--text-2);
+  opacity: 0.6;
+}
+
+/* ── Hover ── */
+
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):hover {
+  background: var(--surface-3);
+}
+
+/* ── Focus ── */
+
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus {
+  border-color: var(--accent);
+  background: var(--surface-1);
+  box-shadow: 0 0 0 3px var(--accent-softer);
+}
+
+/* ── Textarea ── */
+
+.field textarea {
+  resize: vertical;
+  min-height: var(--size-10);
+}
+
+/* ── Checkbox / radio ── */
+
+.field :is(input[type="checkbox"], input[type="radio"]) {
+  width: auto;
+  accent-color: var(--accent);
+}
+
+label.checkbox {
+  cursor: pointer;
+
+  display: flex;
+  gap: var(--size-3);
+  align-items: center;
+
+  height: var(--size-8);
+}
+
+/* ── Disabled ── */
+
+.field :is(input, textarea, select):disabled {
+  cursor: not-allowed;
+  color: var(--text-2);
+  opacity: 0.5;
+  background: var(--surface-1);
+}
+
+/* ── Error state — CSS-only, no classes on fields ── */
+
+/* Live feedback after user interacts with a field, or after a submit attempt */
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):user-invalid,
+form[data-submitted] .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):invalid {
+  background: color-mix(in srgb, var(--red-6) 8%, var(--surface-2));
+}
+
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):user-invalid:focus,
+form[data-submitted] .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):invalid:focus {
+  border-color: var(--red-5);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red-5) 20%, transparent);
+}
+
+.field:has(:user-invalid) label,
+form[data-submitted] .field:has(:invalid) label {
+  color: var(--red-5);
+}
+
+/* ── Hint text ── */
+
+.field .field-hint {
+  font-size: var(--font-size-0);
+  color: var(--text-2);
+}
+
+/* ── Required marker ── */
+
+.field label:has(+ :required)::after {
+  content: " *";
+  color: var(--red-7);
+}
+
+/* ── Form row ── */
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--size-13), 1fr));
+  gap: var(--size-3);
+}
+
+/* Column modifiers — explicit ratios sized to content */
+.form-row-half       { grid-template-columns: 1fr 1fr; }
+.form-row-two-one    { grid-template-columns: 2fr 1fr; }
+.form-row-three-one  { grid-template-columns: 3fr 1fr; }
+.form-row-one-two    { grid-template-columns: 1fr 2fr; }
+.form-row-compact    { grid-template-columns: repeat(auto-fill, var(--size-11)); }
+.form-row-timestamps { grid-template-columns: var(--size-11) var(--size-11); }
+.form-row-time       { grid-template-columns: var(--size-11) var(--size-11) 1fr; }
+
+/* Collapse all fixed-column modifiers to a single column on small screens */
+@media (width <= 768px) {
+  .form-row,
+  .form-row-half,
+  .form-row-two-one,
+  .form-row-three-one,
+  .form-row-one-two,
+  .form-row-compact,
+  .form-row-timestamps,
+  .form-row-time {
+    grid-template-columns: 1fr;
+  }
+}
+

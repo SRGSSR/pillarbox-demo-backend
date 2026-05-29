@@ -1,8 +1,8 @@
-{% macro inputText(name, label, value, required=false, placeholder="") %}
+{% macro inputText(name, label, value, required=false, placeholder="", list="") %}
 <div class="field">
     <label for="{{ name }}">{{ label }}</label>
     <input type="text" id="{{ name }}" name="{{ name }}" value="{{ value }}"
-           placeholder="{{ placeholder }}"{% if required %}required{% endif %}>
+           placeholder="{{ placeholder }}"{% if required %} required{% endif %}{% if list %} list="{{ list }}"{% endif %}>
 </div>
 {% endmacro %}
 
@@ -10,24 +10,24 @@
 <div class="field">
   <label for="{{ name }}">{{ label }}</label>
   <input type="text" id="{{ name }}" name="{{ name }}" value="{{ value }}"
-         placeholder="{{ placeholder }}"{% if required %}required{% endif %}
+         placeholder="{{ placeholder }}"{% if required %} required{% endif %}
          data-type="array">
 </div>
 {% endmacro %}
 
-{% macro inputNumber(name, label, value, min=0, required=false) %}
+{% macro inputNumber(name, label, value, min=0, required=false, list="") %}
 <div class="field">
     <label for="{{ name }}">{{ label }}</label>
     <input type="number" id="{{ name }}" name="{{ name }}" value="{{ value }}"
-           min="{{ min }}"{% if required %}required{% endif %}>
+           min="{{ min }}"{% if required %} required{% endif %}{% if list %} list="{{ list }}"{% endif %}>
 </div>
 {% endmacro %}
 
-{% macro inputUrl(name, label, value, required=false, placeholder="") %}
+{% macro inputUrl(name, label, value, required=false, placeholder="", list="") %}
 <div class="field">
     <label for="{{ name }}">{{ label }}</label>
     <input type="url" id="{{ name }}" name="{{ name }}" value="{{ value }}"
-           placeholder="{{ placeholder }}" {% if required %}required{% endif %}>
+           placeholder="{{ placeholder }}"{% if required %} required{% endif %}{% if list %} list="{{ list }}"{% endif %}>
 </div>
 {% endmacro %}
 

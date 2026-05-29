@@ -11,101 +11,221 @@
 {% endblock %}
 
 {% block mainContent %}
-<main>
-    {% if item.id is empty %}
-    <h2>New Media</h2>
-    <p>Fill in the details below to publish a new media asset to the library.</p>
-    {% else %}
-    <h2>{{ item.metadata.title | default(item.id) }}</h2>
-    <p>Editing <strong>{{ item.id }}</strong></p>
-    {% endif %}
-    <form class="media-form"
-          hx-post="/console/actions/media{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
-          hx-ext="dot-json">
-      <section class="form-row">
-        {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
-        {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma-separated, e.g. hls, block-segment, live") }}
-      </section>
+<main class="editor-main">
+  <form class="media-form"
+        hx-post="/console/actions/media{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
+        hx-ext="dot-json">
 
-      <fieldset>
-        <legend>Metadata</legend>
-        <div class="form-row">
+    <header class="editor-toolbar">
+      <span class="editor-title">
+        {% if item.id is empty %}New Media{% else %}{{ item.metadata.title | default(item.id) }}{% endif %}
+      </span>
+      <button type="submit" class="btn-primary">{{ item.id is empty ? "Publish" : "Save Changes" }}</button>
+    </header>
+
+    <nav class="editor-tabs" role="tablist">
+      <button type="button" id="tab-btn-general"    class="editor-tab btn-icon" role="tab" aria-selected="true"  aria-controls="panel-general"    data-tab="general">
+        <span class="material-symbols-outlined">edit_note</span>General
+      </button>
+      <button type="button" id="tab-btn-chapters"   class="editor-tab btn-icon" role="tab" aria-selected="false" aria-controls="panel-chapters"   data-tab="chapters">
+        <span class="material-symbols-outlined">list</span>Chapters
+        {% set n = item.metadata.chapters | length %}
+        <span class="tab-badge"{% if n == 0 %} hidden{% endif %}>{{ n }}</span>
+      </button>
+      <button type="button" id="tab-btn-timeranges" class="editor-tab btn-icon" role="tab" aria-selected="false" aria-controls="panel-timeranges" data-tab="timeranges">
+        <span class="material-symbols-outlined">schedule</span>Time ranges
+        {% set n = item.metadata.timeRanges | length %}
+        <span class="tab-badge"{% if n == 0 %} hidden{% endif %}>{{ n }}</span>
+      </button>
+      <button type="button" id="tab-btn-subtitles"  class="editor-tab btn-icon" role="tab" aria-selected="false" aria-controls="panel-subtitles"  data-tab="subtitles">
+        <span class="material-symbols-outlined">subtitles</span>Subtitles
+        {% set n = item.metadata.subtitles | length %}
+        <span class="tab-badge"{% if n == 0 %} hidden{% endif %}>{{ n }}</span>
+      </button>
+      <button type="button" id="tab-btn-sources"    class="editor-tab btn-icon" role="tab" aria-selected="false" aria-controls="panel-sources"    data-tab="sources">
+        <span class="material-symbols-outlined">database</span>Sources
+        {% set n = item.sources | length %}
+        <span class="tab-badge"{% if n == 0 %} hidden{% endif %}>{{ n }}</span>
+      </button>
+      <button type="button" id="tab-btn-customdata" class="editor-tab btn-icon" role="tab" aria-selected="false" aria-controls="panel-customdata" data-tab="customdata">
+        <span class="material-symbols-outlined">data_object</span>Custom Data
+      </button>
+    </nav>
+
+    {# ── General ────────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-general" role="tabpanel" aria-labelledby="tab-btn-general">
+      <article class="tab-section">
+        <div class="form-row form-row-two-one">
+          {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
+          {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma-separated, e.g. hls, block-segment, live") }}
+        </div>
+        <div class="form-row form-row-half">
           {{ inputText("metadata.title", "Title", item.metadata.title, required=true) }}
           {{ inputText("metadata.subtitle", "Subtitle", item.metadata.subtitle) }}
         </div>
-        {{ textarea("metadata.description", "Description", item.metadata.description) }}
-        {{ inputUrl("metadata.posterUrl", "Poster URL", item.metadata.posterUrl, placeholder = "https://placehold.co/400x225") }}
-
-        <div class="form-row">
+        {{ textarea("metadata.description", "Description", item.metadata.description, rows=2) }}
+        <div class="form-row form-row-three-one">
+          {{ inputUrl("metadata.posterUrl", "Poster URL", item.metadata.posterUrl, placeholder = "https://placehold.co/400x225") }}
+          {{ inputText("metadata.viewport", "Viewport", item.metadata.viewport, list="datalist-viewport") }}
+        </div>
+        <div class="form-row form-row-compact">
           {{ inputNumber("metadata.seasonNumber", "Season", item.metadata.seasonNumber) }}
           {{ inputNumber("metadata.episodeNumber", "Episode", item.metadata.episodeNumber) }}
-          {{ inputText("metadata.viewport", "Viewport", item.metadata.viewport, placeholder="e.g. 16:9") }}
         </div>
-      </fieldset>
+      </article>
+    </div>
 
-      <fieldset id="chapter-container">
-        <legend>Chapters</legend>
-
-        {% for ch in item.metadata.chapters %}
-        {{ chapterRow(loop.index, ch, open = false) }}
-        {% endfor %}
-
+    {# ── Chapters ───────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-chapters" role="tabpanel" aria-labelledby="tab-btn-chapters" hidden>
+      {% set n = item.metadata.chapters | length %}
+      <div class="panel-header">
+        <span class="panel-count"><span class="count-value">{{ n }}</span> chapter(s)</span>
         <button type="button"
                 hx-get="/console/fragments/editor/chapter"
-                hx-swap="beforebegin"
-                data-index-selector="#chapter-container > .entry-item:last-of-type">
-          Add Chapter
+                hx-target="#chapter-items"
+                hx-swap="beforeend"
+                data-index-selector="#chapter-items > .entry-item:last-of-type">
+          <span class="material-symbols-outlined">add</span>Add Chapter
         </button>
-      </fieldset>
+      </div>
+      <div id="chapter-items" class="entry-list">
+        {%- for ch in item.metadata.chapters -%}
+        {{ chapterRow(loop.index, ch, open = false) }}
+        {%- endfor -%}
+      </div>
+    </div>
 
-      <fieldset id="time-range-container">
-        <legend>Time Ranges</legend>
-
-        {% for tr in item.metadata.timeRanges %}
-        {{ timeRangeRow(loop.index, tr, open = false) }}
-        {% endfor %}
-
+    {# ── Time ranges ────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-timeranges" role="tabpanel" aria-labelledby="tab-btn-timeranges" hidden>
+      {% set n = item.metadata.timeRanges | length %}
+      <div class="panel-header">
+        <span class="panel-count"><span class="count-value">{{ n }}</span> time range(s)</span>
         <button type="button"
                 hx-get="/console/fragments/editor/time-range"
-                hx-swap="beforebegin"
-                data-index-selector="#time-range-container > .entry-item:last-of-type">
-          Add Time Range
+                hx-target="#timerange-items"
+                hx-swap="beforeend"
+                data-index-selector="#timerange-items > .entry-item:last-of-type">
+          <span class="material-symbols-outlined">add</span>Add Time Range
         </button>
-      </fieldset>
+      </div>
+      <div id="timerange-items" class="entry-list">
+        {%- for tr in item.metadata.timeRanges -%}
+        {{ timeRangeRow(loop.index, tr, open = false) }}
+        {%- endfor -%}
+      </div>
+    </div>
 
-      <fieldset id="subtitle-container">
-        <legend>Subtitles</legend>
-
-        {% for sub in item.metadata.subtitles %}
-        {{ subtitleRow(loop.index, sub, open = false) }}
-        {% endfor %}
-
+    {# ── Subtitles ───────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-subtitles" role="tabpanel" aria-labelledby="tab-btn-subtitles" hidden>
+      {% set n = item.metadata.subtitles | length %}
+      <div class="panel-header">
+        <span class="panel-count"><span class="count-value">{{ n }}</span> subtitle(s)</span>
         <button type="button"
                 hx-get="/console/fragments/editor/subtitle"
-                hx-swap="beforebegin"
-                data-index-selector="#subtitle-container > .entry-item:last-of-type">
-          Add Subtitle
+                hx-target="#subtitle-items"
+                hx-swap="beforeend"
+                data-index-selector="#subtitle-items > .entry-item:last-of-type">
+          <span class="material-symbols-outlined">add</span>Add Subtitle
         </button>
-      </fieldset>
+      </div>
+      <div id="subtitle-items" class="entry-list">
+        {%- for sub in item.metadata.subtitles -%}
+        {{ subtitleRow(loop.index, sub, open = false) }}
+        {%- endfor -%}
+      </div>
+    </div>
 
-      <section id="source-container">
-        {% for src in item.sources %}
-        {{ sourceRow(loop.index, src, open = false) }}
-        {% endfor %}
-
+    {# ── Sources ─────────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-sources" role="tabpanel" aria-labelledby="tab-btn-sources" hidden>
+      {% set n = item.sources | length %}
+      <div class="panel-header">
+        <span class="panel-count"><span class="count-value">{{ n }}</span> source(s)</span>
         <button type="button"
                 hx-get="/console/fragments/editor/source"
-                hx-swap="beforebegin"
-                data-index-selector="#source-container > .entry-item:last-of-type">
-          Add Source
+                hx-target="#source-items"
+                hx-swap="beforeend"
+                data-index-selector="#source-items > .entry-item:last-of-type">
+          <span class="material-symbols-outlined">add</span>Add Source
         </button>
-      </section>
+      </div>
+      <div id="source-items" class="entry-list">
+        {%- for src in item.sources -%}
+        {{ sourceRow(loop.index, src, open = false) }}
+        {%- endfor -%}
+      </div>
+    </div>
 
-      {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=5) }}
+    {# ── Custom Data ─────────────────────────────────────────── #}
+    <div class="tab-panel" id="panel-customdata" role="tabpanel" aria-labelledby="tab-btn-customdata" hidden>
+      <article class="tab-section">
+        {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=12) }}
+      </article>
+    </div>
 
-      <footer class="form-actions">
-        <button type="submit">{{ item.id is empty ? "Publish" : "Save Changes" }}</button>
-      </footer>
-    </form>
+    {# ── Datalists ────────────────────────────────────────────── #}
+    <datalist id="datalist-source-type">
+      <option value="ON-DEMAND">
+      <option value="LIVE">
+      <option value="DVR">
+    </datalist>
+    <datalist id="datalist-mime-type">
+      <option value="application/x-mpegURL">
+      <option value="application/dash+xml">
+      <option value="video/mp4">
+      <option value="audio/mp4">
+      <option value="video/webm">
+      <option value="audio/webm">
+      <option value="audio/mpeg">
+    </datalist>
+    <datalist id="datalist-fragment-format">
+      <option value="fMP4">
+      <option value="MPEG-TS">
+      <option value="AAC">
+    </datalist>
+    <datalist id="datalist-drm-key-system">
+      <option value="com.widevine.alpha">
+      <option value="com.microsoft.playready">
+      <option value="com.apple.fps">
+      <option value="com.apple.fps.1_0">
+      <option value="org.w3.clearkey">
+    </datalist>
+    <datalist id="datalist-drm-security-level">
+      <option value="L1">
+      <option value="L2">
+      <option value="L3">
+      <option value="HW_SECURE_ALL">
+      <option value="HW_SECURE_DECODE">
+      <option value="HW_SECURE_CRYPTO">
+      <option value="SW_SECURE_DECODE">
+      <option value="SW_SECURE_CRYPTO">
+      <option value="SL150">
+      <option value="SL2000">
+      <option value="SL3000">
+    </datalist>
+    <datalist id="datalist-viewport">
+      <option value="STANDARD">
+      <option value="MONOSCOPIC">
+    </datalist>
+    <datalist id="datalist-timerange-type">
+      <option value="BLOCKED">
+      <option value="OPENING_CREDITS">
+      <option value="CLOSING_CREDITS">
+    </datalist>
+    <datalist id="datalist-subtitle-language">
+      <option value="de">
+      <option value="en">
+      <option value="fr">
+      <option value="it">
+      <option value="rm">
+    </datalist>
+    <datalist id="datalist-subtitle-kind">
+      <option value="subtitles">
+      <option value="captions">
+      <option value="descriptions">
+      <option value="chapters">
+      <option value="metadata">
+    </datalist>
+
+  </form>
 </main>
 {% endblock %}

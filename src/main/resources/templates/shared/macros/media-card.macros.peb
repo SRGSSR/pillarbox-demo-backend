@@ -44,11 +44,11 @@
         <span class="material-symbols-outlined">more_vert</span>
       </summary>
       <div class="dropdown">
-        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}">
+        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
           <span class="material-symbols-outlined">edit</span>
           Edit
         </a>
-        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}/duplicate">
+        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}/duplicate{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
           <span class="material-symbols-outlined">content_copy</span>
           Duplicate
         </a>

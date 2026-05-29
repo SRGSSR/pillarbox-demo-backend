@@ -80,10 +80,10 @@
         hx-target="#folder-grid"
         hx-swap="beforeend">
     <h3>New Folder</h3>
-    <label>
-      Name
-      <input name="name" type="text" required placeholder="e.g. Shows" autocomplete="off">
-    </label>
+    <div class="field">
+      <label for="new-folder-name">Name</label>
+      <input id="new-folder-name" name="name" type="text" required placeholder="e.g. Shows" autocomplete="off">
+    </div>
     <input type="hidden" name="parentId" value="{{ folder.id | default('') }}">
     <footer>
       <button type="button" onclick="document.getElementById('new-folder-dialog').close()">

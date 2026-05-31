@@ -59,6 +59,7 @@
   --accent: rgb(160 32 38);
   --accent-soft: rgb(160 32 38 / 60%);
   --accent-softer: rgb(160 32 38 / 20%);
+  --accent-text: color-mix(in srgb, var(--accent), white 45%); /* legible on dark surfaces */
   --transition-quick: 150ms ease;
 
   color-scheme: dark;

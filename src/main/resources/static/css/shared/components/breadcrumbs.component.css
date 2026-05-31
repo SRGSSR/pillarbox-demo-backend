@@ -12,7 +12,7 @@
 
 .breadcrumbs .sep {
   flex-shrink: 0;
-  color: var(--gray-8);
+  color: var(--text-3);
 }
 
 .breadcrumbs .page {
@@ -21,11 +21,11 @@
   min-width: 0;
 
   font-weight: var(--font-weight-5);
-  color: var(--gray-3);
+  color: var(--text-2);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .breadcrumbs .page.current {
-  color: var(--gray-1);
+  color: var(--text-1);
 }

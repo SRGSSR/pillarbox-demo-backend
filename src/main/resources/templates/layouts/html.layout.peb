@@ -7,6 +7,14 @@
 
   <link rel="preload" href="/static/fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem("theme");
+        if (stored) document.documentElement.dataset.theme = stored;
+      } catch (e) { /* storage unavailable: fall back to OS color-scheme */ }
+    })();
+  </script>
   {% block head %}{% endblock %}
 </head>
 <body>

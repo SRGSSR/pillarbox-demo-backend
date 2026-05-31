@@ -13,7 +13,7 @@
     {% endif %}>
 
   <figure>
-    <img src="{{ media.metadata.posterUrl | default("https://placehold.co/160x96/222228/6e6e78?text=No+image") }}"
+    <img src="{{ media.metadata.posterUrl | default("https://placehold.co/160x96/transparent/8a8d94?text=No+image") }}"
          alt="{{ media.metadata.title | default('Media Poster') }}"
          loading="lazy">
   </figure>

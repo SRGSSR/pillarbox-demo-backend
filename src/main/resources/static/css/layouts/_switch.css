@@ -1,0 +1,48 @@
+/* Apple-style toggle switch.
+   Place inside an element with role="switch"; the knob slides when that
+   element has aria-checked="true". Optional .switch-icon children sit at the
+   track ends (e.g. an off/on icon pair). */
+
+.switch {
+  position: relative;
+
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+
+  inline-size: 52px;
+  block-size: 26px;
+  padding-inline: var(--size-1);
+  border-radius: var(--radius-round);
+
+  background: var(--surface-4);
+}
+
+.switch-icon {
+  z-index: 1;
+  font-size: 16px;
+  color: var(--text-3);
+  transition: color 0.2s var(--ease-out-3);
+}
+
+.switch-knob {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: 50%;
+  inset-inline-start: 3px;
+  translate: 0 -50%;
+
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: var(--radius-round);
+
+  background: var(--gray-0);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 12%), var(--shadow-2);
+
+  transition: translate 0.2s var(--ease-out-3);
+}
+
+[aria-checked="true"] .switch-knob {
+  translate: 26px -50%;
+}

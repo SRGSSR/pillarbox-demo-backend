@@ -13,7 +13,7 @@
   color: var(--text-1);
   list-style: none;
 
-  background: var(--gray-7);
+  background: light-dark(var(--gray-4), var(--gray-7));
 }
 
 .user-avatar::-webkit-details-marker {
@@ -46,4 +46,26 @@
 .user-dropdown .dropdown-item {
   border-top: var(--border-size-1) solid var(--surface-3);
   border-radius: 0 0 var(--radius-2) var(--radius-2);
+}
+
+/* ── Theme toggle ── */
+
+.user-dropdown .theme-toggle {
+  border-radius: 0;
+}
+
+.theme-toggle-label {
+  margin-right: auto;
+}
+
+.theme-icon-light {
+  color: var(--text-1);
+}
+
+.theme-toggle[aria-checked="true"] .theme-icon-light {
+  color: var(--text-3);
+}
+
+.theme-toggle[aria-checked="true"] .theme-icon-dark {
+  color: var(--text-1);
 }

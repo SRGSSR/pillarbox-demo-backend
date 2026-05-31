@@ -24,6 +24,26 @@
       if (!d.contains(e.target)) d.removeAttribute("open");
     });
   });
+
+  function currentTheme() {
+    return document.documentElement.dataset.theme ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+
+  function syncThemeToggles(theme) {
+    document.querySelectorAll(".theme-toggle").forEach((btn) => {
+      btn.setAttribute("aria-checked", theme === "dark");
+    });
+  }
+
+  function toggleTheme() {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) { /* storage unavailable */ }
+    syncThemeToggles(next);
+  }
+
+  syncThemeToggles(currentTheme());
 </script>
 
 {% endblock %}

@@ -13,6 +13,14 @@
         {%- endif -%}
       </span>
     </div>
+    <button type="button" class="btn dropdown-item theme-toggle" role="switch" aria-checked="false" onclick="toggleTheme()">
+      <span class="theme-toggle-label">Theme</span>
+      <span class="switch" aria-hidden="true">
+        <span class="material-symbols-outlined switch-icon theme-icon-light">light_mode</span>
+        <span class="material-symbols-outlined switch-icon theme-icon-dark">dark_mode</span>
+        <span class="switch-knob"></span>
+      </span>
+    </button>
     <a class="btn dropdown-item" href="/logout">
       <span class="material-symbols-outlined">logout</span>
       Sign out

@@ -98,14 +98,14 @@ form.media-form {
 
   font-size: var(--font-size-1);
   font-weight: var(--font-weight-5);
-  color: var(--text-3);
+  color: var(--text-2);
   white-space: nowrap;
 
   transition: color 0.15s var(--ease-out-3), background 0.15s var(--ease-out-3);
 }
 
 .editor-tab:hover {
-  color: var(--text-2);
+  color: var(--text-1);
   background: var(--surface-2);
 }
 
@@ -133,13 +133,13 @@ form.media-form {
 /* ── Active tab ── */
 
 .editor-tab[aria-selected="true"] {
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .editor-tab[aria-selected="true"] .tab-badge {
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* ── Mobile: revert to horizontal tab bar ── */

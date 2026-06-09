@@ -56,16 +56,16 @@
   letter-spacing: 0.05em;
 }
 
-/* ── New-folder dialog ── */
-.new-folder-dialog form {
+/* ── New-folder / rename dialog ── */
+.new-folder-dialog form,
+.rename-folder-dialog form {
   display: flex;
   flex-direction: column;
   gap: var(--size-4);
 }
 
-
-
-.new-folder-dialog footer {
+.new-folder-dialog footer,
+.rename-folder-dialog footer {
   display: flex;
   gap: var(--size-2);
   justify-content: flex-end;

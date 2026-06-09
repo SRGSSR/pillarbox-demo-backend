@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: space-between;
 
-  padding: var(--size-3);
+  padding: var(--size-2) var(--size-3);
   border: var(--border-size-1) solid var(--surface-3);
   border-radius: var(--radius-2);
 
@@ -68,13 +68,10 @@
   flex-shrink: 0;
   place-items: center;
 
-  inline-size: var(--size-8);
-  block-size: var(--size-8);
-  border-radius: var(--radius-2);
+  inline-size: var(--size-7);
+  block-size: var(--size-7);
 
-  color: var(--red-5);
-
-  background: var(--red-12);
+  color: var(--text-2);
 }
 
 .folder-card-info {
@@ -96,13 +93,18 @@
   color: var(--text-2);
 }
 
-.folder-card-delete {
+.folder-card .dropdown-menu {
   flex-shrink: 0;
+}
+
+.folder-card .dropdown-menu > summary {
   opacity: 0;
   transition: opacity 0.15s var(--ease-out-3);
 }
 
-.folder-card:hover .folder-card-delete {
+.folder-card:hover .dropdown-menu > summary,
+.folder-card .dropdown-menu > summary:focus-visible,
+.folder-card .dropdown-menu[open] > summary {
   opacity: 1;
 }
 

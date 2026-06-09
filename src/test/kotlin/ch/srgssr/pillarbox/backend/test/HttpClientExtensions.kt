@@ -5,6 +5,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 
@@ -22,6 +23,15 @@ suspend fun HttpClient.hxPost(
   block: HttpRequestBuilder.() -> Unit = {},
 ): HttpResponse =
   post(urlString) {
+    header("HX-Request", "true")
+    block()
+  }
+
+suspend fun HttpClient.hxPatch(
+  urlString: String,
+  block: HttpRequestBuilder.() -> Unit = {},
+): HttpResponse =
+  patch(urlString) {
     header("HX-Request", "true")
     block()
   }

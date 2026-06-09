@@ -16,6 +16,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.util.getOrFail
 import io.ktor.utils.io.ExperimentalKtorApi
@@ -164,6 +165,21 @@ private fun Route.folderActions(
       mapOf(
         "folder" to folderRepository.save(folder),
         "count" to 0,
+      ),
+    )
+  }
+
+  hx.patch("actions/folder/{id}") {
+    val id = call.parameters.getOrFail("id")
+    val name = call.receiveParameters().getOrFail("name")
+    val folder = folderRepository.find(id) ?: return@patch call.respond(HttpStatusCode.NotFound)
+
+    logger.info { "Renaming folder $id to '$name'" }
+    call.respondWithContext(
+      "modules/home/fragments/folder-card.fragment.peb",
+      mapOf(
+        "folder" to folderRepository.save(folder.copy(name = name)),
+        "count" to folderRepository.countMediaIn(id),
       ),
     )
   }

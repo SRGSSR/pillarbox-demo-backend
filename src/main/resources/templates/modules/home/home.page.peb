@@ -93,4 +93,19 @@
     </footer>
   </form>
 </dialog>
+<dialog id="rename-folder-dialog" class="rename-folder-dialog">
+  <form hx-swap="outerHTML">
+    <h3>Rename Folder</h3>
+    <div class="field">
+      <label for="rename-folder-name">Name</label>
+      <input id="rename-folder-name" name="name" type="text" required autocomplete="off">
+    </div>
+    <footer>
+      <button type="button" onclick="document.getElementById('rename-folder-dialog').close()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary">Rename</button>
+    </footer>
+  </form>
+</dialog>
 {% endblock %}

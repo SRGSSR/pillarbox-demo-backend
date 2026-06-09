@@ -5,6 +5,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
 import ch.srgssr.pillarbox.backend.test.count
 import ch.srgssr.pillarbox.backend.test.hxDelete
 import ch.srgssr.pillarbox.backend.test.hxGet
+import ch.srgssr.pillarbox.backend.test.hxPatch
 import ch.srgssr.pillarbox.backend.test.hxPost
 import ch.srgssr.pillarbox.backend.test.login
 import ch.srgssr.pillarbox.backend.test.mediaFixture
@@ -116,6 +117,32 @@ class HomeRouteTest :
       }
     }
 
+    should("rename an existing folder") {
+      testApplicationContext {
+        login()
+        val folderId = client.createFolder("Old Name")
+
+        val response =
+          client.hxPatch("${Navigation.CONSOLE}/actions/folder/$folderId") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(listOf("name" to "Renamed").formUrlEncode())
+          }
+        response shouldHaveStatus HttpStatusCode.OK
+
+        Jsoup.parse(response.bodyAsText()).select(".folder-card-name").text() shouldBe "Renamed"
+      }
+    }
+
+    should("return NOT_FOUND when renaming a non-existent folder") {
+      testApplicationContext {
+        login()
+        client.hxPatch("${Navigation.CONSOLE}/actions/folder/not-a-folder") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf("name" to "Renamed").formUrlEncode())
+        } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
     should("delete an existing folder") {
       testApplicationContext {
         login()
@@ -134,10 +161,14 @@ class HomeRouteTest :
         }
         val folderId = client.createFolder("Test Folder")
 
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-          contentType(ContentType.Application.FormUrlEncoded)
-          setBody(listOf("mediaID" to media.id).formUrlEncode())
-        } shouldHaveStatus HttpStatusCode.OK
+        val response =
+          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(listOf("mediaID" to media.id).formUrlEncode())
+          }
+        response shouldHaveStatus HttpStatusCode.OK
+
+        Jsoup.parse(response.bodyAsText()).select(".folder-card-count").text() shouldBe "1 item"
       }
     }
 
@@ -215,6 +246,7 @@ class HomeRouteTest :
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.BadRequest
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker-child") shouldHaveStatus HttpStatusCode.OK
         client.hxPost("${Navigation.CONSOLE}/actions/folder") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxPatch("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxPost("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
@@ -232,6 +264,8 @@ class HomeRouteTest :
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.BadRequest
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker-child") shouldHaveStatus HttpStatusCode.OK
         client.hxPost("${Navigation.CONSOLE}/actions/folder") shouldHaveStatus HttpStatusCode.UnsupportedMediaType
+        client.hxPatch("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus
+          HttpStatusCode.UnsupportedMediaType
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.NotFound
         client.hxPost("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus
           HttpStatusCode.UnsupportedMediaType

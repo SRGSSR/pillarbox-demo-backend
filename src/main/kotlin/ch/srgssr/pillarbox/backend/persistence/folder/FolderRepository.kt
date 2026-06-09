@@ -157,7 +157,7 @@ class FolderRepository(
       if (folderId != null) {
         (MediaTable leftJoin FolderMediaTable)
           .selectAll()
-          .where { (MediaTable.deleted eq false) and (FolderMediaTable.mediaId eq folderId) }
+          .where { (MediaTable.deleted eq false) and (FolderMediaTable.folderId eq folderId) }
           .count()
       } else {
         (MediaTable leftJoin FolderMediaTable)

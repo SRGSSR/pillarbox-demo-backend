@@ -46,10 +46,6 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
 }
 
-.media-card:has(.dropdown-menu[open]) {
-  z-index: var(--layer-1);
-}
-
 .media-card.dragging {
   cursor: grabbing;
   opacity: 0.45;
@@ -106,6 +102,11 @@
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Inset the outline so it is not clipped by the id row's overflow. */
+.media-card > header p .btn-icon:focus-visible {
+  outline-offset: -2px;
 }
 
 .media-card > header ul.tag-list {

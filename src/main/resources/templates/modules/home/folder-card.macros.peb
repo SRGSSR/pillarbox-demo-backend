@@ -15,29 +15,27 @@
     </div>
   </a>
     {% if not readOnly %}
-    <details class="dropdown-menu">
-      <summary class="btn-icon">
-        <span class="material-symbols-outlined">more_vert</span>
-      </summary>
-      <div class="dropdown">
-        <button class="btn dropdown-item" type="button"
-                data-rename-folder
-                data-folder-id="{{ folder.id }}"
-                data-folder-name="{{ folder.name }}"
-                onclick="this.closest('details').removeAttribute('open')">
-          <span class="material-symbols-outlined">edit</span>
-          Rename
-        </button>
-        <button class="btn dropdown-item danger" type="button"
-                hx-delete="/console/actions/folder/{{ folder.id }}"
-                hx-target="[id='folder-card-{{ folder.id }}']"
-                hx-swap="outerHTML"
-                hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned.">
-          <span class="material-symbols-outlined">delete</span>
-          Delete
-        </button>
-      </div>
-    </details>
+    <button class="btn-icon" type="button" popovertarget="folder-menu-{{ folder.id }}" aria-expanded="false" title="Actions">
+      <span class="material-symbols-outlined">more_vert</span>
+    </button>
+    <div class="dropdown" popover id="folder-menu-{{ folder.id }}">
+      <button class="btn dropdown-item" type="button"
+              data-rename-folder
+              data-folder-id="{{ folder.id }}"
+              data-folder-name="{{ folder.name }}"
+              onclick="this.closest('[popover]').hidePopover()">
+        <span class="material-symbols-outlined">edit</span>
+        Rename
+      </button>
+      <button class="btn dropdown-item danger" type="button"
+              hx-delete="/console/actions/folder/{{ folder.id }}"
+              hx-target="[id='folder-card-{{ folder.id }}']"
+              hx-swap="outerHTML"
+              hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned.">
+        <span class="material-symbols-outlined">delete</span>
+        Delete
+      </button>
+    </div>
     {% endif %}
 </div>
 {% endmacro %}

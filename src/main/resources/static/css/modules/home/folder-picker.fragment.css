@@ -3,10 +3,13 @@
   height: min(var(--size-15), 70dvh);
 }
 
-dialog[open].move-folder-dialog {
+/* Layout lives on the always-present wrapper, not the [open]-gated dialog, so it
+   survives the close transition (when [open] is removed but the dialog lingers). */
+.folder-picker {
   display: flex;
   flex-direction: column;
   gap: var(--size-4);
+  height: 100%;
 }
 
 .move-folder-dialog footer {

@@ -6,22 +6,18 @@
 
   inline-size: var(--size-6);
   block-size: var(--size-6);
+  padding: 0;
+  border: none;
   border-radius: var(--radius-round);
 
   font-size: var(--font-size-0);
   font-weight: var(--font-weight-7);
   color: var(--text-1);
-  list-style: none;
 
   background: light-dark(var(--gray-4), var(--gray-7));
 }
 
-.user-avatar::-webkit-details-marker {
-  display: none;
-}
-
 .user-dropdown {
-  right: 0;
   min-width: var(--size-14);
 }
 

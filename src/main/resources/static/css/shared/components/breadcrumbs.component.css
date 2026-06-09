@@ -26,6 +26,11 @@
   white-space: nowrap;
 }
 
+/* Inset the outline so it is not clipped by the breadcrumbs' overflow. */
+a.page:focus-visible {
+  outline-offset: -2px;
+}
+
 .breadcrumbs .page.current {
   color: var(--text-1);
 }

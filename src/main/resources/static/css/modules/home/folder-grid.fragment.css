@@ -93,18 +93,15 @@
   color: var(--text-2);
 }
 
-.folder-card .dropdown-menu {
+.folder-card .btn-icon {
   flex-shrink: 0;
-}
-
-.folder-card .dropdown-menu > summary {
   opacity: 0;
   transition: opacity 0.15s var(--ease-out-3);
 }
 
-.folder-card:hover .dropdown-menu > summary,
-.folder-card .dropdown-menu > summary:focus-visible,
-.folder-card .dropdown-menu[open] > summary {
+.folder-card:hover .btn-icon,
+.folder-card .btn-icon:focus-visible,
+.folder-card .btn-icon[aria-expanded="true"] {
   opacity: 1;
 }
 

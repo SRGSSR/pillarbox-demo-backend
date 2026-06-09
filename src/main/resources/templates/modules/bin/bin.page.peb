@@ -27,7 +27,7 @@
 {% include "../../shared/components/snackbar.component.peb" %}
 
 <template id="confirm-dialog-template">
-  <dialog class="confirm-dialog">
+  <dialog closedby="any" class="confirm-dialog">
     <form method="dialog">
       <p id="confirm-message"></p>
       <footer>

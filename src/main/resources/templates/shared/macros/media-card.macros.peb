@@ -39,50 +39,48 @@
 
   {% if not readOnly %}
   <footer class="actions">
-    <details class="dropdown-menu">
-      <summary class="btn-icon">
-        <span class="material-symbols-outlined">more_vert</span>
-      </summary>
-      <div class="dropdown">
-        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
-          <span class="material-symbols-outlined">edit</span>
-          Edit
-        </a>
-        <a class="btn dropdown-item" href="/console/editor/{{ media.id }}/duplicate{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
-          <span class="material-symbols-outlined">content_copy</span>
-          Duplicate
-        </a>
-        {% if not media.deleted %}
-        <button class="btn dropdown-item" type="button"
-                data-open-move-dialog
-                data-media-id="{{ media.id }}"
-                hx-get="/console/fragments/folder-picker?mediaId={{ media.id }}{% if folderId is not empty %}&folderId={{ folderId }}{% endif %}"
-                hx-target="#move-folder-dialog"
-                hx-swap="innerHTML"
-                onclick="this.closest('details').removeAttribute('open')">
-          <span class="material-symbols-outlined">drive_file_move</span>
-          Move to Folder
-        </button>
-        <button class="btn dropdown-item danger" type="button"
-                hx-delete="/console/actions/media/{{ media.id }}"
-                hx-target="[id='media-card-{{ media.id }}']"
-                hx-swap="outerHTML"
-                hx-confirm="Move '{{ media.metadata.title }}' to the Bin? It can be restored later.">
-          <span class="material-symbols-outlined">delete</span>
-          Delete
-        </button>
-        {% else %}
-        <button class="btn dropdown-item" type="button"
-                hx-post="/console/actions/media/{{ media.id }}/restore"
-                hx-target="[id='media-card-{{ media.id }}']"
-                hx-swap="outerHTML"
-                hx-confirm="Restore '{{ media.metadata.title }}' to the library?">
-          <span class="material-symbols-outlined">restore_from_trash</span>
-          Restore
-        </button>
-        {% endif %}
-      </div>
-    </details>
+    <button class="btn-icon" type="button" popovertarget="media-menu-{{ media.id }}" aria-expanded="false" title="Actions">
+      <span class="material-symbols-outlined">more_vert</span>
+    </button>
+    <div class="dropdown" popover id="media-menu-{{ media.id }}">
+      <a class="btn dropdown-item" href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+        <span class="material-symbols-outlined">edit</span>
+        Edit
+      </a>
+      <a class="btn dropdown-item" href="/console/editor/{{ media.id }}/duplicate{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+        <span class="material-symbols-outlined">content_copy</span>
+        Duplicate
+      </a>
+      {% if not media.deleted %}
+      <button class="btn dropdown-item" type="button"
+              data-open-move-dialog
+              data-media-id="{{ media.id }}"
+              hx-get="/console/fragments/folder-picker?mediaId={{ media.id }}{% if folderId is not empty %}&folderId={{ folderId }}{% endif %}"
+              hx-target="#move-folder-dialog"
+              hx-swap="innerHTML"
+              onclick="this.closest('[popover]').hidePopover()">
+        <span class="material-symbols-outlined">drive_file_move</span>
+        Move to Folder
+      </button>
+      <button class="btn dropdown-item danger" type="button"
+              hx-delete="/console/actions/media/{{ media.id }}"
+              hx-target="[id='media-card-{{ media.id }}']"
+              hx-swap="outerHTML"
+              hx-confirm="Move '{{ media.metadata.title }}' to the Bin? It can be restored later.">
+        <span class="material-symbols-outlined">delete</span>
+        Delete
+      </button>
+      {% else %}
+      <button class="btn dropdown-item" type="button"
+              hx-post="/console/actions/media/{{ media.id }}/restore"
+              hx-target="[id='media-card-{{ media.id }}']"
+              hx-swap="outerHTML"
+              hx-confirm="Restore '{{ media.metadata.title }}' to the library?">
+        <span class="material-symbols-outlined">restore_from_trash</span>
+        Restore
+      </button>
+      {% endif %}
+    </div>
   </footer>
   {% endif %}
 </article>

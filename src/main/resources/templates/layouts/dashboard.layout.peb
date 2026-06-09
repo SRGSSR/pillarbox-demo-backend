@@ -19,11 +19,22 @@
 {% block footer %}{% endblock %}
 
 <script>
-  document.addEventListener("click", (e) => {
-    document.querySelectorAll("details.dropdown-menu[open]").forEach((d) => {
-      if (!d.contains(e.target)) d.removeAttribute("open");
+  // Popover dropdowns light-dismiss themselves; we mirror the open state onto
+  // the invoker's aria-expanded for screen readers and our CSS state hooks.
+  document.addEventListener("toggle", (e) => {
+    const menu = e.target;
+    if (!(menu instanceof HTMLElement) || !menu.matches(".dropdown")) return;
+    const invoker = document.querySelector(`[popovertarget="${CSS.escape(menu.id)}"]`);
+    if (!invoker) return;
+    invoker.setAttribute("aria-expanded", String(e.newState === "open"));
+  }, true);
+
+  // Backdrop clicks close dialogs in browsers without closedby support.
+  if (!("closedBy" in HTMLDialogElement.prototype)) {
+    document.addEventListener("click", (e) => {
+      if (e.target instanceof HTMLDialogElement && e.target.open) e.target.close();
     });
-  });
+  }
 
   function currentTheme() {
     return document.documentElement.dataset.theme ||

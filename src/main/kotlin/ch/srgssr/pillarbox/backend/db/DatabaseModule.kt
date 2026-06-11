@@ -19,12 +19,14 @@ import javax.sql.DataSource
  *   1. A [DataSource] (HikariCP) configured using the loaded [DatabaseConfig].
  *   2. An Exposed [Database] instance, which automatically triggers [runMigration] on the
  *      data source before establishing the connection.
+ *   3. An [EncryptionService] for protecting credential values stored at rest.
  *
  * @return A Koin [Module] containing the database infrastructure definitions.
  */
 fun databaseModule() =
   module {
     single { get<ApplicationConfig>().toDatabaseConfig() }
+    single { EncryptionService(get()) }
 
     single<DataSource> {
       val dbConfig = get<DatabaseConfig>()

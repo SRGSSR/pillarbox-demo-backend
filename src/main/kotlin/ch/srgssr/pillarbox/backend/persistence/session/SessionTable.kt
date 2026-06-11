@@ -11,9 +11,15 @@ import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
  */
 object SessionTable : Table("pb_session") {
   /**
-   * Unique identifier for the session.
+   * Stored lookup key for the session: the SHA-256 hash of the cookie session id.
+   * Credential material, never exposed through APIs or logs.
    */
   val sessionId = varchar("session_id", 255)
+
+  /**
+   * Public handle for the session, independent of [sessionId] and safe to expose.
+   */
+  val publicId = varchar("public_id", 255).uniqueIndex()
 
   /**
    * The access token used for bearer authentication against downstream services.

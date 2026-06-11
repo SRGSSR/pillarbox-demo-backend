@@ -8,6 +8,8 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.auth
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.folder
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.media
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.playerMedia
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.team
+import ch.srgssr.pillarbox.backend.entrypoint.web.api.user
 import ch.srgssr.pillarbox.backend.entrypoint.web.console.console
 import ch.srgssr.pillarbox.backend.io.httpClientModule
 import ch.srgssr.pillarbox.backend.io.jsonModule
@@ -87,9 +89,11 @@ fun Application.module() {
 
   // Setup HTTP Routing
   routing {
-    auth(get(), get(), get())
+    auth(get(), get(), get(), get())
     media(get())
     folder(get(), get())
+    user(get(), get())
+    team(get(), get())
     console(get(), get())
     playerMedia(get(), get())
   }

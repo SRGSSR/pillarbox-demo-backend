@@ -10,6 +10,8 @@ import io.ktor.server.config.ApplicationConfigurationException
  * @property jdbcUrl The connection string for the database.
  * @property username Database authentication username.
  * @property password Database authentication password.
+ * @property encryptionKey Application-held secret used to encrypt credential columns at rest,
+ *                         so their values are not readable with database access alone.
  * @property poolSize Maximum number of connections in the pool. Defaults to 10.
  * @property connectionTimeout Maximum time (in ms) to wait for a connection from the pool. Defaults to 30s.
  * @property idleTimeout Maximum time (in ms) a connection is allowed to sit idle in the pool. Defaults to 10m.
@@ -21,6 +23,7 @@ data class DatabaseConfig(
   val jdbcUrl: String,
   val username: String,
   val password: String,
+  val encryptionKey: String,
   val poolSize: Int = 10,
   val connectionTimeout: Long = 30000,
   val idleTimeout: Long = 600000,
@@ -61,6 +64,7 @@ fun ApplicationConfig.toDatabaseConfig(): DatabaseConfig {
     jdbcUrl = db.property("jdbcUrl").getString(),
     username = db.property("username").getString(),
     password = db.property("password").getString(),
+    encryptionKey = db.property("encryptionKey").getString(),
     poolSize = db.propertyOrNull("poolSize")?.getString()?.toInt() ?: 10,
     connectionTimeout = db.propertyOrNull("connectionTimeout")?.getString()?.toLong() ?: 30000,
     idleTimeout = db.propertyOrNull("idleTimeout")?.getString()?.toLong() ?: 600000,

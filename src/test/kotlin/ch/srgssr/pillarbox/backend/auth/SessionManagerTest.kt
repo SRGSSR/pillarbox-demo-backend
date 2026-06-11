@@ -1,8 +1,10 @@
 package ch.srgssr.pillarbox.backend.auth
 
+import ch.srgssr.pillarbox.backend.db.EncryptionService
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
 import ch.srgssr.pillarbox.backend.test.buildJwt
+import ch.srgssr.pillarbox.backend.test.testDatabaseConfig
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull
@@ -22,24 +24,36 @@ class SessionManagerTest :
   ShouldSpec({
     should("return session directly if not expired") {
       val builder = SessionManagerBuilder()
-      val session = SessionBuilder().build()
+      val sessionId = SessionId()
+      val session = SessionBuilder().build(builder.hash(sessionId))
 
       coEvery { builder.repository.find(session.sessionId) } returns session
 
-      val result = builder.build().validate(SessionId(session.sessionId))
+      val result = builder.build().validate(sessionId)
 
       result.shouldNotBeNull() shouldBeEqual session
       coVerify(exactly = 0) { builder.userManager.upsert(any()) }
       coVerify(exactly = 0) { builder.repository.save(any()) }
     }
 
+    should("look up the session by the hash of the cookie value") {
+      val builder = SessionManagerBuilder()
+      val sessionId = SessionId()
+      val session = SessionBuilder().build(builder.hash(sessionId))
+
+      coEvery { builder.repository.find(any()) } returns null
+      coEvery { builder.repository.find(builder.hash(sessionId)) } returns session
+
+      builder.build().validate(sessionId).shouldNotBeNull()
+      coVerify(exactly = 0) { builder.repository.find(sessionId.value) }
+    }
+
     should("return null immediately if session is not found in repository") {
       val builder = SessionManagerBuilder()
-      val sessionId = "unknown-id"
 
-      coEvery { builder.repository.find(sessionId) } returns null
+      coEvery { builder.repository.find(any()) } returns null
 
-      val result = builder.build().validate(SessionId(sessionId))
+      val result = builder.build().validate(SessionId("unknown-id"))
 
       result.shouldBeNull()
       coVerify(exactly = 0) { builder.userManager.upsert(any()) }
@@ -48,11 +62,12 @@ class SessionManagerTest :
 
     should("delete session and return null when expired without a refresh token") {
       val builder = SessionManagerBuilder()
-      val session = SessionBuilder().expired().build()
+      val sessionId = SessionId()
+      val session = SessionBuilder().expired().build(builder.hash(sessionId))
 
       coEvery { builder.repository.find(session.sessionId) } returns session
 
-      val result = builder.build().validate(SessionId(session.sessionId))
+      val result = builder.build().validate(sessionId)
 
       result.shouldBeNull()
       coVerify(exactly = 0) { builder.userManager.upsert(any()) }
@@ -67,11 +82,12 @@ class SessionManagerTest :
           expiresIn = 3600L,
         )
       val builder = SessionManagerBuilder().withSuccessfulRefresh(refreshResponse)
-      val session = SessionBuilder().expired().withRefreshToken().build()
+      val sessionId = SessionId()
+      val session = SessionBuilder().expired().withRefreshToken().build(builder.hash(sessionId))
 
       coEvery { builder.repository.find(session.sessionId) } returns session
 
-      val result = builder.build().validate(SessionId(session.sessionId))
+      val result = builder.build().validate(sessionId)
 
       result.shouldNotBeNull()
       result.accessToken shouldBe refreshResponse.accessToken
@@ -83,11 +99,12 @@ class SessionManagerTest :
 
     should("delete session and return null when expired and token refresh fails") {
       val builder = SessionManagerBuilder().withFailedRefresh()
-      val session = SessionBuilder().expired().withRefreshToken().build()
+      val sessionId = SessionId()
+      val session = SessionBuilder().expired().withRefreshToken().build(builder.hash(sessionId))
 
       coEvery { builder.repository.find(session.sessionId) } returns session
 
-      val result = builder.build().validate(SessionId(session.sessionId))
+      val result = builder.build().validate(sessionId)
 
       result.shouldBeNull()
       coVerify(exactly = 0) { builder.userManager.upsert(any()) }
@@ -100,6 +117,9 @@ class SessionManagerBuilder {
   var repository = mockk<SessionRepository>(relaxed = true)
   var userManager = mockk<UserManager>(relaxed = true)
   var tokenProvider = mockk<TokenProvider>(relaxed = true)
+  var encryptionService = EncryptionService(testDatabaseConfig)
+
+  fun hash(sessionId: SessionId) = encryptionService.hash(sessionId.value)
 
   fun withSuccessfulRefresh(response: TokenRefreshResponse) =
     apply {
@@ -114,6 +134,7 @@ class SessionManagerBuilder {
   fun build() =
     SessionManager(
       repository = repository,
+      encryptionService = encryptionService,
       userManager = userManager,
       tokenProvider = tokenProvider,
     )
@@ -134,8 +155,9 @@ class SessionBuilder {
       this.refreshToken = "stub-refresh-token"
     }
 
-  fun build() =
+  fun build(sessionId: String) =
     Session(
+      sessionId = sessionId,
       accessToken = Uuid.random().toString(),
       refreshToken = refreshToken,
       expiresAt = expiresAt,

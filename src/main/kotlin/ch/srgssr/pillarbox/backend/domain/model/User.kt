@@ -1,6 +1,5 @@
 package ch.srgssr.pillarbox.backend.domain.model
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
@@ -16,7 +15,6 @@ import kotlin.uuid.ExperimentalUuidApi
  * @property createdAt Timestamp of the initial creation of this user record.
  * @property updatedAt Timestamp of the last modification to this user record.
  */
-@Serializable
 @OptIn(ExperimentalUuidApi::class)
 data class User(
   val oidcSub: String,

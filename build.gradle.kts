@@ -199,6 +199,7 @@ tasks.named<JavaExec>("run") {
   environment("DATABASE_URL", getEnv("DATABASE_URL", "jdbc:postgresql://localhost:5432/pillarbox"))
   environment("DATABASE_USER", getEnv("DATABASE_USER", "dev_user"))
   environment("DATABASE_PASSWORD", getEnv("DATABASE_PASSWORD", "dev_password"))
+  environment("DATABASE_ENCRYPTION_KEY", getEnv("DATABASE_ENCRYPTION_KEY", "dev-encryption-key-32-chars-long-!!!"))
 
   // --- Auth ---
   environment("AUTH_ISSUER", getEnv("AUTH_ISSUER", "http://localhost:8081/realms/pillarbox"))

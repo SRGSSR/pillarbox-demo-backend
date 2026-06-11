@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.auth
 
+import ch.srgssr.pillarbox.backend.db.EncryptionService
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
@@ -15,11 +16,13 @@ import kotlin.time.Instant
  * periodic token verification.
  *
  * @property repository The persistent storage for session data.
+ * @property encryptionService Used to hash the cookie session id into its persisted form.
  * @property tokenProvider Used to exchange an expired session's refresh token for new tokens.
  * against the identity provider.
  */
 class SessionManager(
   private val repository: SessionRepository,
+  private val encryptionService: EncryptionService,
   private val userManager: UserManager,
   private val tokenProvider: TokenProvider,
 ) {
@@ -28,10 +31,10 @@ class SessionManager(
   }
 
   suspend fun validate(sessionId: SessionId): Session? {
-    val session = repository.find(sessionId.value)
+    val session = repository.find(sessionId.hashedValue)
     return when {
       session == null -> {
-        null.also { logger.info { "Session validation failed: Session ${sessionId.value} not found in repository." } }
+        null.also { logger.info { "Session validation failed: session not found in repository." } }
       }
 
       !session.expired -> {
@@ -39,7 +42,7 @@ class SessionManager(
       }
 
       else -> {
-        logger.info { "Session $sessionId expired at ${session.expiresAt}" }
+        logger.info { "Session ${session.publicId} expired at ${session.expiresAt}" }
         refreshOrInvalidate(session)
       }
     }
@@ -56,7 +59,7 @@ class SessionManager(
   private suspend fun refreshOrInvalidate(session: Session): Session? {
     if (session.refreshToken == null) {
       return null.also {
-        logger.info { "Session ${session.sessionId} has no refresh token. Deleting." }
+        logger.info { "Session ${session.publicId} has no refresh token. Deleting." }
         repository.delete(session.sessionId)
       }
     }
@@ -65,7 +68,7 @@ class SessionManager(
       session.refreshWithToken(tokenResponse).also {
         userManager.upsert(JWT.decode(it.accessToken))
         repository.save(it)
-        logger.info { "Session ${it.sessionId} successfully refreshed." }
+        logger.info { "Session ${it.publicId} successfully refreshed." }
       }
     } ?: run {
       repository.delete(session.sessionId)
@@ -86,4 +89,9 @@ class SessionManager(
       idToken = tokenResponse.idToken ?: idToken,
       expiresAt = tokenResponse.expiresIn?.let { now + it.seconds } ?: (now + 5.minutes),
     )
+
+  /**
+   * The hashed value of the session id that is searchable in the database.
+   */
+  private val SessionId.hashedValue get() = encryptionService.hash(value)
 }

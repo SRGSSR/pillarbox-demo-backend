@@ -2,6 +2,8 @@ package ch.srgssr.pillarbox.backend.auth
 
 import io.ktor.server.config.ApplicationConfig
 import kotlinx.serialization.Serializable
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Configuration parameters for session management and cookie security.
@@ -40,9 +42,10 @@ fun ApplicationConfig.toSessionConfig(): SessionConfig {
  * This distinguishes the session ID from other string-based data during
  * serialization and cookie handling in Ktor.
  *
- * @property value The raw session ID string stored in the cookie.
+ * @property value The raw session ID string stored in the cookie. Defaults to a random UUID string.
  */
 @Serializable
+@OptIn(ExperimentalUuidApi::class)
 data class SessionId(
-  val value: String,
+  val value: String = Uuid.random().toString(),
 )

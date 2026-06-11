@@ -46,6 +46,7 @@ fun authenticationModule() =
     single {
       SessionManager(
         repository = get(),
+        encryptionService = get(),
         userManager = get(),
         tokenProvider = get(),
       )

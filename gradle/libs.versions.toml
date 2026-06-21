@@ -21,7 +21,7 @@ kotlinx-coroutines = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
 ktor = "3.4.0"
 logback = "1.5.34"
-mock-oauth2-server = "3.0.3"
+mock-oauth2-server = "4.0.1"
 mockk = "1.14.11"
 postgresql = "42.7.11"
 

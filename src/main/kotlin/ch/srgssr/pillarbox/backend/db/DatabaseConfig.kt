@@ -18,7 +18,6 @@ import io.ktor.server.config.ApplicationConfigurationException
  * @property dataSourceProperties Additional vendor-specific properties passed to the JDBC driver.
  */
 data class DatabaseConfig(
-  val autoCreate: Boolean = false,
   val driverClassName: String,
   val jdbcUrl: String,
   val username: String,
@@ -59,7 +58,6 @@ fun ApplicationConfig.toDatabaseConfig(): DatabaseConfig {
   }
 
   return DatabaseConfig(
-    autoCreate = db.property("autoCreate").getString().toBoolean(),
     driverClassName = db.property("driverClassName").getString(),
     jdbcUrl = db.property("jdbcUrl").getString(),
     username = db.property("username").getString(),

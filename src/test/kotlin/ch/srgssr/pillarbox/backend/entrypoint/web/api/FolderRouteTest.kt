@@ -307,27 +307,27 @@ class FolderRouteTest :
 
     should("allow read access but return 403 on write endpoints when authenticated with no roles") {
       testApplicationContext {
-        val t = tokenWithRoles(emptySet())
+        val readerToken = tokenWithRoles(emptySet())
 
-        client.get("/v1/folder") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.OK
-        client.get("/v1/folder/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.NotFound
-        client.get("/v1/folder/any-id/media") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.NotFound
+        client.get("/v1/folder") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/folder/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.NotFound
+        client.get("/v1/folder/any-id/media") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.NotFound
         client.post("/v1/folder") {
-          bearerAuth(t)
+          bearerAuth(readerToken)
           contentType(ContentType.Application.Json)
           setBody(FolderRequestV1(name = "Test Folder"))
         } shouldHaveStatus HttpStatusCode.Forbidden
         client.patch("/v1/folder/any-id") {
-          bearerAuth(t)
+          bearerAuth(readerToken)
           contentType(ContentType.Application.Json)
           setBody(FolderRequestV1(name = "Test Folder"))
         } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/folder/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.delete("/v1/folder/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
         client.post("/v1/folder/any-id/media") {
-          bearerAuth(t)
+          bearerAuth(readerToken)
           contentType(ContentType.Application.Json)
         } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/folder/any-id/media/any-media-id") { bearerAuth(t) } shouldHaveStatus
+        client.delete("/v1/folder/any-id/media/any-media-id") { bearerAuth(readerToken) } shouldHaveStatus
           HttpStatusCode.Forbidden
       }
     }

@@ -83,6 +83,10 @@ Use these commands for standard development lifecycle tasks.
 | **Linting**     | `./gradlew ktlintCheck detekt` |
 | **Format Code** | `./gradlew ktlintFormat`       |
 
+> [!NOTE]
+> Tests spin up a throwaway PostgreSQL container via [Testcontainers][testcontainers] and run the
+> real Flyway migrations against it, so a running Docker daemon is required.
+
 ### Usage
 
 To get started with the console and API, please refer to
@@ -145,42 +149,6 @@ This project automates its own development workflow using GitHub Actions:
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute, please follow the project's code style and
-linting rules. Here are some commands to help you get started:
-
-Check your code style:
-
-```shell
-./gradlew ktlintCheck
-```
-
-You can try an automatically apply the style by running:
-
-```shell
-./gradlew ktlintFormat
-```
-
-Detect potential issues:
-
-```shell
-./gradlew detekt
-```
-
-All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-format to ensure compatibility with our automated release system. A pre-commit hook is available to
-validate commit messages.
-
-You can set up hook to automate these checks before commiting and pushing your changes, to do so
-update the Git hooks path:
-
-```bash
-git config core.hooksPath .githooks/
-```
-
-Refer to our [Contribution Guide](docs/CONTRIBUTING.md) for more detailed information.
-
-## Contributing
-
 Contributions are welcome! Please follow the project's code style and linting rules before
 submitting.
 
@@ -213,3 +181,4 @@ This project is licensed under the [MIT License](LICENSE).
 [ktor]: https://ktor.io/
 [nvmrc-doc]: https://github.com/nvm-sh/nvm?tab=readme-ov-file#nvmrc
 [pillarbox-schema]: src/test/resources/schemas/pillarbox-standard-metadata-schema.json
+[testcontainers]: https://testcontainers.com/

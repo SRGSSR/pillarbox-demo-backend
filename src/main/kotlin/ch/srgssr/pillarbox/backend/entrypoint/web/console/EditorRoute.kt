@@ -1,6 +1,8 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.console
 
 import ch.srgssr.pillarbox.backend.auth.withRole
+import ch.srgssr.pillarbox.backend.authz.withFolderWrite
+import ch.srgssr.pillarbox.backend.authz.withMediaWrite
 import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.log.debug
@@ -37,22 +39,30 @@ fun Route.editorPage(
 ) {
   withRole(Role.WRITE) {
     get("editor/{id?}") {
-      val media =
-        call.parameters["id"]
-          ?.let { mediaRepository.find(it) }
-          ?.also { logger.debug { "Opening editor for media: $it" } }
+      val mediaId = call.parameters["id"]
       val folder = call.queryParameters["folderId"]?.takeIf { it.isNotBlank() }?.let { folderRepository.find(it) }
-      call.respondWithContext(
-        "modules/editor/editor.page.peb",
-        buildMap {
-          media?.let { put("item", media) }
-          folder?.let {
-            put("folderId", it.id)
-            put("folder", it)
-            put("ancestors", folderRepository.findAncestors(it.id).dropLast(1))
-          }
-        },
-      )
+
+      val renderEditor: suspend () -> Unit = {
+        val media = mediaId?.let { mediaRepository.find(it) }?.also { logger.debug { "Opening editor for media: $it" } }
+        call.respondWithContext(
+          "modules/editor/editor.page.peb",
+          buildMap {
+            media?.let { put("item", media) }
+            folder?.let {
+              put("folderId", it.id)
+              put("folder", it)
+              put("ancestors", folderRepository.findAncestors(it.id).dropLast(1))
+            }
+          },
+        )
+      }
+
+      // Editing targets the media's folder; creating new media targets the destination folder.
+      if (mediaId != null) {
+        withMediaWrite(mediaId, renderEditor)
+      } else {
+        withFolderWrite(folder?.id, block = renderEditor)
+      }
     }
 
     get("editor/{id}/duplicate") {
@@ -63,17 +73,21 @@ fun Route.editorPage(
           ?.also { logger.debug { "Opening editor with duplicate data from original ID: $id" } }
           ?: return@get call.respond(HttpStatusCode.NotFound)
       val folder = call.queryParameters["folderId"]?.takeIf { it.isNotBlank() }?.let { folderRepository.find(it) }
-      call.respondWithContext(
-        "modules/editor/editor.page.peb",
-        buildMap {
-          put("item", media.copy(id = ""))
-          folder?.let {
-            put("folderId", it.id)
-            put("folder", it)
-            put("ancestors", folderRepository.findAncestors(it.id).dropLast(1))
-          }
-        },
-      )
+
+      // Duplicating creates a new media in the destination folder.
+      withFolderWrite(folder?.id) {
+        call.respondWithContext(
+          "modules/editor/editor.page.peb",
+          buildMap {
+            put("item", media.copy(id = ""))
+            folder?.let {
+              put("folderId", it.id)
+              put("folder", it)
+              put("ancestors", folderRepository.findAncestors(it.id).dropLast(1))
+            }
+          },
+        )
+      }
     }
 
     hx.get("/fragments/editor/{fragment}") {
@@ -95,13 +109,19 @@ fun Route.editorPage(
     hx.post("actions/media") {
       val request = call.receive<Media>()
       val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
-      logger.info { "Saving media: ${request.id}, folderId=$folderId" }
-      val media = mediaRepository.save(request)
-      folderId?.let { folderRepository.assignMedia(it, media.id) }
 
-      val redirect = if (folderId != null) "/console?folderId=$folderId" else "/console"
-      call.response.headers.append("HX-Redirect", redirect)
-      call.respond(HttpStatusCode.OK)
+      // Overwriting an existing media is governed by its folder; the destination folder gates the save.
+      withMediaWrite(request.id.takeIf { mediaRepository.exists(it) }) {
+        withFolderWrite(folderId) {
+          logger.info { "Saving media: ${request.id}, folderId=$folderId" }
+          val media = mediaRepository.save(request)
+          folderId?.let { folderRepository.assignMedia(it, media.id) }
+
+          val redirect = if (folderId != null) "/console?folderId=$folderId" else "/console"
+          call.response.headers.append("HX-Redirect", redirect)
+          call.respond(HttpStatusCode.OK)
+        }
+      }
     }
   }
 }

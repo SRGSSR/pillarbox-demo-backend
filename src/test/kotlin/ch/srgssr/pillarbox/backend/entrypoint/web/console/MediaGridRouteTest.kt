@@ -2,17 +2,27 @@ package ch.srgssr.pillarbox.backend.entrypoint.web.console
 
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.AssignMediaRequestV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderPermissionRequestV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderRequestV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderResponseV1
 import ch.srgssr.pillarbox.backend.test.count
 import ch.srgssr.pillarbox.backend.test.hxDelete
 import ch.srgssr.pillarbox.backend.test.hxGet
 import ch.srgssr.pillarbox.backend.test.hxPost
 import ch.srgssr.pillarbox.backend.test.login
 import ch.srgssr.pillarbox.backend.test.mediaFixture
+import ch.srgssr.pillarbox.backend.test.seedUser
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
+import ch.srgssr.pillarbox.backend.test.tokenWithRoles
+import ch.srgssr.pillarbox.backend.test.userFixture
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
+import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -59,6 +69,40 @@ class MediaGridRouteTest :
       }
     }
 
+    should("return FORBIDDEN when deleting media in a folder restricted to someone else") {
+      testApplicationContext {
+        login()
+
+        val media = mediaFixture()
+        client.hxPost("${Navigation.CONSOLE}/actions/media") {
+          contentType(ContentType.Application.Json)
+          setBody(media)
+        }
+
+        // The session cookie also authenticates against the V1 API.
+        val folder =
+          client
+            .post("/v1/folder") {
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = "Locked"))
+            }.body<FolderResponseV1>()
+        client.post("/v1/folder/${folder.id}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(AssignMediaRequestV1(mediaId = media.id))
+        } shouldHaveStatus HttpStatusCode.Created
+
+        seedUser(userFixture(oidcSub = "someone-else"))
+        client.post("/v1/folder/${folder.id}/permission") {
+          bearerAuth(tokenWithRoles(setOf(Role.ADMIN)))
+          contentType(ContentType.Application.Json)
+          setBody(FolderPermissionRequestV1(oidcSub = "someone-else"))
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.hxDelete("${Navigation.CONSOLE}/actions/media/${media.id}") shouldHaveStatus
+          HttpStatusCode.Forbidden
+      }
+    }
+
     should("return NOT_FOUND when deleting a non-existing media") {
       testApplicationContext {
         login()
@@ -67,9 +111,9 @@ class MediaGridRouteTest :
       }
     }
 
-    should("return NOT_FOUND when restoring a non-existing media") {
+    should("return NOT_FOUND when an admin restores a non-existing media") {
       testApplicationContext {
-        login()
+        login(roles = setOf(Role.ADMIN))
 
         client.hxPost("${Navigation.CONSOLE}/actions/media/not-a-media/restore") shouldHaveStatus
           HttpStatusCode.NotFound
@@ -104,7 +148,7 @@ class MediaGridRouteTest :
 
     should("show media in the active grid and hide it from the deleted grid after restoring") {
       testApplicationContext {
-        login()
+        login(roles = setOf(Role.ADMIN))
         val media = mediaFixture()
 
         client.hxPost("${Navigation.CONSOLE}/actions/media") {
@@ -138,12 +182,20 @@ class MediaGridRouteTest :
       }
     }
 
-    should("allow WRITE user to access all endpoints") {
+    should("let a WRITE user delete but reserve restoring from the bin for admins") {
       testApplicationContext {
         login(roles = setOf(Role.WRITE))
 
         client.hxGet("${Navigation.CONSOLE}/fragments/media-grid") shouldHaveStatus HttpStatusCode.OK
         client.hxDelete("${Navigation.CONSOLE}/actions/media/any-id") shouldHaveStatus HttpStatusCode.NotFound
+        client.hxPost("${Navigation.CONSOLE}/actions/media/any-id/restore") shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
+
+    should("let an admin restore from the bin") {
+      testApplicationContext {
+        login(roles = setOf(Role.ADMIN))
+
         client.hxPost("${Navigation.CONSOLE}/actions/media/any-id/restore") shouldHaveStatus HttpStatusCode.NotFound
       }
     }

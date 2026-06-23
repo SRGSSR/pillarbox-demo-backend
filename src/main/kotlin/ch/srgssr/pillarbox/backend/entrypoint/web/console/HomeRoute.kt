@@ -1,6 +1,10 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.console
 
+import ch.srgssr.pillarbox.backend.auth.user
 import ch.srgssr.pillarbox.backend.auth.withRole
+import ch.srgssr.pillarbox.backend.authz.permissionChecker
+import ch.srgssr.pillarbox.backend.authz.withFolderWrite
+import ch.srgssr.pillarbox.backend.authz.withMediaWrite
 import ch.srgssr.pillarbox.backend.domain.model.Folder
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.log.debug
@@ -46,13 +50,13 @@ fun Route.homePage(
     logger.debug { "Fetching home page: folderId=${folder?.id}" }
     call.respondWithContext(
       "modules/home/home.page.peb",
-      folder
-        ?.let {
-          mapOf(
-            "folder" to folder,
-            "ancestors" to folderRepository.findAncestors(folder.id).dropLast(1),
-          )
-        }.orEmpty(),
+      buildMap {
+        put("canWrite", call.permissionChecker.canWriteFolder(call.user, folder?.id))
+        folder?.let {
+          put("folder", it)
+          put("ancestors", folderRepository.findAncestors(it.id).dropLast(1))
+        }
+      },
     )
   }
 
@@ -70,6 +74,10 @@ fun Route.homePage(
   withRole(Role.WRITE) {
     folderActions(mediaRepository, folderRepository)
     mediaGridActions(mediaRepository)
+  }
+
+  withRole(Role.ADMIN) {
+    mediaGridAdminActions(mediaRepository)
   }
 }
 
@@ -98,6 +106,7 @@ private fun Route.folderFragments(folderRepository: FolderRepository) {
       mapOf(
         "folders" to subFolders,
         "folderCounts" to folderCounts,
+        "folderWriteAccess" to call.permissionChecker.canWriteFolders(call.user, subFolders),
       ),
     )
   }
@@ -146,7 +155,7 @@ private fun Route.folderFragments(folderRepository: FolderRepository) {
  * @param folderRepository Repository used to persist folder and assignment changes.
  */
 @OptIn(ExperimentalKtorApi::class)
-@SuppressWarnings("LongMethod")
+@SuppressWarnings("LongMethod", "CyclomaticComplexMethod")
 private fun Route.folderActions(
   mediaRepository: MediaRepository,
   folderRepository: FolderRepository,
@@ -159,37 +168,42 @@ private fun Route.folderActions(
           parentId = params["parentId"]?.takeIf { it.isNotBlank() },
         )
       }
-    logger.info { "Creating folder: $folder" }
-    call.respondWithContext(
-      "modules/home/fragments/folder-card.fragment.peb",
-      mapOf(
-        "folder" to folderRepository.save(folder),
-        "count" to 0,
-      ),
-    )
+    withFolderWrite(folder.parentId) {
+      logger.info { "Creating folder: $folder" }
+      call.respondWithContext(
+        "modules/home/fragments/folder-card.fragment.peb",
+        mapOf(
+          "folder" to folderRepository.save(folder),
+          "count" to 0,
+        ),
+      )
+    }
   }
 
   hx.patch("actions/folder/{id}") {
     val id = call.parameters.getOrFail("id")
     val name = call.receiveParameters().getOrFail("name")
     val folder = folderRepository.find(id) ?: return@patch call.respond(HttpStatusCode.NotFound)
-
-    logger.info { "Renaming folder $id to '$name'" }
-    call.respondWithContext(
-      "modules/home/fragments/folder-card.fragment.peb",
-      mapOf(
-        "folder" to folderRepository.save(folder.copy(name = name)),
-        "count" to folderRepository.countMediaIn(id),
-      ),
-    )
+    withFolderWrite(id) {
+      logger.info { "Renaming folder $id to '$name'" }
+      call.respondWithContext(
+        "modules/home/fragments/folder-card.fragment.peb",
+        mapOf(
+          "folder" to folderRepository.save(folder.copy(name = name)),
+          "count" to folderRepository.countMediaIn(id),
+        ),
+      )
+    }
   }
 
   hx.delete("actions/folder/{id}") {
     val id = call.parameters.getOrFail("id")
-    logger.info { "Deleting folder with ID: $id" }
-    when (folderRepository.delete(id)) {
-      true -> call.respond(HttpStatusCode.OK)
-      false -> call.respond(HttpStatusCode.NotFound)
+    withFolderWrite(id) {
+      logger.info { "Deleting folder with ID: $id" }
+      when (folderRepository.delete(id)) {
+        true -> call.respond(HttpStatusCode.OK)
+        false -> call.respond(HttpStatusCode.NotFound)
+      }
     }
   }
 
@@ -203,18 +217,22 @@ private fun Route.folderActions(
     if (!mediaRepository.exists(mediaId)) return@post call.respond(HttpStatusCode.UnprocessableEntity)
     if (folderRepository.isMediaInFolder(id, mediaId)) return@post call.respond(HttpStatusCode.OK)
 
-    folderRepository.assignMedia(id, mediaId)
+    withFolderWrite(id) {
+      withMediaWrite(mediaId) {
+        folderRepository.assignMedia(id, mediaId)
 
-    call.response.headers.append("HX-Retarget", "[id='media-card-$mediaId']")
-    call.response.headers.append("HX-Reswap", "delete")
-    call.respondWithContext(
-      "modules/home/fragments/folder-card.fragment.peb",
-      mapOf(
-        "folder" to folder,
-        "count" to folderRepository.countMediaIn(id),
-        "oob" to true,
-      ),
-    )
+        call.response.headers.append("HX-Retarget", "[id='media-card-$mediaId']")
+        call.response.headers.append("HX-Reswap", "delete")
+        call.respondWithContext(
+          "modules/home/fragments/folder-card.fragment.peb",
+          mapOf(
+            "folder" to folder,
+            "count" to folderRepository.countMediaIn(id),
+            "oob" to true,
+          ),
+        )
+      }
+    }
   }
 
   hx.delete("actions/folder/{id}/media/{mediaId}") {
@@ -222,25 +240,26 @@ private fun Route.folderActions(
     val mediaId = call.parameters.getOrFail("mediaId")
 
     val previousFolder = folderRepository.find(id) ?: return@delete call.respond(HttpStatusCode.NotFound)
+    withFolderWrite(id) {
+      logger.info { "Removing folder assignment for media $mediaId" }
 
-    logger.info { "Removing folder assignment for media $mediaId" }
+      when (folderRepository.removeMediaAssignment(id, mediaId)) {
+        true -> {
+          call.response.headers.append("HX-Retarget", "[id='media-card-$mediaId']")
+          call.response.headers.append("HX-Reswap", "delete")
+          call.respondWithContext(
+            "modules/home/fragments/folder-card.fragment.peb",
+            mapOf(
+              "folder" to previousFolder,
+              "count" to folderRepository.countMediaIn(previousFolder.id),
+              "oob" to true,
+            ),
+          )
+        }
 
-    when (folderRepository.removeMediaAssignment(id, mediaId)) {
-      true -> {
-        call.response.headers.append("HX-Retarget", "[id='media-card-$mediaId']")
-        call.response.headers.append("HX-Reswap", "delete")
-        call.respondWithContext(
-          "modules/home/fragments/folder-card.fragment.peb",
-          mapOf(
-            "folder" to previousFolder,
-            "count" to folderRepository.countMediaIn(previousFolder.id),
-            "oob" to true,
-          ),
-        )
-      }
-
-      false -> {
-        call.respond(HttpStatusCode.NotFound)
+        false -> {
+          call.respond(HttpStatusCode.NotFound)
+        }
       }
     }
   }

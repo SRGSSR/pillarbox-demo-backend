@@ -1,5 +1,9 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.console
 
+import ch.srgssr.pillarbox.backend.auth.user
+import ch.srgssr.pillarbox.backend.authz.permissionChecker
+import ch.srgssr.pillarbox.backend.authz.withMediaWrite
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
 import ch.srgssr.pillarbox.backend.log.debug
 import ch.srgssr.pillarbox.backend.log.info
@@ -42,12 +46,19 @@ fun Route.mediaGridFragments(mediaRepository: MediaRepository) {
           else -> mediaRepository.findMediaWithoutFolder(limit, offset)
         }
 
+      val canWrite =
+        when {
+          deleted -> call.user.hasAnyRole(setOf(Role.ADMIN))
+          else -> call.permissionChecker.canWriteFolder(call.user, folderId)
+        }
+
       call.respondWithContext(
         "shared/fragments/media-grid.fragment.peb",
         buildMap {
           put("result", result)
           put("nextPage", nextPage)
           put("deleted", deleted)
+          put("canWrite", canWrite)
           folderId?.let { put("folderId", folderId) }
         },
       )
@@ -64,15 +75,25 @@ fun Route.mediaGridFragments(mediaRepository: MediaRepository) {
 fun Route.mediaGridActions(mediaRepository: MediaRepository) {
   hx.delete("actions/media/{id}") {
     val id = call.parameters.getOrFail("id")
-    logger.info { "Attempting to delete media with ID: $id" }
-    when (mediaRepository.softDelete(id)) {
-      true -> call.respond(HttpStatusCode.OK)
-      false -> call.respond(HttpStatusCode.NotFound)
+    withMediaWrite(id) {
+      logger.info { "Attempting to delete media with ID: $id" }
+      when (mediaRepository.softDelete(id)) {
+        true -> call.respond(HttpStatusCode.OK)
+        false -> call.respond(HttpStatusCode.NotFound)
+      }
     }
   }
+}
 
+/**
+ * Registers HTMX admin action endpoints for the paginated media-grid fragment.
+ *
+ * @param mediaRepository Repository used to apply soft-delete and restore operations.
+ */
+fun Route.mediaGridAdminActions(mediaRepository: MediaRepository) {
   hx.post("actions/media/{id}/restore") {
     val id = call.parameters.getOrFail("id")
+
     logger.info { "Attempting to restore media with ID: $id" }
     when (mediaRepository.restore(id)) {
       true -> call.respond(HttpStatusCode.OK)

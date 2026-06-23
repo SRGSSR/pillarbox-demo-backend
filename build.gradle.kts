@@ -56,12 +56,12 @@ dependencies {
   // --- Test ---
   testImplementation(libs.bundles.kotest)
   testImplementation(libs.bundles.ktor.test)
-  testImplementation(libs.h2)
   testImplementation(libs.json.schema.validator)
   testImplementation(libs.jsoup)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.mock.oauth2.server)
   testImplementation(libs.mockk)
+  testImplementation(libs.testcontainers.postgresql)
 }
 
 // ==============================================================================

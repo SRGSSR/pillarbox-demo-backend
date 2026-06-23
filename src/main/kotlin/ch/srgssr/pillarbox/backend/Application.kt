@@ -3,6 +3,7 @@ package ch.srgssr.pillarbox.backend
 import ch.srgssr.pillarbox.backend.auth.authenticationModule
 import ch.srgssr.pillarbox.backend.auth.configureOidc
 import ch.srgssr.pillarbox.backend.auth.installSession
+import ch.srgssr.pillarbox.backend.authz.authzModule
 import ch.srgssr.pillarbox.backend.db.databaseModule
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.auth
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.folder
@@ -69,6 +70,7 @@ fun Application.module() {
       jsonModule(),
       httpClientModule(),
       authenticationModule(),
+      authzModule(),
     )
   }
 
@@ -91,7 +93,7 @@ fun Application.module() {
   routing {
     auth(get(), get(), get(), get())
     media(get())
-    folder(get(), get())
+    folder(get(), get(), get(), get(), get())
     user(get(), get())
     team(get(), get())
     console(get(), get())

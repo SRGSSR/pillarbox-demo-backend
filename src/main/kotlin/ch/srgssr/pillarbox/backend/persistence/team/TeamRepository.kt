@@ -100,6 +100,20 @@ class TeamRepository(
     }
 
   /**
+   * Retrieves all teams the given user is a member of.
+   *
+   * @param oidcSub The OIDC sub of the user.
+   * @return The list of [Team] entities, empty if the user belongs to no team.
+   */
+  suspend fun findTeamsOf(oidcSub: String): List<Team> =
+    query(readOnly = true) {
+      (TeamTable innerJoin TeamMemberTable)
+        .selectAll()
+        .where { TeamMemberTable.oidcSub eq oidcSub }
+        .map { it.decode() }
+    }
+
+  /**
    * Retrieves the members of a team as [User] entities, paginated.
    *
    * @param teamId The ID of the team whose members should be retrieved.

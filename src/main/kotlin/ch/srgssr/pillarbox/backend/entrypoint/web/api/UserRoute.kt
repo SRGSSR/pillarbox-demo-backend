@@ -25,7 +25,10 @@ import org.jetbrains.exposed.v1.core.greater
 import kotlin.time.Clock
 
 /**
- * Configures the versioned user-related routes, restricted to administrators.
+ * Configures the versioned user-related routes.
+ *
+ * Listing users is available to editors (e.g. to pick folder grant subjects);
+ * session data is restricted to administrators.
  *
  * @param userRepository Repository used to read user records.
  * @param sessionRepository Repository used to read user sessions.
@@ -35,8 +38,8 @@ fun Route.user(
   sessionRepository: SessionRepository,
 ) {
   authenticate("pillarbox-jwt", "pillarbox-session") {
-    withRole(Role.ADMIN) {
-      route("v1/user") {
+    route("v1/user") {
+      withRole(Role.WRITE) {
         get {
           with(call.request.queryParameters.toQuerySlice()) {
             call.respond(
@@ -56,7 +59,9 @@ fun Route.user(
             else -> call.respond(user)
           }
         }
+      }
 
+      withRole(Role.ADMIN) {
         get("/{id}/session") {
           val id = call.parameters.getOrFail("id")
           if (!userRepository.exists(id)) return@get call.respond(HttpStatusCode.NotFound)

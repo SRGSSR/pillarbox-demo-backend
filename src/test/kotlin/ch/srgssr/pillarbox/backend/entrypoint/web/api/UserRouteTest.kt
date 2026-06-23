@@ -202,11 +202,23 @@ class UserRouteTest :
       }
     }
 
-    should("return 403 on all endpoints when authenticated without the ADMIN role") {
+    should("allow editors to list users but not sessions") {
       testApplicationContext {
-        client.get("/v1/user") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.get("/v1/user/any-id") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.get("/v1/user/any-id/session") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
+        seedUser(userFixture(oidcSub = "user-1"))
+
+        client.get("/v1/user") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/user/user-1") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/user/user-1/session") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
+      }
+    }
+
+    should("return 403 on all endpoints when authenticated without roles") {
+      testApplicationContext {
+        val readerToken = tokenWithRoles(emptySet())
+
+        client.get("/v1/user") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/user/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/user/any-id/session") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
       }
     }
   })

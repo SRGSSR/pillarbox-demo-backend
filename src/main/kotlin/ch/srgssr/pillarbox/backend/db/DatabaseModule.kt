@@ -3,10 +3,7 @@ package ch.srgssr.pillarbox.backend.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.config.ApplicationConfig
-import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 import javax.sql.DataSource
@@ -55,19 +52,8 @@ fun databaseModule() =
     }
 
     single {
-      val dbConfig = get<DatabaseConfig>()
       val dataSource = get<DataSource>()
-      val db = Database.connect(dataSource)
-
-      if (dbConfig.autoCreate) {
-        val allTables = get<List<Table>>().toTypedArray()
-
-        transaction(db) {
-          SchemaUtils.create(*allTables)
-        }
-      } else {
-        dataSource.runMigration()
-      }
-      db
+      dataSource.runMigration()
+      Database.connect(dataSource)
     }
   }

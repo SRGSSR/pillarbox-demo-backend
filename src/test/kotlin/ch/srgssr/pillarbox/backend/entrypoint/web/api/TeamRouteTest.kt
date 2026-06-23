@@ -239,24 +239,42 @@ class TeamRouteTest :
       }
     }
 
-    should("return 403 on all endpoints when authenticated without the ADMIN role") {
+    should("allow editors to list teams and members but not to modify them") {
       testApplicationContext {
-        client.get("/v1/team") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.get("/v1/team/any-id") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.get("/v1/team/any-id/member") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
+        val team = client.createTeamV1("Test Team", tokenWithRoles(adminRoles))
+
+        client.get("/v1/team") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/team/${team.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/team/${team.id}/member") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.post("/v1/team") {
           bearerAuth(token)
           contentType(ContentType.Application.Json)
-          setBody(TeamRequestV1(name = "Test Team"))
+          setBody(TeamRequestV1(name = "Another Team"))
         } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/team/any-id") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.post("/v1/team/any-id/member") {
+        client.delete("/v1/team/${team.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/team/${team.id}/member") {
           bearerAuth(token)
           contentType(ContentType.Application.Json)
           setBody(AddTeamMemberRequestV1(oidcSub = "any-user"))
         } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/team/any-id/member/any-user") { bearerAuth(token) } shouldHaveStatus
+        client.delete("/v1/team/${team.id}/member/any-user") { bearerAuth(token) } shouldHaveStatus
           HttpStatusCode.Forbidden
+      }
+    }
+
+    should("return 403 on all endpoints when authenticated without roles") {
+      testApplicationContext {
+        val readerToken = tokenWithRoles(emptySet())
+
+        client.get("/v1/team") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/team/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.get("/v1/team/any-id/member") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/team") {
+          bearerAuth(readerToken)
+          contentType(ContentType.Application.Json)
+          setBody(TeamRequestV1(name = "Test Team"))
+        } shouldHaveStatus HttpStatusCode.Forbidden
+        client.delete("/v1/team/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
       }
     }
   })

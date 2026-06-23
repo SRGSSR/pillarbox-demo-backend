@@ -1,7 +1,7 @@
 {% import "../folder-card.macros.peb" %}
 {# @pebvariable name="folders" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
 {# @pebvariable name="folderCounts" type="java.util.Map<java.lang.String, java.lang.Long>" #}
-{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+{# @pebvariable name="folderWriteAccess" type="java.util.Map<java.lang.String, java.lang.Boolean>" #}
 
-{{ folderList(folders, folderCounts, not (user.roles contains "WRITE")) }}
+{{ folderList(folders, folderCounts, folderWriteAccess) }}
 

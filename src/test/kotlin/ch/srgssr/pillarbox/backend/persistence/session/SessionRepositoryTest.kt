@@ -3,9 +3,11 @@ package ch.srgssr.pillarbox.backend.persistence.session
 import ch.srgssr.pillarbox.backend.db.EncryptionService
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.test.seedSession
+import ch.srgssr.pillarbox.backend.test.seedUser
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import ch.srgssr.pillarbox.backend.test.testDatabaseConfig
 import ch.srgssr.pillarbox.backend.test.testDb
+import ch.srgssr.pillarbox.backend.test.userFixture
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -21,6 +23,7 @@ class SessionRepositoryTest :
 
     should("save, find and delete a session by its stored id") {
       testApplicationContext {
+        seedUser(userFixture(oidcSub = "test-sub"))
         val session =
           seedSession(
             Session(
@@ -46,6 +49,7 @@ class SessionRepositoryTest :
 
     should("store the tokens encrypted at rest") {
       testApplicationContext {
+        seedUser(userFixture(oidcSub = "test-sub"))
         val session =
           seedSession(
             Session(

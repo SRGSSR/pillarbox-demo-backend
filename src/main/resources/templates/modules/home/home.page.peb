@@ -2,6 +2,7 @@
 {# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
 {# @pebvariable name="ancestors" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
 {# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+{# @pebvariable name="canWrite" type="java.lang.Boolean" #}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/modules/home/home.page.css">
@@ -18,7 +19,7 @@
         <span class="material-symbols-outlined">delete</span>
         Recently Deleted
       </a>
-      {% if user.roles contains "WRITE" %}
+      {% if canWrite %}
       <button class="btn btn-primary" type="button" popovertarget="new-menu" aria-expanded="false">
         <span class="material-symbols-outlined">add</span>
         New

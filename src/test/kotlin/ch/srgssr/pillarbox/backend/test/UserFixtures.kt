@@ -11,21 +11,22 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 
 /**
- * Connection to the same in-memory H2 database used by the application under test.
+ * Connection to the same [TestDatabase] PostgreSQL container used by the application under test.
  *
  * The Ktor test engine loads application classes in a child classloader, so repository
  * instances obtained from the application's Koin context cannot be used directly from
- * test code. Seeding goes through this dedicated connection instead, configured to
- * match `src/test/resources/application.conf`.
+ * test code. Seeding goes through this dedicated connection instead, pointed at the same
+ * container so it shares the schema and data with the application.
  */
-val testDatabaseConfig =
+val testDatabaseConfig by lazy {
   DatabaseConfig(
-    driverClassName = "org.h2.Driver",
-    jdbcUrl = "jdbc:h2:mem:test_db;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-    username = "sa",
-    password = "",
+    driverClassName = "org.postgresql.Driver",
+    jdbcUrl = TestDatabase.container.jdbcUrl,
+    username = TestDatabase.container.username,
+    password = TestDatabase.container.password,
     encryptionKey = "test-encryption-key-32-chars-long!!",
   )
+}
 
 val testDb by lazy {
   with(testDatabaseConfig) {

@@ -30,6 +30,7 @@ import kotlin.time.Clock
  *
  * @param db The [Database] instance used for all transactions.
  */
+@SuppressWarnings("TooManyFunctions")
 class FolderRepository(
   db: Database,
 ) : ExposedRepository<Folder, String>(db = db, table = FolderTable, idColumn = FolderTable.id) {
@@ -74,7 +75,7 @@ class FolderRepository(
    * folder in parameter.
    *
    * @param folderId The ID of the folder whose ancestors should be retrieved.
-   * @return A list of ancestor [Folder] entities, from the most distant (root) to the closest (parent).
+   * @return A list of [Folder] entities from the root down to the folder itself.
    */
   suspend fun findAncestors(folderId: String): List<Folder> =
     query(readOnly = true) {
@@ -91,6 +92,21 @@ class FolderRepository(
             updatedAt = row[FolderAncestorView.updatedAt].toKotlinInstant(),
           )
         }
+    }
+
+  /**
+   * Finds the folder a media item is assigned to.
+   *
+   * @param mediaId The media ID to look up.
+   * @return The [Folder], or `null` if the media is not assigned to any folder.
+   */
+  suspend fun findFolderOf(mediaId: String): Folder? =
+    query(readOnly = true) {
+      (FolderTable innerJoin FolderMediaTable)
+        .selectAll()
+        .where { FolderMediaTable.mediaId eq mediaId }
+        .singleOrNull()
+        ?.decode()
     }
 
   /**

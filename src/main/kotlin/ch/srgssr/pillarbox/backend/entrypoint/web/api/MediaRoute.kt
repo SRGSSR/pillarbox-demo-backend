@@ -1,10 +1,10 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
+import ch.srgssr.pillarbox.backend.auth.AuthenticatedUserPlugin
 import ch.srgssr.pillarbox.backend.auth.withRole
-import ch.srgssr.pillarbox.backend.domain.model.Media
+import ch.srgssr.pillarbox.backend.authz.withMediaWrite
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
-import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
@@ -27,107 +27,90 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 
 /**
- * Generic helper to register standard Media CRUD endpoints.
- *
- * This function abstracts the web layer logic (Ktor parameters, status codes, logging)
- * from the specific DTO types used. It allows the same endpoint logic to be reused
- * for different API versions or entry points.
- *
- * @param Req The Request DTO type.
- * @param Res The Response DTO type.
- * @param TagReq The DTO type used for tag update operations.
- * @param mediaRepository The repository for persistence operations.
- * @param toDomain Function to map the Request DTO to the [Media] domain model.
- * @param toResponse Function to map the [Media] domain model to the Response DTO.
- * @param applyTags Logic to apply [TagReq] to an existing list of tags.
- */
-inline fun <reified Req : Any, reified Res : Any, reified TagReq : Any> Route.mediaEndpoints(
-  mediaRepository: MediaRepository,
-  crossinline toDomain: (Req) -> Media,
-  crossinline toResponse: (Media) -> Res,
-  crossinline applyTags: (TagReq, List<String>) -> List<String>,
-) {
-  get {
-    with(call.request.queryParameters.toQuerySlice()) {
-      call.respond(
-        mediaRepository
-          .getAll(
-            limit,
-            offset,
-            filter = { MediaTable.deleted eq false },
-          ).map { toResponse(it) }
-          .toList(),
-      )
-    }
-  }
-
-  get("/{id}") {
-    val id = call.parameters.getOrFail("id")
-
-    val media =
-      mediaRepository.findOne {
-        (MediaTable.id eq id) and (MediaTable.deleted eq false)
-      } ?: return@get call.respond(HttpStatusCode.NotFound)
-
-    call.respond(toResponse(media))
-  }
-
-  withRole(Role.WRITE) {
-    post {
-      val dto = call.receive<Req>()
-      val media = toDomain(dto)
-
-      mediaRepository.save(media)
-      call.respond(HttpStatusCode.Created, toResponse(media))
-    }
-
-    patch("/{id}/tags") {
-      val id = call.parameters.getOrFail("id")
-      val request = call.receive<TagReq>()
-
-      mediaRepository
-        .updateTags(id) { applyTags(request, it) }
-        ?.let { call.respond(HttpStatusCode.OK, it) }
-        ?: call.respond(HttpStatusCode.NotFound)
-    }
-
-    delete("/{id}") {
-      val id = call.parameters.getOrFail("id")
-
-      mediaRepository
-        .softDelete(id)
-        .takeIf { it }
-        ?.let { call.respond(HttpStatusCode.NoContent) }
-        ?: call.respond(HttpStatusCode.NotFound)
-    }
-
-    post("/{id}/restore") {
-      val id = call.parameters.getOrFail("id")
-
-      mediaRepository
-        .restore(id)
-        .takeIf { it }
-        ?.let { call.respond(HttpStatusCode.Created) }
-        ?: call.respond(HttpStatusCode.NotFound)
-    }
-  }
-}
-
-/**
  * Configures the versioned media management routes.
+ *
+ * Mutations are guarded by `withMediaWrite`: media in restricted folders only accepts changes
+ * from granted editors and administrators.
  *
  * @param mediaRepository The repository used to manage media entities.
  */
+@SuppressWarnings("LongMethod")
 fun Route.media(mediaRepository: MediaRepository) {
-  // Entry point for the V1 media API.
   authenticate("pillarbox-jwt", "pillarbox-session") {
     route("v1/media") {
-      mediaEndpoints<MediaRequestV1, MediaResponseV1, TagBatchUpdateRequestV1>(
-        mediaRepository = mediaRepository,
-        toDomain = { it.toMedia() },
-        toResponse = { it.toMediaResponseV1() },
-        applyTags = { dto, tags -> dto.apply(tags) },
-      )
+      install(AuthenticatedUserPlugin)
+
+      get {
+        with(call.request.queryParameters.toQuerySlice()) {
+          call.respond(
+            mediaRepository
+              .getAll(
+                limit,
+                offset,
+                filter = { MediaTable.deleted eq false },
+              ).map { it.toMediaResponseV1() }
+              .toList(),
+          )
+        }
+      }
+
+      get("/{id}") {
+        val id = call.parameters.getOrFail("id")
+
+        val media =
+          mediaRepository.findOne {
+            (MediaTable.id eq id) and (MediaTable.deleted eq false)
+          } ?: return@get call.respond(HttpStatusCode.NotFound)
+
+        call.respond(media.toMediaResponseV1())
+      }
+
+      withRole(Role.WRITE) {
+        post {
+          val media = call.receive<MediaRequestV1>().toMedia()
+
+          // Saving is an upsert: overwriting an existing media is governed by its folder,
+          // while a brand-new id has nothing to protect yet.
+          withMediaWrite(media.id.takeIf { mediaRepository.exists(it) }) {
+            mediaRepository.save(media)
+            call.respond(HttpStatusCode.Created, media.toMediaResponseV1())
+          }
+        }
+
+        patch("/{id}/tags") {
+          val id = call.parameters.getOrFail("id")
+          val request = call.receive<TagBatchUpdateRequestV1>()
+          withMediaWrite(id) {
+            mediaRepository
+              .updateTags(id) { request.apply(it) }
+              ?.let { call.respond(HttpStatusCode.OK, it) }
+              ?: call.respond(HttpStatusCode.NotFound)
+          }
+        }
+
+        delete("/{id}") {
+          val id = call.parameters.getOrFail("id")
+          withMediaWrite(id) {
+            mediaRepository
+              .softDelete(id)
+              .takeIf { it }
+              ?.let { call.respond(HttpStatusCode.NoContent) }
+              ?: call.respond(HttpStatusCode.NotFound)
+          }
+        }
+      }
+
+      withRole(Role.ADMIN) {
+        post("/{id}/restore") {
+          val id = call.parameters.getOrFail("id")
+
+          mediaRepository
+            .restore(id)
+            .takeIf { it }
+            ?.let { call.respond(HttpStatusCode.Created) }
+            ?: call.respond(HttpStatusCode.NotFound)
+        }
+      }
     }
   }
 }

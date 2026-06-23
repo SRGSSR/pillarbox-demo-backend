@@ -13,17 +13,29 @@ and **Pebble templates**, allowing for dynamic updates without full page reloads
 ### Console Routes
 
 The console exposes several endpoints that return either full HTML pages or partial HTML fragments.
+Fragment and action endpoints are driven by HTMX. Mutating actions require the `Write` role, and
+restoring from the bin requires the `Admin` role; folder and media mutations are additionally gated
+by folder write access (see [Folder permissions](#folder-permissions)).
 
-| Method     | Endpoint                                 | Type | Description                                                                                                             |
-|------------|------------------------------------------|------|-------------------------------------------------------------------------------------------------------------------------|
-| **GET**    | `/console`                               | Page | Renders the main dashboard/home page.                                                                                   |
-| **GET**    | `/console/media`                         | HTMX | Returns a paginated grid fragment of media items, accepts `page` and `pageSize` query parameters to handle navigation.. |
-| **POST**   | `/console/media`                         | HTMX | Saves a media entity and triggers a client-side redirect.                                                               |
-| **DELETE** | `/console/media/{id}`                    | HTMX | Deletes a specific media entity from the repository.                                                                    |
-| **GET**    | `/console/media/editor/{id?}`            | Page | Opens the media editor (empty for new, populated for existing).                                                         |
-| **GET**    | `/console/media/editor/{id}/duplicate`   | Page | Opens the editor with data from an existing ID (ID cleared) for duplication.                                            |
-| **GET**    | `/console/media/editor/fragments/{name}` | HTMX | Returns a set of input fields for a specific object type.                                                               |
-| **POST**   | `/console/media/{id}/restore`            | HTMX | Restores a deleted media entity from the repository.                                                                    |
+| Method     | Endpoint                                       | Type     | Description                                                                               |
+|------------|------------------------------------------------|----------|-------------------------------------------------------------------------------------------|
+| **GET**    | `/console`                                     | Page     | Renders the main dashboard/home page. Accepts `folderId` to open a folder.                |
+| **GET**    | `/console/bin`                                 | Page     | Renders the bin (recently deleted media).                                                 |
+| **GET**    | `/console/editor/{id?}`                        | Page     | Opens the media editor (empty for new, populated for an existing id). Accepts `folderId`. |
+| **GET**    | `/console/editor/{id}/duplicate`               | Page     | Opens the editor pre-filled from an existing id (id cleared) for duplication.             |
+| **GET**    | `/console/fragments/media-grid`                | Fragment | Paginated media grid. Accepts `page`, `pageSize`, `folderId`, and `deleted`.              |
+| **GET**    | `/console/fragments/folder-grid`               | Fragment | Grid of subfolders. Accepts `id` (parent folder, omitted for root).                       |
+| **GET**    | `/console/fragments/folder-picker`             | Fragment | Folder picker dialog for moving a media item. Accepts `mediaId` and `folderId`.           |
+| **GET**    | `/console/fragments/folder-picker-child`       | Fragment | Lazily loads child folders in the picker. Accepts `id` and `currentFolderId`.             |
+| **GET**    | `/console/fragments/editor/{fragment}`         | Fragment | Returns a set of input fields for a specific editor row type.                             |
+| **POST**   | `/console/actions/folder`                      | Action   | Creates a folder.                                                                         |
+| **PATCH**  | `/console/actions/folder/{id}`                 | Action   | Renames a folder.                                                                         |
+| **DELETE** | `/console/actions/folder/{id}`                 | Action   | Deletes a folder.                                                                         |
+| **POST**   | `/console/actions/folder/{id}/media`           | Action   | Assigns a media item to a folder.                                                         |
+| **DELETE** | `/console/actions/folder/{id}/media/{mediaId}` | Action   | Removes a media item's assignment from a folder.                                          |
+| **POST**   | `/console/actions/media`                       | Action   | Saves a media entity (create/update) and triggers a client-side redirect.                 |
+| **DELETE** | `/console/actions/media/{id}`                  | Action   | Soft-deletes a media entity (moves it to the bin).                                        |
+| **POST**   | `/console/actions/media/{id}/restore`          | Action   | Restores a deleted media entity from the bin. Requires the `Admin` role.                  |
 
 ## REST API
 
@@ -73,36 +85,98 @@ curl -v --request POST \
 All endpoints below require the `Authorization: Bearer $TOKEN` header. You can find all the
 definitions in [MediaRoute.kt][media-route-kt].
 
-| Method     | Endpoint                 | Description                                             |
-|------------|--------------------------|---------------------------------------------------------|
-| **GET**    | `/v1/media`              | List all media (supports `limit` and `offset` queries). |
-| **GET**    | `/v1/media/{id}`         | Retrieve a specific media entity by ID.                 |
-| **POST**   | `/v1/media`              | Create or fully update a media entity.                  |
-| **PATCH**  | `/v1/media/{id}/tags`    | Batch update tags for a specific media entity.          |
-| **DELETE** | `/v1/media/{id}`         | Remove a media entity from the repository.              |
-| **POST**   | `/v1/media/{id}/restore` | Restores a deleted media entity from the repository.    |
+| Method     | Endpoint                 | Description                                                |
+|------------|--------------------------|------------------------------------------------------------|
+| **GET**    | `/v1/media`              | List all media (supports `limit` and `offset` queries).    |
+| **GET**    | `/v1/media/{id}`         | Retrieve a specific media entity by ID.                    |
+| **POST**   | `/v1/media`              | Create or fully update a media entity.                     |
+| **PATCH**  | `/v1/media/{id}/tags`    | Batch update tags for a specific media entity.             |
+| **DELETE** | `/v1/media/{id}`         | Soft-delete a media entity (moves it to the bin).          |
+| **POST**   | `/v1/media/{id}/restore` | Restore a deleted media entity. Requires the `Admin` role. |
+
+Mutations (`POST`, `PATCH`, `DELETE`) require the `Write` role and are additionally gated by the
+write access of the media's folder (see [Folder permissions](#folder-permissions)). Restoring from
+the bin is reserved for the `Admin` role.
 
 #### Folder API
 
 Folders provide a hierarchical way to organise media items. They support nesting via a `parentId`
 field. You can find all the definitions in [FolderRoute.kt][folder-route-kt].
 
-| Method     | Endpoint                          | Description                                                                                |
-|------------|-----------------------------------|--------------------------------------------------------------------------------------------|
-| **GET**    | `/v1/folder`                      | List folders. Accepts `limit` and `offset` for pagination; `parentId` to filter by parent. |
-| **GET**    | `/v1/folder/{id}`                 | Retrieve a specific folder by ID.                                                          |
-| **GET**    | `/v1/folder/{id}/media`           | List media items assigned to a folder. Accepts `limit` and `offset`.                       |
-| **POST**   | `/v1/folder`                      | Create a new folder.                                                                       |
-| **PATCH**  | `/v1/folder/{id}`                 | Update an existing folder.                                                                 |
-| **DELETE** | `/v1/folder/{id}`                 | Delete a folder.                                                                           |
-| **POST**   | `/v1/folder/{id}/media`           | Assign a media item to a folder.                                                           |
-| **DELETE** | `/v1/folder/{id}/media/{mediaId}` | Remove a media item's assignment from a folder.                                            |
+| Method     | Endpoint                                    | Description                                                                                |
+|------------|---------------------------------------------|--------------------------------------------------------------------------------------------|
+| **GET**    | `/v1/folder`                                | List folders. Accepts `limit` and `offset` for pagination; `parentId` to filter by parent. |
+| **GET**    | `/v1/folder/{id}`                           | Retrieve a specific folder by ID.                                                          |
+| **GET**    | `/v1/folder/{id}/media`                     | List media items assigned to a folder. Accepts `limit` and `offset`.                       |
+| **POST**   | `/v1/folder`                                | Create a new folder.                                                                       |
+| **PATCH**  | `/v1/folder/{id}`                           | Update an existing folder.                                                                 |
+| **DELETE** | `/v1/folder/{id}`                           | Delete a folder.                                                                           |
+| **POST**   | `/v1/folder/{id}/media`                     | Assign a media item to a folder.                                                           |
+| **DELETE** | `/v1/folder/{id}/media/{mediaId}`           | Remove a media item's assignment from a folder.                                            |
+| **GET**    | `/v1/folder/{id}/permission`                | List the grants effective on a folder (its own grants plus inherited ancestor grants).     |
+| **POST**   | `/v1/folder/{id}/permission`                | Add an access grant to a folder.                                                           |
+| **DELETE** | `/v1/folder/{id}/permission/{permissionId}` | Remove a grant from a folder.                                                              |
+
+#### Folder permissions
+
+By default, any user with the `Write` role may modify any folder and its media. A folder becomes
+**restricted** as soon as it (or one of its ancestors) carries at least one grant: from then on
+only granted subjects (and `Admin` users) may write to it and its descendants. Grants are inherited
+downwards. Managing a folder's grants requires write access to that folder, so editors with access
+can delegate it without involving an administrator. Reading is always open to any authenticated
+user.
+
+A grant targets exactly one subject: a user, a team, or a role, so a `POST` body must set exactly
+one of `oidcSub`, `teamId`, or `role`. `canWrite` defaults to `true`.
+
+```bash
+curl --request POST \
+  --url http://localhost:8080/v1/folder/{id}/permission \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  --data '{"teamId": "team-123", "canWrite": true}'
+```
+
+| Field      | Type      | Description                                                                                  |
+|------------|-----------|----------------------------------------------------------------------------------------------|
+| `oidcSub`  | `string`  | Grant for a single user (their OIDC subject). Mutually exclusive.                            |
+| `teamId`   | `string`  | Grant for all members of a team. Mutually exclusive.                                         |
+| `role`     | `string`  | Grant for all holders of a role (e.g. re-open a subtree to all editors). Mutually exclusive. |
+| `canWrite` | `boolean` | Whether the grant confers write access. Defaults to `true`.                                  |
+
+#### Team API
+
+Teams group users so a single folder grant can cover many people. Listing teams and their members
+requires the `Write` role (e.g. to pick grant subjects); creating or deleting teams and managing
+membership requires the `Admin` role. You can find all the definitions
+in [TeamRoute.kt][team-route-kt].
+
+| Method     | Endpoint                         | Role    | Description                                            |
+|------------|----------------------------------|---------|--------------------------------------------------------|
+| **GET**    | `/v1/team`                       | `Write` | List teams (supports `limit` and `offset`).            |
+| **GET**    | `/v1/team/{id}`                  | `Write` | Retrieve a specific team by ID.                        |
+| **GET**    | `/v1/team/{id}/member`           | `Write` | List a team's members (supports `limit` and `offset`). |
+| **POST**   | `/v1/team`                       | `Admin` | Create a team (body: `{ "name": "..." }`).             |
+| **DELETE** | `/v1/team/{id}`                  | `Admin` | Delete a team.                                         |
+| **POST**   | `/v1/team/{id}/member`           | `Admin` | Add a member (body: `{ "oidcSub": "..." }`).           |
+| **DELETE** | `/v1/team/{id}/member/{oidcSub}` | `Admin` | Remove a member from a team.                           |
+
+#### User API
+
+Users are provisioned from the OIDC provider on login. Listing users requires the `Write` role
+(e.g. to pick grant subjects); inspecting a user's active sessions requires the `Admin` role.
+You can find all the definitions in [UserRoute.kt][user-route-kt].
+
+| Method  | Endpoint                | Role    | Description                                                |
+|---------|-------------------------|---------|------------------------------------------------------------|
+| **GET** | `/v1/user`              | `Write` | List users (supports `limit` and `offset`).                |
+| **GET** | `/v1/user/{id}`         | `Write` | Retrieve a specific user by OIDC subject.                  |
+| **GET** | `/v1/user/{id}/session` | `Admin` | List a user's active sessions, most recently active first. |
 
 ### Player API (Public)
 
-The playback endpoints do not require a token and are open to all clients.
-Unlike the management API, these endpoints are **publicly accessible** (no Bearer token required).
-They support content negotiation via query parameters or custom headers.
+The playback endpoints do not require a token and are open to all clients, unlike the management
+API. They support content negotiation via query parameters or custom headers.
 You can find all the definitions in [PlayerMediaRoute.kt][player-media-route-kt].
 
 | Method  | Endpoint                       | Description                                                          |
@@ -164,8 +238,8 @@ level.
 Native levels (`L1`, `L2`, `L3`, `SL2000`, `SL3000`) are still accepted and passed through
 unchanged.
 
-[media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/MediaRoute.kt
-
-[folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/FolderRoute.kt
-
-[player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/PlayerMediaRoute.kt
+[folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/FolderRoute.kt
+[media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/MediaRoute.kt
+[player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/PlayerMediaRoute.kt
+[team-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/TeamRoute.kt
+[user-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/UserRoute.kt

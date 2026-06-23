@@ -40,14 +40,14 @@
 </div>
 {% endmacro %}
 
-{% macro folderList(folders, folderCounts, readOnly = false) %}
+{% macro folderList(folders, folderCounts, writeAccess) %}
 {# @pebvariable name="folders" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
 {# @pebvariable name="folderCounts" type="java.util.Map<java.lang.String, java.lang.Long>" #}
-{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+{# @pebvariable name="writeAccess" type="java.util.Map<java.lang.String, java.lang.Boolean>" #}
 
 <section class="folder-grid" id="folder-grid">
 {%- for folder in folders -%}
-  {{ folderCard(folder, folderCounts[folder.id] | default(0), readOnly) }}
+  {{ folderCard(folder, folderCounts[folder.id] | default(0), not (writeAccess[folder.id] | default(false))) }}
 {%- endfor -%}
 </section>
 {% endmacro %}

@@ -23,7 +23,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
 /**
- * Configures the versioned team-related routes, restricted to administrators.
+ * Configures the versioned team-related routes.
+ *
+ * Listing teams and members is available to editors (e.g. to pick folder grant
+ * subjects); creating and deleting teams and managing membership is restricted
+ * to administrators.
  *
  * @param teamRepository Repository used to manage team persistence.
  * @param userRepository Repository used to validate team member references.
@@ -34,8 +38,8 @@ fun Route.team(
   userRepository: UserRepository,
 ) {
   authenticate("pillarbox-jwt", "pillarbox-session") {
-    withRole(Role.ADMIN) {
-      route("v1/team") {
+    route("v1/team") {
+      withRole(Role.WRITE) {
         get {
           with(call.request.queryParameters.toQuerySlice()) {
             call.respond(
@@ -68,7 +72,9 @@ fun Route.team(
             )
           }
         }
+      }
 
+      withRole(Role.ADMIN) {
         post {
           val team = call.receive<TeamRequestV1>().toTeam()
           call.respond(

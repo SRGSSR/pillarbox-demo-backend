@@ -4,10 +4,10 @@
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
 {# @pebvariable name="nextPage" type="java.lang.Integer" #}
 {# @pebvariable name="folderId" type="java.lang.String" #}
-{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+{# @pebvariable name="canWrite" type="java.lang.Boolean" #}
 
 {% set hasMore = (nextPage * result.limit) < result.totalCount %}
 {% set folderParam = folderId is not empty ? "&folderId=" + folderId : "" %}
 {% set nextUrl = hasMore ? "/console/fragments/media-grid?page=" + nextPage + "&pageSize=" + result.limit + "&deleted=" + deleted + folderParam : null %}
 
-{{ mediaList(result, nextUrl, not (user.roles contains "WRITE"), folderId) }}
+{{ mediaList(result, nextUrl, not canWrite, folderId) }}

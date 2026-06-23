@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
+import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagActionV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.TagBatchUpdateRequestV1
@@ -147,10 +148,10 @@ class MediaRouteTest :
       }
     }
 
-    should("return NOT_FOUND when restoring a non-existent media") {
+    should("return NOT_FOUND when an admin restores a non-existent media") {
       testApplicationContext {
         client.post("/v1/media/does-not-exist/restore") {
-          bearerAuth(token)
+          bearerAuth(tokenWithRoles(setOf(Role.ADMIN)))
         } shouldHaveStatus HttpStatusCode.NotFound
       }
     }
@@ -214,25 +215,25 @@ class MediaRouteTest :
 
     should("allow read access but return 403 on write endpoints when authenticated with no roles") {
       testApplicationContext {
-        val t = tokenWithRoles(emptySet())
+        val readerToken = tokenWithRoles(emptySet())
 
         client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.get("/v1/media/any-media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NotFound
         client.post("/v1/media") {
-          bearerAuth(t)
+          bearerAuth(readerToken)
           contentType(ContentType.Application.Json)
           setBody(mediaFixture().toMediaRequestV1())
         } shouldHaveStatus HttpStatusCode.Forbidden
         client.patch("/v1/media/any-id/tags") {
-          bearerAuth(t)
+          bearerAuth(readerToken)
           contentType(ContentType.Application.Json)
         } shouldHaveStatus HttpStatusCode.Forbidden
-        client.delete("/v1/media/any-id") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
-        client.post("/v1/media/any-id/restore") { bearerAuth(t) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.delete("/v1/media/any-id") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
+        client.post("/v1/media/any-id/restore") { bearerAuth(readerToken) } shouldHaveStatus HttpStatusCode.Forbidden
       }
     }
 
-    should("allow WRITE token to access all endpoints") {
+    should("let a WRITE token write but reserve restoring from the bin for admins") {
       testApplicationContext {
         val fixture = mediaFixture { id = "auth-test-id" }
 
@@ -245,11 +246,11 @@ class MediaRouteTest :
         client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.get("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.delete("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
-        client.post("/v1/media/${fixture.id}/restore") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Created
+        client.post("/v1/media/${fixture.id}/restore") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
       }
     }
 
-    should("successfully restore a deleted media item") {
+    should("successfully restore a deleted media item as an admin") {
       testApplicationContext {
         val fixture = mediaFixture()
         val request = fixture.toMediaRequestV1()
@@ -269,7 +270,7 @@ class MediaRouteTest :
         } shouldHaveStatus HttpStatusCode.NotFound
 
         client.post("/v1/media/${fixture.id}/restore") {
-          bearerAuth(token)
+          bearerAuth(tokenWithRoles(setOf(Role.ADMIN)))
         } shouldHaveStatus HttpStatusCode.Created
 
         val restoredMedia =

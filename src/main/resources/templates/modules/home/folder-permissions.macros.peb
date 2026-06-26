@@ -5,9 +5,7 @@
 {% set editable = row.subject == 'editor' or (not isRole and not row.inherited) %}
 <div id="permission-grant-{{ row.subject | replace({':': '-'}) }}" class="permission-row{% if not editable %} permission-row-locked{% endif %}"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
   <span class="permission-subject">
-    <span class="permission-avatar">
-      <span class="material-symbols-outlined">{% if row.subject.startsWith('team:') %}group{% elseif row.subject.startsWith('user:') %}person{% else %}shield{% endif %}</span>
-    </span>
+    <span class="avatar"><span class="material-symbols-outlined" aria-hidden="true">{% if row.subject.startsWith('team:') %}group{% elseif row.subject.startsWith('user:') %}person{% else %}shield{% endif %}</span></span>
     <span class="permission-name">{{ row.label }}</span>
   </span>
   <div class="field">

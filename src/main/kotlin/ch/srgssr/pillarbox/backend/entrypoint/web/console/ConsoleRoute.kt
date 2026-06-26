@@ -36,6 +36,7 @@ fun Route.console(
     route(Navigation.CONSOLE) {
       homePage(mediaRepository, folderRepository, folderPermissionRepository, userRepository, teamRepository)
       editorPage(mediaRepository, folderRepository)
+      usersPage(userRepository)
     }
   }
 }

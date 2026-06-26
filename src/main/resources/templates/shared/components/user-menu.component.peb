@@ -1,5 +1,5 @@
 {# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
-<button type="button" class="user-avatar" popovertarget="user-menu" aria-expanded="false" title="{{ user.name | default('User') }}">
+<button type="button" class="avatar" popovertarget="user-menu" aria-expanded="false" title="{{ user.name | default('User') }}">
   {{ user.initials | default('?') }}
 </button>
 <div class="dropdown user-dropdown" popover id="user-menu">

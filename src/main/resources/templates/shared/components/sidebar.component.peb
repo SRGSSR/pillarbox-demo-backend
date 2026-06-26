@@ -1,5 +1,6 @@
 {# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
 {# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="section" type="java.lang.String" #}
 
 <aside class="sidebar" id="sidebar" popover>
   <header>
@@ -8,17 +9,13 @@
   </header>
 
   <nav>
-    <a href="/console" class="{{ folder is empty and not deleted ? 'is-active' : '' }}">
+    <a href="/console" class="{{ section == 'library' ? 'is-active' : '' }}">
       <span class="material-symbols-outlined">folder_open</span> Media Library
     </a>
+    {% if user.roles contains 'WRITE' %}
+    <a href="/console/users" class="{{ section == 'users' ? 'is-active' : '' }}">
+      <span class="material-symbols-outlined">group</span> Users
+    </a>
+    {% endif %}
   </nav>
-
-  <!--
-  <div class="sidebar-section-label">Folders</div>
-  <div class="folder-tree"
-       hx-get="/console/folders/tree?active={{ folder.id | default('') }}"
-       hx-trigger="load"
-       hx-swap="innerHTML">
-  </div> -->
-
 </aside>

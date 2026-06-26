@@ -96,7 +96,7 @@ fun Application.module() {
     folder(get(), get(), get(), get(), get())
     user(get(), get())
     team(get(), get())
-    console(get(), get())
+    console(get(), get(), get(), get(), get())
     playerMedia(get(), get())
   }
 

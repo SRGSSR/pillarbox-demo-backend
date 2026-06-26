@@ -10,9 +10,12 @@ import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.log.debug
 import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
+import ch.srgssr.pillarbox.backend.persistence.folder.FolderPermissionRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderTable
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
+import ch.srgssr.pillarbox.backend.persistence.team.TeamRepository
+import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.htmx.hx
 import io.ktor.server.request.receiveParameters
@@ -37,10 +40,16 @@ private val logger = HomeRoute.logger()
  *
  * @param mediaRepository Repository used to read and soft-delete media items.
  * @param folderRepository Repository used to read, create, and manage folder structure.
+ * @param folderPermissionRepository Repository used to read and manage folder grants.
+ * @param userRepository Repository used to resolve and search users for grants.
+ * @param teamRepository Repository used to resolve and search teams for grants.
  */
 fun Route.homePage(
   mediaRepository: MediaRepository,
   folderRepository: FolderRepository,
+  folderPermissionRepository: FolderPermissionRepository,
+  userRepository: UserRepository,
+  teamRepository: TeamRepository,
 ) {
   get {
     val folder =
@@ -74,6 +83,8 @@ fun Route.homePage(
   withRole(Role.WRITE) {
     folderActions(mediaRepository, folderRepository)
     mediaGridActions(mediaRepository)
+    folderPermissionFragments(folderRepository, folderPermissionRepository, userRepository, teamRepository)
+    folderPermissionActions(folderRepository, folderPermissionRepository, userRepository, teamRepository)
   }
 
   withRole(Role.ADMIN) {

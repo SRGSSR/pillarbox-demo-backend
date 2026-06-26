@@ -1,0 +1,5 @@
+{% import "../folder-permissions.macros.peb" %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="row" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.PermissionRow" #}
+{# @pebvariable name="oob" type="java.lang.Boolean" #}
+{{ permissionRow(folder, row, oob) }}

@@ -1,0 +1,143 @@
+.folder-permissions-dialog {
+  inline-size: min(92vw, 46rem);
+  max-inline-size: 46rem;
+}
+
+.permissions-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+/* ── Permission tables ── */
+.permission-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-table + .permission-table {
+  margin-block-start: var(--size-3);
+}
+
+/* Append target for new grants; transparent to the table's row layout. */
+#permission-grants {
+  display: contents;
+}
+
+.permission-row-head,
+.permission-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(7rem, 11rem) var(--size-7);
+  gap: var(--size-3);
+  align-items: center;
+}
+
+.permission-row-head {
+  padding: 0 var(--size-3) var(--size-2);
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-6);
+  color: var(--text-2);
+}
+
+.permission-head-level {
+  grid-column: 2;
+}
+
+.permission-row {
+  padding: var(--size-2) var(--size-3);
+  border-radius: var(--radius-2);
+}
+
+.permission-row:hover {
+  background: var(--surface-2);
+}
+
+.permission-subject {
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.permission-avatar {
+  display: grid;
+  place-items: center;
+
+  inline-size: var(--size-7);
+  block-size: var(--size-7);
+  border-radius: var(--radius-round);
+
+  color: var(--text-2);
+
+  background: var(--surface-3);
+}
+
+.permission-avatar .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.permission-name {
+  overflow: hidden;
+  color: var(--text-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.permission-lock {
+  cursor: help;
+  justify-self: center;
+  font-size: 18px;
+  color: var(--text-3);
+}
+
+.permission-lock:focus-visible {
+  border-radius: var(--radius-1);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.permission-delete {
+  justify-self: center;
+  color: var(--text-3);
+}
+
+.permission-delete:hover {
+  color: var(--accent-text);
+}
+
+/* ── Add a permission (native <details> disclosure) ── */
+.permission-add {
+  align-self: stretch;
+  background: transparent;
+}
+
+.permission-add-toggle {
+  display: flex;
+  width: fit-content;
+  margin-inline-start: auto;
+  list-style: none;
+}
+
+.permission-add-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.permission-add[open] .permission-add-toggle {
+  margin-block-end: var(--size-3);
+}
+
+.permission-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-2);
+  align-items: center;
+}
+
+.permission-subject-field {
+  flex: 1 1 var(--size-12);
+  min-inline-size: var(--size-12);
+}
+
+.permission-level {
+  min-inline-size: var(--size-11);
+}

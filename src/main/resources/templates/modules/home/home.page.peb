@@ -20,6 +20,33 @@
         Recently Deleted
       </a>
       {% if canWrite %}
+      {% if folder is not empty %}
+      <button class="btn" type="button" popovertarget="folder-actions-menu" aria-expanded="false">
+        <span class="material-symbols-outlined">folder_managed</span>
+        Folder Actions
+        <span class="material-symbols-outlined dropdown-chevron">expand_more</span>
+      </button>
+      <div class="dropdown" popover id="folder-actions-menu">
+        <button class="btn dropdown-item" type="button"
+                data-open-permissions
+                hx-get="/console/fragments/folder-permissions?folderId={{ folder.id }}"
+                hx-target="#folder-permissions-dialog"
+                hx-swap="innerHTML"
+                onclick="this.closest('[popover]').hidePopover()">
+          <span class="material-symbols-outlined">key</span>
+          Manage permissions
+        </button>
+        <button class="btn dropdown-item danger" type="button"
+                hx-delete="/console/actions/folder/{{ folder.id }}"
+                hx-swap="none"
+                hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned."
+                hx-on::after-request="if(event.detail.successful) window.location.href='/console{% if folder.parentId is not empty %}?folderId={{ folder.parentId }}{% endif %}'"
+                onclick="this.closest('[popover]').hidePopover()">
+          <span class="material-symbols-outlined">delete</span>
+          Delete this folder
+        </button>
+      </div>
+      {% endif %}
       <button class="btn btn-primary" type="button" popovertarget="new-menu" aria-expanded="false">
         <span class="material-symbols-outlined">add</span>
         New
@@ -74,6 +101,7 @@
 </template>
 
 <dialog closedby="any" id="move-folder-dialog" class="move-folder-dialog"></dialog>
+<dialog closedby="any" id="folder-permissions-dialog" class="folder-permissions-dialog"></dialog>
 <dialog closedby="any" id="new-folder-dialog" class="new-folder-dialog">
   <form hx-post="/console/actions/folder"
         hx-target="#folder-grid"

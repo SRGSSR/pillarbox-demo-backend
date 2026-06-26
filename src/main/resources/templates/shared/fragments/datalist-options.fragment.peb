@@ -1,0 +1,4 @@
+{# @pebvariable name="options" type="java.util.List<ch.srgssr.pillarbox.backend.entrypoint.web.console.DatalistOption>" #}
+{%- for option in options -%}
+<option value="{{ option.value }}"{% if option.label %} label="{{ option.label }}"{% endif %}{% if option.id %} data-id="{{ option.id }}"{% endif %}>
+{%- endfor -%}

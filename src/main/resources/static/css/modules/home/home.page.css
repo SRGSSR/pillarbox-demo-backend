@@ -3,6 +3,7 @@
 @import url("../../shared/components/snackbar.component.css");
 @import url("./folder-grid.fragment.css");
 @import url("./folder-picker.fragment.css");
+@import url("./folder-permissions.fragment.css");
 
 /* ── Main content layout ── */
 #main-container {

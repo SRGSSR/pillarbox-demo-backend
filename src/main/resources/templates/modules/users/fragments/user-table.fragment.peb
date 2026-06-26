@@ -9,9 +9,9 @@
 {%- for user in result.items -%}
 <tr class="user-row"{% if loop.last and nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="revealed" hx-swap="afterend" hx-select=".user-row"{% endif %}>
   <td>
-    <span class="user-identity">
+    <span class="cell-identity">
       {{ avatar(initials=user.initials) }}
-      <span class="user-name">{{ user.displayName }}</span>
+      <span class="cell-name">{{ user.displayName }}</span>
     </span>
   </td>
   <td>
@@ -19,8 +19,8 @@
       {%- for role in user.roles -%}<span class="role-tag">{{ role }}</span>{%- endfor -%}
     </span>
   </td>
-  <td class="user-date">{{ user.createdAt | datetime }}</td>
-  <td class="user-date">{{ user.updatedAt | datetime }}</td>
+  <td class="cell-muted">{{ user.createdAt | datetime }}</td>
+  <td class="cell-muted">{{ user.updatedAt | datetime }}</td>
 </tr>
 {%- endfor -%}
 

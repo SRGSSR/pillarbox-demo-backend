@@ -16,6 +16,9 @@
     <a href="/console/users" class="{{ section == 'users' ? 'is-active' : '' }}">
       <span class="material-symbols-outlined">group</span> Users
     </a>
+    <a href="/console/teams" class="{{ section == 'teams' ? 'is-active' : '' }}">
+      <span class="material-symbols-outlined">groups</span> Teams
+    </a>
     {% endif %}
   </nav>
 </aside>

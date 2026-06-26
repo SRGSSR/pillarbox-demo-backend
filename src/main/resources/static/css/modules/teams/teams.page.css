@@ -1,0 +1,10 @@
+@import url("../../layouts/dashboard.layout.css");
+
+/* ── Columns ── */
+.col-members {
+  inline-size: 16%;
+}
+
+.col-date {
+  inline-size: 24%;
+}

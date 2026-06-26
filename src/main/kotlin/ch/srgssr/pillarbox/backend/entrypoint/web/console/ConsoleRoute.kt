@@ -37,7 +37,7 @@ fun Route.console(
       homePage(mediaRepository, folderRepository, folderPermissionRepository, userRepository, teamRepository)
       editorPage(mediaRepository, folderRepository)
       usersPage(userRepository)
-      teamsPage(teamRepository)
+      teamsPage(teamRepository, userRepository)
     }
   }
 }

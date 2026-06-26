@@ -17,6 +17,7 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -144,6 +145,30 @@ class TeamRepository(
             updatedAt = row[UserTable.updatedAt].toKotlinInstant(),
           )
         }
+    }
+
+  /**
+   * Replaces the entire membership of a team in a single transaction: every current member is removed
+   * and [memberOidcSubs] are inserted as the team's members in one batch.
+   *
+   * @param teamId The team whose members are replaced.
+   * @param memberOidcSubs The OIDC subs the team should have as members; blanks and duplicates are ignored.
+   */
+  suspend fun replaceMembers(
+    teamId: String,
+    memberOidcSubs: Collection<String>,
+  ): Unit =
+    query {
+      TeamMemberTable.deleteWhere { TeamMemberTable.teamId eq teamId }
+      val subs = memberOidcSubs.filter { it.isNotBlank() }.distinct()
+      if (subs.isNotEmpty()) {
+        val addedAt = Clock.System.now().toUtcOffsetDateTime()
+        TeamMemberTable.batchInsert(subs) { sub ->
+          this[TeamMemberTable.teamId] = teamId
+          this[TeamMemberTable.oidcSub] = sub
+          this[TeamMemberTable.addedAt] = addedAt
+        }
+      }
     }
 
   /**

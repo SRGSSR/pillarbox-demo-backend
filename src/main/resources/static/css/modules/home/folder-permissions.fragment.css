@@ -82,11 +82,6 @@
 
 .permission-delete {
   justify-self: center;
-  color: var(--text-3);
-}
-
-.permission-delete:hover {
-  color: var(--accent-text);
 }
 
 /* ── Add a permission (native <details> disclosure) ── */

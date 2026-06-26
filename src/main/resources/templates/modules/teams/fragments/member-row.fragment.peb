@@ -1,0 +1,3 @@
+{% import "../team.macros.peb" %}
+{# @pebvariable name="member" type="ch.srgssr.pillarbox.backend.domain.model.User" #}
+{{ memberRow(member) }}

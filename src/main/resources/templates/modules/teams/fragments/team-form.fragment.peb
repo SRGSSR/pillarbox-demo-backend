@@ -1,0 +1,39 @@
+{% import "../team.macros.peb" %}
+{# @pebvariable name="team" type="ch.srgssr.pillarbox.backend.domain.model.Team" #}
+{# @pebvariable name="members" type="java.util.List<ch.srgssr.pillarbox.backend.domain.model.User>" #}
+{% set editing = team is not empty %}
+<form class="team-form"
+      hx-post="/console/actions/team{% if editing %}/{{ team.id }}{% endif %}"
+      hx-target="{% if editing %}#team-row-{{ team.id }}{% else %}#team-rows{% endif %}"
+      hx-swap="{% if editing %}outerHTML{% else %}afterbegin{% endif %}">
+  <h3>{{ editing ? 'Edit team' : 'New team' }}</h3>
+
+  <div class="field">
+    <label for="team-name">Name</label>
+    <input id="team-name" name="name" type="text" required autocomplete="off"
+           placeholder="e.g. Newsroom" value="{{ team.name | default('') }}">
+  </div>
+
+  <div class="field">
+    <div class="field">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <input id="team-member-search" type="search" name="q" autocomplete="off" data-member-search
+             list="member-options"
+             placeholder="Search users to add…"
+             aria-label="Search users to add"
+             hx-get="/console/fragments/member-options"
+             hx-target="#member-options"
+             hx-swap="innerHTML"
+             hx-trigger="input changed delay:200ms">
+      <datalist id="member-options"></datalist>
+    </div>
+    <div id="member-list" class="member-list">
+      {%- for member in members -%}{{ memberRow(member) }}{%- endfor -%}
+    </div>
+  </div>
+
+  <footer>
+    <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save team</button>
+  </footer>
+</form>

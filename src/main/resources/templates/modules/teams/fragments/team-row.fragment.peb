@@ -1,0 +1,5 @@
+{% import "../team.macros.peb" %}
+{# @pebvariable name="team" type="ch.srgssr.pillarbox.backend.domain.model.Team" #}
+{# @pebvariable name="memberCount" type="java.lang.Long" #}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+{{ teamRow(team, memberCount, null, user.roles contains 'ADMIN') }}

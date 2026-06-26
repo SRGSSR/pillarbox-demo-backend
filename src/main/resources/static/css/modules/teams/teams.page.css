@@ -8,3 +8,43 @@
 .col-date {
   inline-size: 24%;
 }
+
+.col-actions {
+  inline-size: var(--size-9);
+}
+
+/* ── Team dialog ── */
+.team-dialog {
+  inline-size: min(92vw, 32rem);
+}
+
+.team-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+.team-form footer {
+  display: flex;
+  gap: var(--size-2);
+  justify-content: flex-end;
+}
+
+/* ── Member list ── */
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-1);
+  margin-block-start: var(--size-1);
+}
+
+.member-row {
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+  padding: var(--size-1) var(--size-2);
+}
+
+.member-row .cell-name {
+  flex: 1;
+}

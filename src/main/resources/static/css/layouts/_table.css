@@ -56,6 +56,7 @@ tbody tr:hover td {
 
 .cell-name {
   overflow: hidden;
+
   min-inline-size: 0;
 
   font-weight: var(--font-weight-6);
@@ -65,4 +66,10 @@ tbody tr:hover td {
 
 .cell-muted {
   color: var(--text-2);
+}
+
+/* A trailing cell holding a row action; no ellipsis since it never overflows. */
+.cell-action {
+  text-align: end;
+  text-overflow: clip;
 }

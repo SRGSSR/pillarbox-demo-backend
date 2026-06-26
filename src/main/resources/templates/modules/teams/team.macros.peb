@@ -1,0 +1,41 @@
+{% macro teamRow(team, memberCount, nextUrl, canManage) %}
+{# @pebvariable name="team" type="ch.srgssr.pillarbox.backend.domain.model.Team" #}
+{# @pebvariable name="memberCount" type="java.lang.Long" #}
+{# @pebvariable name="nextUrl" type="java.lang.String" #}
+{# @pebvariable name="canManage" type="java.lang.Boolean" #}
+<tr id="team-row-{{ team.id }}" class="team-row"{% if nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="revealed" hx-swap="afterend" hx-select=".team-row"{% endif %}>
+  <td>
+    <span class="cell-identity">
+      <span class="avatar"><span class="material-symbols-outlined" aria-hidden="true">group</span></span>
+      <span class="cell-name">{{ team.name }}</span>
+    </span>
+  </td>
+  <td>{{ memberCount }}</td>
+  <td class="cell-muted">{{ team.createdAt | datetime }}</td>
+  <td class="cell-muted">{{ team.updatedAt | datetime }}</td>
+  {% if canManage %}
+  <td class="cell-action">
+    <button class="btn-icon" type="button" data-open-team
+            hx-get="/console/fragments/team-form?teamId={{ team.id }}"
+            hx-target="#team-dialog"
+            hx-swap="innerHTML"
+            title="Edit {{ team.name }}" aria-label="Edit {{ team.name }}">
+      <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    </button>
+  </td>
+  {% endif %}
+</tr>
+{% endmacro %}
+
+{% macro memberRow(member) %}
+{# @pebvariable name="member" type="ch.srgssr.pillarbox.backend.domain.model.User" #}
+<div class="member-row" data-member-id="{{ member.oidcSub }}">
+  <input type="hidden" name="memberId" value="{{ member.oidcSub }}">
+  <span class="avatar">{{ member.initials }}</span>
+  <span class="cell-name">{{ member.displayName }}</span>
+  <button type="button" class="btn-icon btn-remove" data-remove-member
+          title="Remove {{ member.displayName }}" aria-label="Remove {{ member.displayName }}">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</div>
+{% endmacro %}

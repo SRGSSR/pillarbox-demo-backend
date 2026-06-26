@@ -24,7 +24,7 @@
     {% endif %}
   </div>
   {% if not isRole and editable %}
-  <button type="button" class="btn-icon permission-delete" title="Remove {{ row.label }}" aria-label="Remove {{ row.label }}"
+  <button type="button" class="btn-icon btn-remove permission-delete" title="Remove {{ row.label }}" aria-label="Remove {{ row.label }}"
           hx-delete="/console/actions/folder/{{ folder.id }}/permission/{{ row.subject }}"
           hx-target="closest .permission-row"
           hx-swap="delete">

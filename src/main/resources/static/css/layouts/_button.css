@@ -45,6 +45,15 @@ button:hover, .btn:hover {
   background: var(--surface-3);
 }
 
+/* A muted icon button that turns accent on hover — the cross ending a removable row. */
+.btn-remove {
+  color: var(--text-3);
+}
+
+.btn-remove:hover {
+  color: var(--accent-text);
+}
+
 .btn-primary {
   border-color: var(--accent);
   color: var(--gray-0);

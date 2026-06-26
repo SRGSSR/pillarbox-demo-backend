@@ -9,10 +9,23 @@
 {% endblock %}
 
 {% block mainContent %}
+{% set canManage = user.roles contains 'ADMIN' %}
 <main role="main" id="main-container">
 
   <div class="main-header">
     <h2>Teams</h2>
+    {% if canManage %}
+    <div class="main-header-actions">
+      <button class="btn btn-primary" type="button"
+              data-open-team
+              hx-get="/console/fragments/team-form"
+              hx-target="#team-dialog"
+              hx-swap="innerHTML">
+        <span class="material-symbols-outlined">add</span>
+        New team
+      </button>
+    </div>
+    {% endif %}
   </div>
 
   <div class="field">
@@ -32,6 +45,7 @@
       <col class="col-members">
       <col class="col-date">
       <col class="col-date">
+      {% if canManage %}<col class="col-actions">{% endif %}
     </colgroup>
     <thead>
       <tr>
@@ -39,15 +53,20 @@
         <th>Members</th>
         <th>Created</th>
         <th>Updated</th>
+        {% if canManage %}<th></th>{% endif %}
       </tr>
     </thead>
     <tbody id="team-rows"
            hx-get="/console/fragments/team-table?page=0"
            hx-trigger="load"
            hx-swap="innerHTML">
-      <tr><td colspan="4" class="table-empty">Loading teams…</td></tr>
+      <tr><td colspan="{{ canManage ? 5 : 4 }}" class="table-empty">Loading teams…</td></tr>
     </tbody>
   </table>
+
+  {% if canManage %}
+  <dialog closedby="any" id="team-dialog" class="team-dialog"></dialog>
+  {% endif %}
 
 </main>
 {% endblock %}

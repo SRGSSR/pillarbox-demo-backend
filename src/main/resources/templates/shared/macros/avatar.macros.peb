@@ -1,4 +1,4 @@
 {# A round avatar showing either a material icon or the subject's initials. #}
 {% macro avatar(initials = null, icon = null) %}
-<span class="avatar">{% if icon is not null %}<span class="material-symbols-outlined" aria-hidden="true">{{ icon }}</span>{% else %}{{ initials | default('?') }}{% endif %}</span>
+<span class="avatar" aria-hidden="true">{% if icon is not null %}<span class="material-symbols-outlined">{{ icon }}</span>{% else %}{{ initials | default('?') }}{% endif %}</span>
 {% endmacro %}

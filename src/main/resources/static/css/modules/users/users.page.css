@@ -9,28 +9,7 @@
   inline-size: 24%;
 }
 
-/* ── User cells ── */
-.user-identity {
-  display: flex;
-  gap: var(--size-3);
-  align-items: center;
-  min-inline-size: 0;
-}
-
-.user-name {
-  overflow: hidden;
-
-  min-inline-size: 0;
-
-  font-weight: var(--font-weight-6);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-date {
-  color: var(--text-2);
-}
-
+/* ── Roles ── */
 .role-tags {
   display: inline-flex;
   flex-wrap: wrap;

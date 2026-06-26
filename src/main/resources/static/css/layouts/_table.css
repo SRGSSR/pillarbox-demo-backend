@@ -43,3 +43,26 @@ tbody tr:hover td {
   color: var(--text-2);
   text-align: center;
 }
+
+/* ── Cell content ── */
+
+/* An avatar beside a truncating label. */
+.cell-identity {
+  display: flex;
+  gap: var(--size-3);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.cell-name {
+  overflow: hidden;
+  min-inline-size: 0;
+
+  font-weight: var(--font-weight-6);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-muted {
+  color: var(--text-2);
+}

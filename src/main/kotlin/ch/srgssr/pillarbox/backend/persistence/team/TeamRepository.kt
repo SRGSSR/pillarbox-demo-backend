@@ -10,12 +10,15 @@ import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.count
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.time.Clock
@@ -141,5 +144,28 @@ class TeamRepository(
             updatedAt = row[UserTable.updatedAt].toKotlinInstant(),
           )
         }
+    }
+
+  /**
+   * Counts the members of each of the given teams in a single query.
+   *
+   * @param teamIds The teams whose members should be counted.
+   * @return A map from team id to member count; teams with no members map to `0`.
+   */
+  suspend fun countMembersOf(vararg teamIds: String): Map<String, Long> =
+    query(readOnly = true) {
+      val named = teamIds.distinct()
+      val results = named.associateWith { 0L }.toMutableMap()
+      if (named.isNotEmpty()) {
+        val memberCount = TeamMemberTable.oidcSub.count()
+        TeamMemberTable
+          .select(TeamMemberTable.teamId, memberCount)
+          .where { TeamMemberTable.teamId inList named }
+          .groupBy(TeamMemberTable.teamId)
+          .forEach { row ->
+            results[row[TeamMemberTable.teamId]] = row[memberCount]
+          }
+      }
+      results
     }
 }

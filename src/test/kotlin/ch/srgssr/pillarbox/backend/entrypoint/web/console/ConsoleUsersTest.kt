@@ -5,6 +5,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
 import ch.srgssr.pillarbox.backend.test.count
 import ch.srgssr.pillarbox.backend.test.hxGet
 import ch.srgssr.pillarbox.backend.test.login
+import ch.srgssr.pillarbox.backend.test.parseRows
 import ch.srgssr.pillarbox.backend.test.seedUser
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
 import ch.srgssr.pillarbox.backend.test.userFixture
@@ -20,7 +21,6 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 class ConsoleUsersTest :
   ShouldSpec({
@@ -42,7 +42,7 @@ class ConsoleUsersTest :
         seedUser(userFixture(oidcSub = "secret-sub-bbb", displayName = "Bianca Late", roles = setOf(Role.WRITE)))
 
         val body = client.hxGet("${Navigation.CONSOLE}/fragments/user-table?page=0").bodyAsText()
-        val names = parseRows(body).select(".user-name").eachText()
+        val names = parseRows(body).select(".cell-name").eachText()
 
         (names.indexOf("Bianca Late") < names.indexOf("Aaron Early")).shouldBeTrue()
         body shouldNotContain "secret-sub"
@@ -58,7 +58,7 @@ class ConsoleUsersTest :
 
         val names =
           parseRows(client.hxGet("${Navigation.CONSOLE}/fragments/user-table?q=grace").bodyAsText())
-            .select(".user-name")
+            .select(".cell-name")
             .eachText()
 
         names shouldContain "Grace Hopper"
@@ -89,6 +89,3 @@ class ConsoleUsersTest :
       }
     }
   })
-
-/** Wraps a bare `<tr>` fragment in a table so Jsoup's HTML parser keeps the rows. */
-private fun parseRows(fragment: String): Document = Jsoup.parse("<table>$fragment</table>")

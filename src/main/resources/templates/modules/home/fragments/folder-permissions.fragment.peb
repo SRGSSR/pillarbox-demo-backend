@@ -1,0 +1,45 @@
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+<div class="permissions-dialog">
+  <h3>Manage permissions</h3>
+
+  <div id="permission-list"
+       hx-get="/console/fragments/folder-permissions-list?folderId={{ folder.id }}"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+    <p>Loading…</p>
+  </div>
+
+  <details class="permission-add">
+    <summary class="btn btn-icon permission-add-toggle">
+      <span class="material-symbols-outlined">add</span>
+      Add a permission
+    </summary>
+
+    <form class="permission-add-form"
+          hx-post="/console/actions/folder/{{ folder.id }}/permission"
+          hx-target="#permission-grants"
+          hx-swap="beforeend">
+      <div class="field permission-subject-field">
+        <input type="text" name="subject" autocomplete="off" required data-subject-search
+               list="permission-subject-options"
+               aria-label="Search for a user or team"
+               placeholder="Search for a user or team…"
+               hx-get="/console/fragments/subject-options"
+               hx-target="#permission-subject-options"
+               hx-swap="innerHTML"
+               hx-trigger="input changed delay:200ms">
+        <input type="hidden" name="subjectRef">
+        <datalist id="permission-subject-options"></datalist>
+      </div>
+
+      <div class="field permission-level">
+        <select name="level" aria-label="Permission level">
+          <option value="view">View</option>
+          <option value="write" selected>Write</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+  </details>
+</div>

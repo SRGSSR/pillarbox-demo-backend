@@ -23,12 +23,12 @@
   font-size: var(--font-size-1);
   color: var(--text-1);
 
-  background: var(--surface-2);
+  background-color: var(--surface-2);
   outline: none;
 
   transition:
     border-color 0.2s var(--ease-out-3),
-    background 0.15s var(--ease-out-3),
+    background-color 0.15s var(--ease-out-3),
     box-shadow 0.2s var(--ease-out-3);
 }
 
@@ -37,17 +37,33 @@
   opacity: 0.6;
 }
 
+/* Custom chevron — appearance:none lets us inset it from the right edge. */
+.field select {
+  padding-inline-end: calc(var(--size-3) + var(--size-6));
+
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--size-3) center;
+  background-size: 1em;
+}
+
+/* Drop Chrome's datalist dropdown arrow; typing and the Down key still open it. */
+.field input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
 /* ── Hover ── */
 
 .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):hover {
-  background: var(--surface-3);
+  background-color: var(--surface-3);
 }
 
 /* ── Focus ── */
 
 .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus {
   border-color: var(--accent);
-  background: var(--surface-1);
+  background-color: var(--surface-1);
   box-shadow: 0 0 0 3px var(--accent-softer);
 }
 
@@ -81,7 +97,7 @@ label.checkbox {
   cursor: not-allowed;
   color: var(--text-2);
   opacity: 0.5;
-  background: var(--surface-1);
+  background-color: var(--surface-1);
 }
 
 /* ── Error state — CSS-only, no classes on fields ── */
@@ -89,7 +105,7 @@ label.checkbox {
 /* Live feedback after user interacts with a field, or after a submit attempt */
 .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):user-invalid,
 form[data-submitted] .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):invalid {
-  background: color-mix(in srgb, var(--red-6) 8%, var(--surface-2));
+  background-color: color-mix(in srgb, var(--red-6) 8%, var(--surface-2));
 }
 
 .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):user-invalid:focus,

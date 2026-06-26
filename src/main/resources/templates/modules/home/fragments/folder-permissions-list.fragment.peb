@@ -1,0 +1,20 @@
+{% import "../folder-permissions.macros.peb" %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="rows" type="java.util.List<ch.srgssr.pillarbox.backend.entrypoint.web.console.PermissionRow>" #}
+<div class="permission-table">
+  <div class="permission-row-head">
+    <span>Role</span>
+    <span class="permission-head-level">Permission</span>
+  </div>
+  {%- for row in rows -%}{% if row.subject == 'admin' or row.subject == 'editor' or row.subject == 'viewer' %}{{ permissionRow(folder, row) }}{% endif %}{%- endfor -%}
+</div>
+
+<div class="permission-table">
+  <div class="permission-row-head">
+    <span>User &amp; Team</span>
+    <span class="permission-head-level">Permission</span>
+  </div>
+  <div id="permission-grants">
+    {%- for row in rows -%}{% if row.subject != 'admin' and row.subject != 'editor' and row.subject != 'viewer' %}{{ permissionRow(folder, row) }}{% endif %}{%- endfor -%}
+  </div>
+</div>

@@ -1,0 +1,40 @@
+{% macro permissionRow(folder, row, oob=false) %}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="row" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.PermissionRow" #}
+{% set isRole = row.subject == 'admin' or row.subject == 'editor' or row.subject == 'viewer' %}
+{% set editable = row.subject == 'editor' or (not isRole and not row.inherited) %}
+<div id="permission-grant-{{ row.subject | replace({':': '-'}) }}" class="permission-row{% if not editable %} permission-row-locked{% endif %}"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  <span class="permission-subject">
+    <span class="permission-avatar">
+      <span class="material-symbols-outlined">{% if row.subject.startsWith('team:') %}group{% elseif row.subject.startsWith('user:') %}person{% else %}shield{% endif %}</span>
+    </span>
+    <span class="permission-name">{{ row.label }}</span>
+  </span>
+  <div class="field">
+    {% if editable %}
+    <select name="level" aria-label="{{ row.label }} permission"
+            hx-patch="/console/actions/folder/{{ folder.id }}/permission/{{ row.subject }}"
+            hx-swap="none"
+            hx-trigger="change">
+      <option value="view" {% if not row.canWrite %}selected{% endif %}>View</option>
+      <option value="write" {% if row.canWrite %}selected{% endif %}>Write</option>
+    </select>
+    {% else %}
+    <select aria-label="{{ row.label }} permission" disabled>
+      <option selected>{{ row.canWrite ? 'Write' : 'View' }}</option>
+    </select>
+    {% endif %}
+  </div>
+  {% if not isRole and editable %}
+  <button type="button" class="btn-icon permission-delete" title="Remove {{ row.label }}" aria-label="Remove {{ row.label }}"
+          hx-delete="/console/actions/folder/{{ folder.id }}/permission/{{ row.subject }}"
+          hx-target="closest .permission-row"
+          hx-swap="delete">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+  {% elseif not editable %}
+  {% set hint = row.subject == 'admin' ? 'Administrators always have full access' : (row.subject == 'viewer' ? 'Everyone can view; only administrators and granted subjects can edit' : 'Inherited from a parent folder') %}
+  <span class="permission-lock material-symbols-outlined" tabindex="0" role="img" aria-label="{{ hint }}" title="{{ hint }}">lock</span>
+  {% endif %}
+</div>
+{% endmacro %}

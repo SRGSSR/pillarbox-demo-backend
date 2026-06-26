@@ -1,6 +1,7 @@
 import { showSnackbar } from "../../shared/components/snackbar.component.js";
 import "./fragments/folder-grid.fragment.js";
 import "./fragments/folder-picker.fragment.js";
+import "./fragments/folder-permissions.fragment.js";
 import "../../shared/fragments/media-grid.fragment.js";
 
 /**

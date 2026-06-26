@@ -60,6 +60,7 @@ fun Route.homePage(
     call.respondWithContext(
       "modules/home/home.page.peb",
       buildMap {
+        put("section", "library")
         put("canWrite", call.permissionChecker.canWriteFolder(call.user, folder?.id))
         folder?.let {
           put("folder", it)

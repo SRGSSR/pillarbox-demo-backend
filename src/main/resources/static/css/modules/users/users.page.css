@@ -1,0 +1,45 @@
+@import url("../../layouts/dashboard.layout.css");
+
+/* ── Columns ── */
+.col-roles {
+  inline-size: 18%;
+}
+
+.col-date {
+  inline-size: 24%;
+}
+
+/* ── User cells ── */
+.user-identity {
+  display: flex;
+  gap: var(--size-3);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.user-name {
+  overflow: hidden;
+
+  min-inline-size: 0;
+
+  font-weight: var(--font-weight-6);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-date {
+  color: var(--text-2);
+}
+
+.role-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--size-1);
+}
+
+.role-tag {
+  padding: 2px var(--size-2);
+  border-radius: var(--radius-2);
+  color: var(--text-2);
+  background-color: var(--surface-3);
+}

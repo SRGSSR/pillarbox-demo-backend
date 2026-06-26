@@ -53,6 +53,26 @@
   display: none !important;
 }
 
+/* ── Search field — a leading icon, inset from a sibling material symbol ── */
+.field:has(input[type="search"]) {
+  position: relative;
+}
+
+.field input[type="search"] {
+  padding-inline-start: calc(var(--size-3) + var(--size-6));
+}
+
+.field:has(input[type="search"]) > .material-symbols-outlined {
+  pointer-events: none;
+
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--size-3);
+  translate: 0 -50%;
+
+  color: var(--text-3);
+}
+
 /* ── Hover ── */
 
 .field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):hover {

@@ -1,0 +1,53 @@
+{% extends "../../../layouts/dashboard.layout.peb" %}
+{# @pebvariable name="user" type="ch.srgssr.pillarbox.backend.entrypoint.web.console.UserView" #}
+
+{% block title %}Users · Pillarbox Console{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/modules/users/users.page.css">
+<script src="/static/js/modules/users/users.page.js" type="module" defer></script>
+{% endblock %}
+
+{% block mainContent %}
+<main role="main" id="main-container">
+
+  <div class="main-header">
+    <h2>Users</h2>
+  </div>
+
+  <div class="field">
+    <span class="material-symbols-outlined" aria-hidden="true">search</span>
+    <input type="search" name="q" autocomplete="off"
+           placeholder="Search users by name…"
+           aria-label="Search users by name"
+           hx-get="/console/fragments/user-table"
+           hx-target="#user-rows"
+           hx-swap="innerHTML"
+           hx-trigger="input changed delay:300ms, search">
+  </div>
+
+  <table>
+    <colgroup>
+      <col>
+      <col class="col-roles">
+      <col class="col-date">
+      <col class="col-date">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Roles</th>
+        <th>Created</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody id="user-rows"
+           hx-get="/console/fragments/user-table?page=0"
+           hx-trigger="load"
+           hx-swap="innerHTML">
+      <tr><td colspan="4" class="table-empty">Loading users…</td></tr>
+    </tbody>
+  </table>
+
+</main>
+{% endblock %}

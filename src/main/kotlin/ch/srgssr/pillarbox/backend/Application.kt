@@ -12,6 +12,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.playerMedia
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.team
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.user
 import ch.srgssr.pillarbox.backend.entrypoint.web.console.console
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.PillarboxPebbleExtension
 import ch.srgssr.pillarbox.backend.io.httpClientModule
 import ch.srgssr.pillarbox.backend.io.jsonModule
 import ch.srgssr.pillarbox.backend.ktor.plugins.configureDevelopmentDefaults
@@ -59,6 +60,7 @@ fun Application.module() {
         prefix = "templates"
       },
     )
+    extension(PillarboxPebbleExtension())
   }
 
   install(Koin) {

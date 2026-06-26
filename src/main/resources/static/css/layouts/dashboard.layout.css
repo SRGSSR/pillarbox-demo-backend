@@ -2,6 +2,7 @@
 @import url("../shared/components/breadcrumbs.component.css");
 @import url("../shared/components/sidebar.component.css");
 @import url("../shared/components/user-menu.component.css");
+@import url("../shared/components/avatar.component.css");
 
 body {
   overflow: hidden;
@@ -40,4 +41,44 @@ section {
   display: grid;
   gap: var(--size-4);
   padding-block: var(--size-4);
+}
+
+/* ── Page shell (shared by every console page) ── */
+#main-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+  padding: var(--size-5);
+}
+
+.main-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--size-3);
+  align-items: center;
+
+  padding-bottom: var(--size-2);
+}
+
+.main-header h2 {
+  overflow: hidden;
+
+  margin: 0;
+
+  font-size: var(--font-size-4);
+  font-weight: var(--font-weight-6);
+  color: var(--text-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-header-actions {
+  display: flex;
+  gap: var(--size-2);
+}
+
+@media (width <= 768px) {
+  .main-header {
+    grid-template-columns: 1fr;
+  }
 }

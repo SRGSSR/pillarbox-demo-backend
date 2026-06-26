@@ -1,0 +1,29 @@
+{% import "../../../shared/macros/avatar.macros.peb" %}
+{# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.User>" #}
+{# @pebvariable name="nextPage" type="java.lang.Integer" #}
+{# @pebvariable name="q" type="java.lang.String" #}
+
+{% set hasMore = (nextPage * result.limit) < result.totalCount %}
+{% set nextUrl = hasMore ? "/console/fragments/user-table?page=" + nextPage + "&pageSize=" + result.limit + "&q=" + (q | urlencode) : null %}
+
+{%- for user in result.items -%}
+<tr class="user-row"{% if loop.last and nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="revealed" hx-swap="afterend" hx-select=".user-row"{% endif %}>
+  <td>
+    <span class="user-identity">
+      {{ avatar(initials=user.initials) }}
+      <span class="user-name">{{ user.displayName }}</span>
+    </span>
+  </td>
+  <td>
+    <span class="role-tags">
+      {%- for role in user.roles -%}<span class="role-tag">{{ role }}</span>{%- endfor -%}
+    </span>
+  </td>
+  <td class="user-date">{{ user.createdAt | datetime }}</td>
+  <td class="user-date">{{ user.updatedAt | datetime }}</td>
+</tr>
+{%- endfor -%}
+
+{% if result.totalCount == 0 %}
+<tr><td class="table-empty" colspan="4">No users found</td></tr>
+{% endif %}

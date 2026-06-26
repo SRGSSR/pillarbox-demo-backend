@@ -7,6 +7,7 @@
 @import url("_dropdown.css");
 @import url("_forms.css");
 @import url("_switch.css");
+@import url("_table.css");
 
 :focus-visible {
   outline: 2px solid var(--accent);

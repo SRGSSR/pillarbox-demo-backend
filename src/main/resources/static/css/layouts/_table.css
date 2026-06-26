@@ -1,0 +1,45 @@
+/* ── Table ── */
+
+table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  inline-size: 100%;
+  text-align: start;
+}
+
+/* Cells truncate rather than wrap; columns get their width from table-layout: fixed. */
+th,
+td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+th {
+  padding: var(--size-2) var(--size-3);
+  border-block-end: var(--border-size-1) solid var(--surface-3);
+
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-6);
+  color: var(--text-2);
+  text-align: start;
+}
+
+td {
+  padding-inline: var(--size-3);
+  border-block-end: var(--border-size-1) solid var(--surface-2);
+
+  font-size: var(--font-size-0);
+  color: var(--text-1);
+  text-align: start; /* override open-props normalize's :where(td:not([align])){text-align:center} */
+}
+
+tbody tr:hover td {
+  background-color: var(--surface-2);
+}
+
+.table-empty {
+  padding: var(--size-5);
+  color: var(--text-2);
+  text-align: center;
+}

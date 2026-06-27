@@ -6,11 +6,14 @@
       hx-post="/console/actions/team{% if editing %}/{{ team.id }}{% endif %}"
       hx-target="{% if editing %}#team-row-{{ team.id }}{% else %}#team-rows{% endif %}"
       hx-swap="{% if editing %}outerHTML{% else %}afterbegin{% endif %}">
+  <button type="button" class="btn-icon dialog-close" aria-label="Close" onclick="this.closest('dialog').close()">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
   <h3>{{ editing ? 'Edit team' : 'New team' }}</h3>
 
   <div class="field">
     <label for="team-name">Name</label>
-    <input id="team-name" name="name" type="text" required autocomplete="off"
+    <input id="team-name" name="name" type="text" required autocomplete="off" autofocus
            placeholder="e.g. Newsroom" value="{{ team.name | default('') }}">
   </div>
 
@@ -33,7 +36,6 @@
   </div>
 
   <footer>
-    <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
     <button type="submit" class="btn btn-primary">Save team</button>
   </footer>
 </form>

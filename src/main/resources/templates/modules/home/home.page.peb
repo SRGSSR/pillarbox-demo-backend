@@ -39,7 +39,11 @@
         <button class="btn dropdown-item danger" type="button"
                 hx-delete="/console/actions/folder/{{ folder.id }}"
                 hx-swap="none"
-                hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned."
+                hx-confirm="Delete folder '{{ folder.name }}'?"
+                data-confirm-description="Media inside will remain but be unassigned."
+                data-confirm-danger
+                data-confirm-icon="delete"
+                data-confirm-action="Delete Folder"
                 hx-on::after-request="if(event.detail.successful) window.location.href='/console{% if folder.parentId is not empty %}?folderId={{ folder.parentId }}{% endif %}'"
                 onclick="this.closest('[popover]').hidePopover()">
           <span class="material-symbols-outlined">delete</span>
@@ -88,49 +92,37 @@
 {{ parent() }}
 {% include "../../shared/components/snackbar.component.peb" %}
 
-<template id="confirm-dialog-template">
-  <dialog closedby="any" class="confirm-dialog">
-    <form method="dialog">
-      <p id="confirm-message"></p>
-      <footer>
-        <button value="cancel" class="btn">Cancel</button>
-        <button value="confirm" class="btn btn-primary">Confirm</button>
-      </footer>
-    </form>
-  </dialog>
-</template>
-
 <dialog closedby="any" id="move-folder-dialog" class="move-folder-dialog"></dialog>
 <dialog closedby="any" id="folder-permissions-dialog" class="folder-permissions-dialog"></dialog>
 <dialog closedby="any" id="new-folder-dialog" class="new-folder-dialog">
   <form hx-post="/console/actions/folder"
         hx-target="#folder-grid"
         hx-swap="beforeend">
+    <button type="button" class="btn-icon dialog-close" aria-label="Close" onclick="this.closest('dialog').close()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
     <h3>New Folder</h3>
     <div class="field">
       <label for="new-folder-name">Name</label>
-      <input id="new-folder-name" name="name" type="text" required placeholder="e.g. Shows" autocomplete="off">
+      <input id="new-folder-name" name="name" type="text" required placeholder="e.g. Shows" autocomplete="off" autofocus>
     </div>
     <input type="hidden" name="parentId" value="{{ folder.id | default('') }}">
     <footer>
-      <button type="button" onclick="document.getElementById('new-folder-dialog').close()">
-        Cancel
-      </button>
       <button type="submit" class="btn btn-primary">Create Folder</button>
     </footer>
   </form>
 </dialog>
 <dialog closedby="any" id="rename-folder-dialog" class="rename-folder-dialog">
   <form hx-swap="outerHTML">
+    <button type="button" class="btn-icon dialog-close" aria-label="Close" onclick="this.closest('dialog').close()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
     <h3>Rename Folder</h3>
     <div class="field">
       <label for="rename-folder-name">Name</label>
-      <input id="rename-folder-name" name="name" type="text" required autocomplete="off">
+      <input id="rename-folder-name" name="name" type="text" required autocomplete="off" autofocus>
     </div>
     <footer>
-      <button type="button" onclick="document.getElementById('rename-folder-dialog').close()">
-        Cancel
-      </button>
       <button type="submit" class="btn btn-primary">Rename</button>
     </footer>
   </form>

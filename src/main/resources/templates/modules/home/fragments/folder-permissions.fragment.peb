@@ -1,5 +1,8 @@
 {# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
 <div class="permissions-dialog">
+  <button type="button" class="btn-icon dialog-close" aria-label="Close" onclick="this.closest('dialog').close()">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
   <h3>Manage permissions</h3>
 
   <div id="permission-list"

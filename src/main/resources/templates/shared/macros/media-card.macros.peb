@@ -66,7 +66,11 @@
               hx-delete="/console/actions/media/{{ media.id }}"
               hx-target="[id='media-card-{{ media.id }}']"
               hx-swap="outerHTML"
-              hx-confirm="Move '{{ media.metadata.title }}' to the Bin? Only an administrator can restore it.">
+              hx-confirm="Move '{{ media.metadata.title }}' to the Bin?"
+              data-confirm-description="Only an administrator can restore it."
+              data-confirm-danger
+              data-confirm-icon="delete"
+              data-confirm-action="Move to Bin">
         <span class="material-symbols-outlined">delete</span>
         Delete
       </button>
@@ -75,7 +79,9 @@
               hx-post="/console/actions/media/{{ media.id }}/restore"
               hx-target="[id='media-card-{{ media.id }}']"
               hx-swap="outerHTML"
-              hx-confirm="Restore '{{ media.metadata.title }}' to the library?">
+              hx-confirm="Restore '{{ media.metadata.title }}' to the library?"
+              data-confirm-icon="restore_from_trash"
+              data-confirm-action="Restore">
         <span class="material-symbols-outlined">restore_from_trash</span>
         Restore
       </button>

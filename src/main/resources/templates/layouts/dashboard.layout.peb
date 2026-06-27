@@ -18,43 +18,23 @@
 
 {% block footer %}{% endblock %}
 
-<script>
-  // Popover dropdowns light-dismiss themselves; we mirror the open state onto
-  // the invoker's aria-expanded for screen readers and our CSS state hooks.
-  document.addEventListener("toggle", (e) => {
-    const menu = e.target;
-    if (!(menu instanceof HTMLElement) || !menu.matches(".dropdown")) return;
-    const invoker = document.querySelector(`[popovertarget="${CSS.escape(menu.id)}"]`);
-    if (!invoker) return;
-    invoker.setAttribute("aria-expanded", String(e.newState === "open"));
-  }, true);
-
-  // Backdrop clicks close dialogs in browsers without closedby support.
-  if (!("closedBy" in HTMLDialogElement.prototype)) {
-    document.addEventListener("click", (e) => {
-      if (e.target instanceof HTMLDialogElement && e.target.open) e.target.close();
-    });
-  }
-
-  function currentTheme() {
-    return document.documentElement.dataset.theme ||
-      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  }
-
-  function syncThemeToggles(theme) {
-    document.querySelectorAll(".theme-toggle").forEach((btn) => {
-      btn.setAttribute("aria-checked", theme === "dark");
-    });
-  }
-
-  function toggleTheme() {
-    const next = currentTheme() === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch (e) { /* storage unavailable */ }
-    syncThemeToggles(next);
-  }
-
-  syncThemeToggles(currentTheme());
-</script>
+{# Cloned by the confirm handler in dashboard.layout.js (imported per page). #}
+<template id="confirm-dialog-template">
+  <dialog closedby="any" class="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-description">
+    <form method="dialog">
+      <div class="confirm-head">
+        <span class="confirm-icon material-symbols-outlined" aria-hidden="true"></span>
+        <div class="confirm-body">
+          <h3 class="confirm-title" id="confirm-title"></h3>
+          <p class="confirm-description" id="confirm-description"></p>
+        </div>
+      </div>
+      <footer>
+        <button value="cancel" type="submit" class="btn confirm-cancel">Cancel</button>
+        <button value="confirm" type="submit" class="btn btn-primary confirm-action">Confirm</button>
+      </footer>
+    </form>
+  </dialog>
+</template>
 
 {% endblock %}

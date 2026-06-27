@@ -65,6 +65,17 @@ button:hover, .btn:hover {
   background: var(--accent-soft);
 }
 
+.btn-danger {
+  border-color: var(--red-7);
+  color: var(--gray-0);
+  background: var(--red-7);
+}
+
+.btn-danger:hover {
+  border-color: var(--red-6);
+  background: var(--red-6);
+}
+
 
 .btn.danger:hover, button.danger:hover {
   color: var(--red-5);

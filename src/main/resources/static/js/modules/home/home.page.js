@@ -1,3 +1,4 @@
+import "../../layouts/dashboard.layout.js";
 import { showSnackbar } from "../../shared/components/snackbar.component.js";
 import "./fragments/folder-grid.fragment.js";
 import "./fragments/folder-picker.fragment.js";
@@ -18,31 +19,4 @@ document.addEventListener("click", function(e) {
   );
 
   showSnackbar("Link Copied!", button);
-});
-
-/**
- * Intercepts HTMX confirm prompts and shows a custom modal dialog instead of
- * the browser's native confirm().
- * @listens document#htmx:confirm
- */
-document.addEventListener("htmx:confirm", function(e) {
-  if (!e.detail.question) return;
-
-  e.preventDefault();
-
-  const template = document.getElementById("confirm-dialog-template");
-  const clone = template.content.cloneNode(true);
-  const dialog = clone.querySelector("dialog");
-
-  dialog.querySelector("#confirm-message").textContent = e.detail.question;
-  document.body.appendChild(dialog);
-
-  dialog.addEventListener("close", () => {
-    if (dialog.returnValue === "confirm") {
-      e.detail.issueRequest(true);
-    }
-    dialog.remove();
-  });
-
-  dialog.showModal();
 });

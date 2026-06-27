@@ -41,3 +41,15 @@ dialog h3 {
   font-size: var(--font-size-3);
   font-weight: var(--font-weight-6);
 }
+
+/* Reserve room so the title clears a close button parked in the corner. */
+dialog:has(.dialog-close) h3 {
+  padding-inline-end: var(--size-7);
+}
+
+/* Sits in the top-right padding, level with the title. */
+.dialog-close {
+  position: absolute;
+  inset-block-start: var(--size-4);
+  inset-inline-end: var(--size-4);
+}

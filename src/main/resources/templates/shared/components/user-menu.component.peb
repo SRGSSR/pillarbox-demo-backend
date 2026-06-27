@@ -12,7 +12,7 @@
         {%- endif -%}
       </span>
     </div>
-    <button type="button" class="btn dropdown-item theme-toggle" role="switch" aria-checked="false" onclick="toggleTheme()">
+    <button type="button" class="btn dropdown-item theme-toggle" role="switch" aria-checked="false">
       <span class="theme-toggle-label">Theme</span>
       <span class="switch" aria-hidden="true">
         <span class="material-symbols-outlined switch-icon theme-icon-light">light_mode</span>

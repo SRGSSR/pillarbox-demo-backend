@@ -31,7 +31,11 @@
               hx-delete="/console/actions/folder/{{ folder.id }}"
               hx-target="[id='folder-card-{{ folder.id }}']"
               hx-swap="outerHTML"
-              hx-confirm="Delete folder '{{ folder.name }}'? Media inside will remain but be unassigned.">
+              hx-confirm="Delete folder '{{ folder.name }}'?"
+              data-confirm-description="Media inside will remain but be unassigned."
+              data-confirm-danger
+              data-confirm-icon="delete"
+              data-confirm-action="Delete Folder">
         <span class="material-symbols-outlined">delete</span>
         Delete
       </button>

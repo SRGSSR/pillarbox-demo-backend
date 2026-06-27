@@ -1,4 +1,5 @@
-import htmx from 'htmx.org';
+import "../../layouts/dashboard.layout.js";
+import htmx from "htmx.org";
 import dot from 'dot-object';
 
 /**

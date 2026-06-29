@@ -90,9 +90,6 @@
       {
         "assets": [
           {
-            "path": "build/libs/pillarbox-demo-backend.jar"
-          },
-          {
             "path": "LICENSE",
             "label": "License"
           },

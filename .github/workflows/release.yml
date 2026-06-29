@@ -33,7 +33,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          # Pinned to 22 instead of .nvmrc: see
+          # https://github.com/semantic-release/github/issues/1224
+          node-version: '22'
 
       - name: Install semantic-release
         run: |

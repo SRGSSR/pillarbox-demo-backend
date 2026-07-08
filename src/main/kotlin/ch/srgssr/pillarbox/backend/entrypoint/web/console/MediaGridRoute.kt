@@ -3,6 +3,8 @@ package ch.srgssr.pillarbox.backend.entrypoint.web.console
 import ch.srgssr.pillarbox.backend.auth.user
 import ch.srgssr.pillarbox.backend.authz.permissionChecker
 import ch.srgssr.pillarbox.backend.authz.withMediaWrite
+import ch.srgssr.pillarbox.backend.db.PaginatedResult
+import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toPageRequest
 import ch.srgssr.pillarbox.backend.log.debug
@@ -36,20 +38,25 @@ fun Route.mediaGridFragments(mediaRepository: MediaRepository) {
     with(call.queryParameters.toPageRequest()) {
       val deleted = call.parameters["deleted"] == "true"
       val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
+      val query = call.parameters["q"]?.takeIf { it.isNotBlank() }
 
-      logger.debug { "Fetching media grid: pageRequest=$this, folderId=$folderId, deleted=$deleted" }
+      logger.debug { "Fetching media grid: pageRequest=$this, folderId=$folderId, deleted=$deleted, query=$query" }
 
       val result =
         when {
+          query != null -> mediaRepository.search(query, limit, offset, filter = { MediaTable.deleted eq deleted })
           deleted -> mediaRepository.getAllPaginated(limit, offset, filter = { MediaTable.deleted eq true })
           folderId != null -> mediaRepository.findMediaInFolder(folderId, limit, offset)
           else -> mediaRepository.findMediaWithoutFolder(limit, offset)
         }
 
-      val canWrite =
+      // The bin is admin-only and a folder grid shares one ACL, so a single verdict fits both; a
+      // cross-folder search spans folders and must resolve write access per media item.
+      val writableByMedia =
         when {
-          deleted -> call.user.hasAnyRole(setOf(Role.ADMIN))
-          else -> call.permissionChecker.canWriteFolder(call.user, folderId)
+          deleted -> result.writeAccess(call.user.hasAnyRole(setOf(Role.ADMIN)))
+          query != null -> call.permissionChecker.canWriteMedia(call.user, result.items.map { it.id })
+          else -> result.writeAccess(call.permissionChecker.canWriteFolder(call.user, folderId))
         }
 
       call.respondWithContext(
@@ -58,13 +65,23 @@ fun Route.mediaGridFragments(mediaRepository: MediaRepository) {
           put("result", result)
           put("nextPage", nextPage)
           put("deleted", deleted)
-          put("canWrite", canWrite)
-          folderId?.let { put("folderId", folderId) }
+          put("writableByMedia", writableByMedia)
+          query?.let { put("query", it) }
+          folderId?.let { put("folderId", it) }
         },
       )
     }
   }
 }
+
+/**
+ * Maps every media item on the page to the same write [verdict].
+ *
+ * @param verdict Whether the current user may write all items on the page.
+ * @return A map from media id to [verdict].
+ */
+private fun PaginatedResult<Media>.writeAccess(verdict: Boolean): Map<String, Boolean> =
+  items.associate { it.id to verdict }
 
 /**
  * Registers HTMX action endpoints for the paginated media-grid fragment.

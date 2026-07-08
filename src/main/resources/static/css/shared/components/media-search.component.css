@@ -1,0 +1,16 @@
+/* ── Media search ── */
+.media-search {
+  inline-size: 24ch;
+  transition: inline-size 0.25s var(--ease-out-3);
+}
+
+.media-search:focus-within {
+  inline-size: 36ch;
+}
+
+@media (width <= 768px) {
+  .media-search {
+    flex: 1;
+    inline-size: auto;
+  }
+}

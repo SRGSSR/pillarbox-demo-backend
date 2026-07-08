@@ -107,6 +107,45 @@ class PermissionChecker(
     mediaId: String,
   ): Boolean = canWriteFolder(user, folderRepository.findFolderOf(mediaId)?.id)
 
+  /**
+   * Whether [user] may modify each of the given media items, based on the folders they are
+   * assigned to.
+   *
+   * @param user The authenticated user.
+   * @param mediaIds The target media items.
+   * @return A map from media id to whether [user] may write it.
+   */
+  suspend fun canWriteMedia(
+    user: User,
+    mediaIds: List<String>,
+  ): Map<String, Boolean> = canWriteMedia(user, mediaIds, folderRepository.findFoldersOf(mediaIds))
+
+  /**
+   * Whether [user] may modify each of the given media items, reusing an already-resolved
+   * [foldersByMedia] map so the caller and this check share a single folder lookup.
+   *
+   * @param user The authenticated user.
+   * @param mediaIds The target media items.
+   * @param foldersByMedia The folder each media item is assigned to; ids absent from the map are
+   *   treated as unassigned.
+   * @return A map from media id to whether [user] may write it.
+   */
+  suspend fun canWriteMedia(
+    user: User,
+    mediaIds: List<String>,
+    foldersByMedia: Map<String, Folder>,
+  ): Map<String, Boolean> {
+    val writableByFolder = canWriteFolders(user, foldersByMedia.values.distinctBy { it.id })
+    val canWriteUnassigned = canWriteFolder(user, null)
+
+    return mediaIds.associateWith { mediaId ->
+      when (val folder = foldersByMedia[mediaId]) {
+        null -> canWriteUnassigned
+        else -> writableByFolder[folder.id] == true
+      }
+    }
+  }
+
   private fun isGranted(
     user: User,
     grants: List<FolderPermission>,

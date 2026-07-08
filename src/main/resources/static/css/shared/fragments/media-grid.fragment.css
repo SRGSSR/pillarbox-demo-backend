@@ -25,6 +25,10 @@
   font-weight: var(--font-weight-6);
 }
 
+.media-list[data-empty-label]:empty::after {
+  content: attr(data-empty-label);
+}
+
 /* ── Media card ── */
 .media-card {
   display: grid;
@@ -102,6 +106,10 @@
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.media-card-folder .material-symbols-outlined {
+  font-size: var(--font-size-1);
 }
 
 /* Inset the outline so it is not clipped by the id row's overflow. */

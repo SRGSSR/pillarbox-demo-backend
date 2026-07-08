@@ -1,0 +1,19 @@
+{% import "../../../shared/macros/media-card.macros.peb" %}
+
+{# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
+{# @pebvariable name="nextPage" type="java.lang.Integer" #}
+{# @pebvariable name="query" type="java.lang.String" #}
+{# @pebvariable name="writableByMedia" type="java.util.Map<java.lang.String, java.lang.Boolean>" #}
+{# @pebvariable name="foldersByMedia" type="java.util.Map<java.lang.String, ch.srgssr.pillarbox.backend.domain.model.Folder>" #}
+
+{% set hasMore = (nextPage * result.limit) < result.totalCount %}
+{% set nextUrl = hasMore ? "/console/fragments/media-search?page=" + nextPage + "&pageSize=" + result.limit + "&q=" + (query | urlencode) : null %}
+
+<div class="search-results">
+  <div class="section-label">Results for &ldquo;{{ query }}&rdquo; ({{ result.totalCount }})</div>
+  <section class="media-list" data-empty-label="No media found for &quot;{{ query }}&quot;">
+  {%- for item in result.items -%}
+    {{ mediaCard(item, loop.last ? nextUrl : null, not writableByMedia[item.id], foldersByMedia[item.id].id, foldersByMedia[item.id].name) }}
+  {%- endfor -%}
+  </section>
+</div>

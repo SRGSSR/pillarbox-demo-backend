@@ -1,8 +1,9 @@
-{% macro mediaCard(media, nextUrl = null, readOnly = false, folderId = null) %}
+{% macro mediaCard(media, nextUrl = null, readOnly = false, folderId = null, folderName = null) %}
 {# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="media" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
 {# @pebvariable name="readOnly" type="java.lang.Boolean" #}
 {# @pebvariable name="folderId" type="java.lang.String" #}
+{# @pebvariable name="folderName" type="java.lang.String" #}
 <article class="media-card" id="media-card-{{ media.id }}"
     {% if not readOnly %}draggable="true" data-media-id="{{ media.id }}"{% endif %}
     {% if nextUrl is not empty %}
@@ -19,6 +20,12 @@
   </figure>
 
   <header>
+    {% if folderName is not empty %}
+    <p class="media-card-folder">
+      <span class="material-symbols-outlined" aria-hidden="true">folder</span>
+      {{ folderName }}
+    </p>
+    {% endif %}
     <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
     <p>
       {% if not media.deleted %}
@@ -92,13 +99,14 @@
 </article>
 {% endmacro %}
 
-{% macro mediaList(result, nextUrl = null, readOnly = false, folderId = null) %}
+{% macro mediaList(result, nextUrl = null, writableByMedia = null, folderId = null, emptyLabel = null) %}
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
-{# @pebvariable name="readOnly" type="java.lang.Boolean" #}
+{# @pebvariable name="writableByMedia" type="java.util.Map<java.lang.String, java.lang.Boolean>" #}
 {# @pebvariable name="folderId" type="java.lang.String" #}
-<section class="media-list">
+{# @pebvariable name="emptyLabel" type="java.lang.String" #}
+<section class="media-list"{% if emptyLabel is not empty %} data-empty-label="{{ emptyLabel }}"{% endif %}>
 {%- for item in result.items -%}
-  {{ mediaCard(item, loop.last ? nextUrl : null, readOnly, folderId) }}
+  {{ mediaCard(item, loop.last ? nextUrl : null, not writableByMedia[item.id], folderId) }}
 {%- endfor -%}
 </section>
 {% endmacro %}

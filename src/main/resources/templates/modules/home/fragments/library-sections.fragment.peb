@@ -1,0 +1,14 @@
+{# @pebvariable name="folderId" type="java.lang.String" #}
+<div class="section-label">Folders</div>
+<div id="folder-section"
+     hx-get="/console/fragments/folder-grid{% if folderId is not empty %}?id={{ folderId }}{% endif %}"
+     hx-trigger="load">
+  <div class="loader">Loading folders...</div>
+</div>
+
+<div class="section-label">Media</div>
+<div id="media-section"
+     hx-get="/console/fragments/media-grid{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
+     hx-trigger="load">
+  <div class="loader">Loading media...</div>
+</div>

@@ -110,6 +110,26 @@ class FolderRepository(
     }
 
   /**
+   * Finds the folder each of the given media items is assigned to, in a single query.
+   *
+   * Media items that are not assigned to any folder are absent from the result.
+   *
+   * @param mediaIds The media IDs to look up.
+   * @return A map from media ID to its assigned [Folder].
+   */
+  suspend fun findFoldersOf(mediaIds: Collection<String>): Map<String, Folder> =
+    query(readOnly = true) {
+      if (mediaIds.isEmpty()) {
+        emptyMap()
+      } else {
+        (FolderTable innerJoin FolderMediaTable)
+          .selectAll()
+          .where { FolderMediaTable.mediaId inList mediaIds.distinct() }
+          .associate { it[FolderMediaTable.mediaId] to it.decode() }
+      }
+    }
+
+  /**
    * Returns `true` if the given media item is already assigned to the given folder.
    *
    * @param folderId The folder ID to check.

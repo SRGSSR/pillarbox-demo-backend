@@ -11,6 +11,9 @@
 
   <div class="main-header">
     <h2>Recently Deleted</h2>
+    <div class="main-header-actions">
+      {% include "../../shared/components/media-search.component.peb" with {"deleted": true} %}
+    </div>
   </div>
 
   <div id="media-section"

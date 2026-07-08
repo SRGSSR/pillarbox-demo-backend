@@ -4,10 +4,12 @@
 {# @pebvariable name="result" type="ch.srgssr.pillarbox.backend.db.PaginatedResult<ch.srgssr.pillarbox.backend.domain.model.Media>" #}
 {# @pebvariable name="nextPage" type="java.lang.Integer" #}
 {# @pebvariable name="folderId" type="java.lang.String" #}
-{# @pebvariable name="canWrite" type="java.lang.Boolean" #}
+{# @pebvariable name="query" type="java.lang.String" #}
+{# @pebvariable name="writableByMedia" type="java.util.Map<java.lang.String, java.lang.Boolean>" #}
 
 {% set hasMore = (nextPage * result.limit) < result.totalCount %}
-{% set folderParam = folderId is not empty ? "&folderId=" + folderId : "" %}
-{% set nextUrl = hasMore ? "/console/fragments/media-grid?page=" + nextPage + "&pageSize=" + result.limit + "&deleted=" + deleted + folderParam : null %}
+{% set scopeParam = query is not empty ? "&q=" + (query | urlencode) : (folderId is not empty ? "&folderId=" + (folderId | urlencode) : "") %}
+{% set nextUrl = hasMore ? "/console/fragments/media-grid?page=" + nextPage + "&pageSize=" + result.limit + "&deleted=" + deleted + scopeParam : null %}
+{% set emptyLabel = query is not empty ? 'No media found for "' + query + '"' : null %}
 
-{{ mediaList(result, nextUrl, not canWrite, folderId) }}
+{{ mediaList(result, nextUrl, writableByMedia, folderId, emptyLabel) }}

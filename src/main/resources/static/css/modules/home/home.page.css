@@ -1,9 +1,15 @@
 @import url("../../layouts/dashboard.layout.css");
 @import url("../../shared/fragments/media-grid.fragment.css");
 @import url("../../shared/components/snackbar.component.css");
+@import url("../../shared/components/media-search.component.css");
 @import url("./folder-grid.fragment.css");
 @import url("./folder-picker.fragment.css");
 @import url("./folder-permissions.fragment.css");
+
+/* ── Search results — library actions do not apply while they are shown ── */
+main:has(.search-results) .main-header-actions > :not(.media-search) {
+  display: none;
+}
 
 /* ── Section labels ── */
 .section-label {

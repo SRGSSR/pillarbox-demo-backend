@@ -15,6 +15,11 @@
   <div class="main-header">
     <h2>{{ folder.name | default("Media Library") }}</h2>
     <div class="main-header-actions">
+      {% include "../../shared/components/media-search.component.peb" with {
+        "url": "/console/fragments/media-search",
+        "target": "#library-content",
+        "folderId": folder.id
+      } %}
       <a class="btn" href="/console/bin">
         <span class="material-symbols-outlined">delete</span>
         Recently Deleted
@@ -72,18 +77,8 @@
     </div>
   </div>
 
-  <div class="section-label">Folders</div>
-  <div id="folder-section"
-       hx-get="/console/fragments/folder-grid?{% if folder is not empty %}&id={{ folder.id }}{% endif %}"
-       hx-trigger="load">
-    <div class="loader">Loading folders...</div>
-  </div>
-
-  <div class="section-label">Media</div>
-  <div id="media-section"
-       hx-get="/console/fragments/media-grid?{% if folder is not empty %}&folderId={{ folder.id }}{% endif %}"
-       hx-trigger="load">
-    <div class="loader">Loading media...</div>
+  <div id="library-content">
+    {% include "./fragments/library-sections.fragment.peb" with {"folderId": folder.id} %}
   </div>
 </main>
 {% endblock %}

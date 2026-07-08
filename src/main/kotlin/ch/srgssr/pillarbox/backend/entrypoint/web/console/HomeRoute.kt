@@ -80,6 +80,7 @@ fun Route.homePage(
 
   folderFragments(folderRepository)
   mediaGridFragments(mediaRepository)
+  mediaSearchFragments(mediaRepository, folderRepository)
 
   withRole(Role.WRITE) {
     folderActions(mediaRepository, folderRepository)

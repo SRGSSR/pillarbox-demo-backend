@@ -1,0 +1,16 @@
+{# @pebvariable name="url" type="java.lang.String" #}
+{# @pebvariable name="target" type="java.lang.String" #}
+{# @pebvariable name="folderId" type="java.lang.String" #}
+{# @pebvariable name="deleted" type="java.lang.Boolean" #}
+<search class="field media-search">
+  <span class="material-symbols-outlined" aria-hidden="true">search</span>
+  <input type="search" name="q" placeholder="Search media…" autocomplete="off"
+         aria-label="Search media"
+         hx-get="{{ url | default('/console/fragments/media-grid') }}"
+         hx-include="closest .media-search"
+         hx-trigger="input changed delay:300ms, search"
+         hx-target="{{ target | default('#media-section') }}"
+         hx-swap="innerHTML">
+  {% if folderId is not empty %}<input type="hidden" name="folderId" value="{{ folderId }}">{% endif %}
+  {% if deleted %}<input type="hidden" name="deleted" value="true">{% endif %}
+</search>

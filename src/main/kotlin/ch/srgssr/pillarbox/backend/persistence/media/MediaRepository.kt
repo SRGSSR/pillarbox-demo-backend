@@ -1,13 +1,15 @@
 package ch.srgssr.pillarbox.backend.persistence.media
 
-import ch.srgssr.pillarbox.backend.db.ExposedRepository
+import ch.srgssr.pillarbox.backend.db.FullTextSearch
 import ch.srgssr.pillarbox.backend.db.PaginatedResult
+import ch.srgssr.pillarbox.backend.db.SearchableRepository
 import ch.srgssr.pillarbox.backend.db.map
 import ch.srgssr.pillarbox.backend.db.paginated
 import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderMediaTable
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
+import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.Expression
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.Op
@@ -37,7 +39,12 @@ import kotlin.time.Clock
  */
 class MediaRepository(
   db: Database,
-) : ExposedRepository<Media, String>(db = db, table = MediaTable, idColumn = MediaTable.id) {
+) : SearchableRepository<Media, String>(
+    db = db,
+    table = MediaTable,
+    idColumn = MediaTable.id,
+    textSearch = FullTextSearch(MediaTable, column = "search_vector"),
+  ) {
   /**
    * Decodes a [ResultRow] from the [MediaTable] into a [Media] domain object.
    */
@@ -166,6 +173,24 @@ class MediaRepository(
         .apply { sort?.let { orderBy(*it.toTypedArray()) } }
         .paginated(limit, offset)
         .map { it.decode() }
+    }
+
+  /**
+   * Retrieves a page of active (non-deleted) media, narrowed by an optional full-text [query].
+   *
+   * @param query Optional search text; blank or `null` lists the page unfiltered.
+   * @param limit The maximum number of items to return.
+   * @param offset The number of items to skip before returning results.
+   * @return The matching [Media] items, most relevant first when searching.
+   */
+  suspend fun findActiveMedia(
+    query: String?,
+    limit: Int = 100,
+    offset: Long = 0,
+  ): List<Media> =
+    when {
+      query.isNullOrBlank() -> getAll(limit, offset, filter = { MediaTable.deleted eq false }).toList()
+      else -> search(query, limit, offset, filter = { MediaTable.deleted eq false }).items
     }
 
   /**

@@ -21,8 +21,6 @@ import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.util.getOrFail
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 
@@ -42,14 +40,11 @@ fun Route.media(mediaRepository: MediaRepository) {
 
       get {
         with(call.request.queryParameters.toQuerySlice()) {
+          val query = call.request.queryParameters["q"]
           call.respond(
             mediaRepository
-              .getAll(
-                limit,
-                offset,
-                filter = { MediaTable.deleted eq false },
-              ).map { it.toMediaResponseV1() }
-              .toList(),
+              .findActiveMedia(query, limit, offset)
+              .map { it.toMediaResponseV1() },
           )
         }
       }

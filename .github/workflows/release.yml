@@ -31,7 +31,7 @@ jobs:
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # Pinned to 22 instead of .nvmrc: see
           # https://github.com/semantic-release/github/issues/1224

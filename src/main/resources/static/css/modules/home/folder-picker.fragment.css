@@ -12,12 +12,6 @@
   height: 100%;
 }
 
-.move-folder-dialog footer {
-  display: flex;
-  gap: var(--size-2);
-  justify-content: flex-end;
-}
-
 /* ── Folder picker list ── */
 .folder-picker-list {
   scrollbar-gutter: stable;

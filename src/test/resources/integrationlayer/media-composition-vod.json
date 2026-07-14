@@ -1,0 +1,153 @@
+{
+  "chapterUrn": "urn:rsi:video:3845234",
+  "episode": {
+    "id": "3845234",
+    "title": "Telegiornale flash",
+    "seasonNumber": 2,
+    "number": 7
+  },
+  "show": {
+    "id": "6413e0d9-cbb6-4b1c-89b4-19fe0bd54fc1",
+    "vendor": "RSI",
+    "transmission": "TV",
+    "urn": "urn:rsi:show:tv:6413e0d9-cbb6-4b1c-89b4-19fe0bd54fc1",
+    "title": "Telegiornale",
+    "imageUrl": "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/1837577"
+  },
+  "chapterList": [
+    {
+      "id": "3845234",
+      "mediaType": "VIDEO",
+      "vendor": "RSI",
+      "urn": "urn:rsi:video:3845234",
+      "title": "Telegiornale flash",
+      "lead": "Le notizie di mezza giornata",
+      "description": "",
+      "imageUrl": "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/3878974",
+      "type": "EPISODE",
+      "date": "2026-07-08T12:30:00+02:00",
+      "duration": 372000,
+      "playableAbroad": true,
+      "displayable": true,
+      "position": 0,
+      "noEmbed": false,
+      "subtitleList": [
+        {
+          "locale": "it",
+          "language": "Italiano",
+          "source": "EXTERNAL",
+          "type": "SDH",
+          "url": "https://rsi-subtitles.s3.eu-central-1.amazonaws.com/subt_web/rsi/production/2026/telegiornale.vtt",
+          "format": "VTT"
+        },
+        {
+          "locale": "it",
+          "language": "Italiano",
+          "source": "EXTERNAL",
+          "type": "SDH",
+          "url": "https://rsi-subtitles.s3.eu-central-1.amazonaws.com/subt_web/rsi/production/2026/telegiornale.xml",
+          "format": "TTML"
+        }
+      ],
+      "resourceList": [
+        {
+          "url": "https://rsivod.akamaized.net/out/v1/telegiornale/index.m3u8",
+          "quality": "HD",
+          "protocol": "HLS",
+          "encoding": "H264",
+          "mimeType": "application/x-mpegURL",
+          "presentation": "DEFAULT",
+          "streaming": "HLS",
+          "dvr": false,
+          "live": false,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE"
+        },
+        {
+          "url": "https://rsivod.akamaized.net/out/v1/telegiornale/index-sd.m3u8",
+          "quality": "SD",
+          "protocol": "HLS",
+          "encoding": "H264",
+          "mimeType": "application/x-mpegURL",
+          "presentation": "DEFAULT",
+          "streaming": "HLS",
+          "dvr": false,
+          "live": false,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE"
+        },
+        {
+          "url": "https://rsivod.akamaized.net/telegiornale/video.mp4",
+          "quality": "HD",
+          "protocol": "HTTPS",
+          "encoding": "H264",
+          "presentation": "DEFAULT",
+          "streaming": "PROGRESSIVE",
+          "dvr": false,
+          "live": false,
+          "mediaContainer": "MP4",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE"
+        }
+      ],
+      "segmentList": [
+        {
+          "id": "3845234",
+          "mediaType": "VIDEO",
+          "vendor": "RSI",
+          "urn": "urn:rsi:video:3845234",
+          "title": "Telegiornale flash",
+          "markIn": 0,
+          "markOut": 372000,
+          "imageUrl": "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/3878974",
+          "type": "EPISODE",
+          "date": "2026-07-08T12:30:00+02:00",
+          "duration": 372000,
+          "playableAbroad": true,
+          "displayable": true,
+          "position": 0,
+          "noEmbed": false
+        },
+        {
+          "id": "3878648",
+          "mediaType": "VIDEO",
+          "vendor": "RSI",
+          "urn": "urn:rsi:video:3878648",
+          "title": "Nuovi attacchi USA contro l'Iran",
+          "markIn": 46600,
+          "markOut": 156256,
+          "imageUrl": "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/3878975",
+          "type": "CLIP",
+          "date": "2026-07-08T12:30:00+02:00",
+          "duration": 109656,
+          "playableAbroad": true,
+          "displayable": true,
+          "position": 1,
+          "noEmbed": false
+        },
+        {
+          "id": "3878666",
+          "mediaType": "VIDEO",
+          "vendor": "RSI",
+          "urn": "urn:rsi:video:3878666",
+          "title": "La salma di Khamenei a Mashad per la sepoltura",
+          "markIn": 155600,
+          "markOut": 187600,
+          "imageUrl": "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/3878981",
+          "type": "CLIP",
+          "date": "2026-07-08T12:30:00+02:00",
+          "duration": 32000,
+          "playableAbroad": true,
+          "displayable": true,
+          "position": 2,
+          "noEmbed": false
+        }
+      ]
+    }
+  ]
+}

@@ -30,11 +30,13 @@ val writeRoles: Set<Role> = setOf(Role.WRITE)
  *    4. Ensuring database isolation between tests by truncating all tables after each
  *       test execution.
  *
+ * @param configOverrides Additional configuration properties applied on top of the defaults.
  * @param block The test logic to execute, provides access to the [ApplicationTestBuilder]
  *              and a pre-configured `client` with JSON support.
  */
 fun testApplicationContext(
   enableProxyHeaders: Boolean = false,
+  configOverrides: Map<String, String> = emptyMap(),
   block: suspend ApplicationTestBuilder.() -> Unit,
 ) {
   val oAuthServer = mockOAuth2Server().also { it.start() }
@@ -50,6 +52,7 @@ fun testApplicationContext(
       this["oidc.discovery_path"] = ".well-known/openid-configuration"
       this["oidc.client_id"] = "pillarbox-test-client"
       this["oidc.realm"] = "pillarbox-realm"
+      configOverrides.forEach { (key, value) -> this[key] = value }
     }
 
     client =

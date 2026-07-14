@@ -2,6 +2,7 @@ package ch.srgssr.pillarbox.backend.entrypoint.web.console
 
 import ch.srgssr.pillarbox.backend.auth.AuthenticatedUserPlugin
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
+import ch.srgssr.pillarbox.backend.integrationlayer.IntegrationLayerClient
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderPermissionRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
@@ -20,6 +21,7 @@ import io.ktor.server.routing.route
  * @param folderPermissionRepository Repository used to read and manage folder grants.
  * @param userRepository Repository used to resolve and search users for grants.
  * @param teamRepository Repository used to resolve and search teams for grants.
+ * @param integrationLayerClient Client used to import media metadata by URN.
  */
 fun Route.console(
   mediaRepository: MediaRepository,
@@ -27,6 +29,7 @@ fun Route.console(
   folderPermissionRepository: FolderPermissionRepository,
   userRepository: UserRepository,
   teamRepository: TeamRepository,
+  integrationLayerClient: IntegrationLayerClient,
 ) {
   authenticate("pillarbox-session") {
     install(AuthenticatedUserPlugin)
@@ -35,7 +38,7 @@ fun Route.console(
 
     route(Navigation.CONSOLE) {
       homePage(mediaRepository, folderRepository, folderPermissionRepository, userRepository, teamRepository)
-      editorPage(mediaRepository, folderRepository)
+      editorPage(mediaRepository, folderRepository, integrationLayerClient)
       usersPage(userRepository)
       teamsPage(teamRepository, userRepository)
     }

@@ -4,7 +4,6 @@
 }
 
 .confirm-dialog form {
-  display: grid;
   gap: var(--size-5);
 }
 
@@ -45,10 +44,8 @@
 }
 
 .confirm-dialog footer {
-  display: flex;
   flex-wrap: wrap;
   gap: var(--size-3);
-  justify-content: end;
 }
 
 @media (width <= 400px) {

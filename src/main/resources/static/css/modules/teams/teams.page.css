@@ -18,18 +18,6 @@
   inline-size: min(92vw, 32rem);
 }
 
-.team-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-4);
-}
-
-.team-form footer {
-  display: flex;
-  gap: var(--size-2);
-  justify-content: flex-end;
-}
-
 /* ── Member list ── */
 .member-list {
   display: flex;

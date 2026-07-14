@@ -15,6 +15,40 @@ val ApplicationCall.permissionChecker: PermissionChecker
   get() = application.get()
 
 /**
+ * Whether the authenticated user may write the media identified by [mediaId],
+ * otherwise responds [HttpStatusCode.Forbidden] and returns false.
+ *
+ * A `null` id means there is no existing media to protect (e.g. creating a new item).
+ *
+ * @param mediaId The media to protect, or `null` when there is nothing to check.
+ * @return true if the user has write permission to the given media, false otherwise.
+ */
+suspend fun RoutingContext.requireMediaWrite(mediaId: String?): Boolean =
+  if (mediaId == null || call.permissionChecker.canWriteMedia(call.user, mediaId)) {
+    true
+  } else {
+    call.respond(HttpStatusCode.Forbidden)
+    false
+  }
+
+/**
+ * Whether authenticated user may write every one of the given [folderIds],
+ * otherwise responds [HttpStatusCode.Forbidden] and returns false.
+ *
+ * A `null` id denotes the unrestricted root scope.
+ *
+ * @param folderIds The folders that must be writable; pass several to require write access to all.
+ * @return true if the user has write permission to all the given folders, false otherwise.
+ */
+suspend fun RoutingContext.requireFolderWrite(vararg folderIds: String?): Boolean =
+  if (folderIds.all { call.permissionChecker.canWriteFolder(call.user, it) }) {
+    true
+  } else {
+    call.respond(HttpStatusCode.Forbidden)
+    false
+  }
+
+/**
  * Runs [block] only if the authenticated user may write every one of the given [folderIds],
  * otherwise responds [HttpStatusCode.Forbidden] and skips it.
  *
@@ -23,15 +57,11 @@ val ApplicationCall.permissionChecker: PermissionChecker
  * @param folderIds The folders that must be writable; pass several to require write access to all.
  * @param block The work to perform when access is granted.
  */
-suspend fun RoutingContext.withFolderWrite(
+suspend inline fun RoutingContext.withFolderWrite(
   vararg folderIds: String?,
   block: suspend () -> Unit,
 ) {
-  if (folderIds.all { call.permissionChecker.canWriteFolder(call.user, it) }) {
-    block()
-  } else {
-    call.respond(HttpStatusCode.Forbidden)
-  }
+  if (requireFolderWrite(*folderIds)) block()
 }
 
 /**
@@ -44,13 +74,9 @@ suspend fun RoutingContext.withFolderWrite(
  * @param mediaId The media to protect, or `null` when there is nothing to check.
  * @param block The work to perform when access is granted.
  */
-suspend fun RoutingContext.withMediaWrite(
+suspend inline fun RoutingContext.withMediaWrite(
   mediaId: String?,
   block: suspend () -> Unit,
 ) {
-  if (mediaId == null || call.permissionChecker.canWriteMedia(call.user, mediaId)) {
-    block()
-  } else {
-    call.respond(HttpStatusCode.Forbidden)
-  }
+  if (requireMediaWrite(mediaId)) block()
 }

@@ -36,6 +36,18 @@ dialog[open] {
   }
 }
 
+/* Default content layout: stacked body with right-aligned actions. */
+dialog form {
+  display: grid;
+  gap: var(--size-4);
+}
+
+dialog footer {
+  display: flex;
+  gap: var(--size-2);
+  justify-content: flex-end;
+}
+
 dialog h3 {
   margin: 0;
   font-size: var(--font-size-3);

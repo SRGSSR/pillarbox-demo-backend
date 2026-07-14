@@ -13,6 +13,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.team
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.user
 import ch.srgssr.pillarbox.backend.entrypoint.web.console.console
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.PillarboxPebbleExtension
+import ch.srgssr.pillarbox.backend.integrationlayer.integrationLayerModule
 import ch.srgssr.pillarbox.backend.io.httpClientModule
 import ch.srgssr.pillarbox.backend.io.jsonModule
 import ch.srgssr.pillarbox.backend.ktor.plugins.configureDevelopmentDefaults
@@ -71,6 +72,7 @@ fun Application.module() {
       persistenceModule(),
       jsonModule(),
       httpClientModule(),
+      integrationLayerModule(),
       authenticationModule(),
       authzModule(),
     )
@@ -98,7 +100,7 @@ fun Application.module() {
     folder(get(), get(), get(), get(), get())
     user(get(), get())
     team(get(), get())
-    console(get(), get(), get(), get(), get())
+    console(get(), get(), get(), get(), get(), get())
     playerMedia(get(), get())
   }
 

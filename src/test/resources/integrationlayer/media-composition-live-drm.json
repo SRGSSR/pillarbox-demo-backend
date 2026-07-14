@@ -1,0 +1,127 @@
+{
+  "chapterUrn": "urn:rts:video:3608506",
+  "show": {
+    "id": "93abfc12-b547-31ce-9c0a-68ff11ff0e52",
+    "vendor": "RTS",
+    "transmission": "TV",
+    "urn": "urn:rts:show:tv:93abfc12-b547-31ce-9c0a-68ff11ff0e52",
+    "title": "RTS 1",
+    "imageUrl": "https://img.rts.ch/articles/2023/image/ra3xg-26166607.image/16x9"
+  },
+  "chapterList": [
+    {
+      "id": "3608506",
+      "mediaType": "VIDEO",
+      "vendor": "RTS",
+      "urn": "urn:rts:video:3608506",
+      "title": "RTS 1",
+      "imageUrl": "https://img.rts.ch/articles/2023/image/ra3xg-26166607.image",
+      "imageTitle": "RTS 1",
+      "type": "LIVESTREAM",
+      "date": "2026-07-08T00:00:00+02:00",
+      "duration": 0,
+      "playableAbroad": false,
+      "displayable": true,
+      "position": 0,
+      "noEmbed": false,
+      "resourceList": [
+        {
+          "url": "https://lsvs-rts1-d.akamaized.net/out/v1/82ab0e39500a47a3b7ac54626d5399b5/index.m3u8?dw=7201",
+          "quality": "HD",
+          "protocol": "HLS-DVR",
+          "encoding": "H264",
+          "mimeType": "application/x-mpegURL",
+          "presentation": "DEFAULT",
+          "streaming": "HLS",
+          "dvr": true,
+          "live": true,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "drmList": [
+            {
+              "type": "FAIRPLAY",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/streaming/v1/SRG/getckc?contentId=RTS1DRM&keyId=a4de6060-e533-46ca-9cc1-0f043b903416",
+              "certificateUrl": "https://srg.live.ott.irdeto.com/licenseServer/streaming/v1/SRG/getcertificate?applicationId=live"
+            }
+          ]
+        },
+        {
+          "url": "https://lsvs-rts1-d.akamaized.net/out/v1/82ab0e39500a47a3b7ac54626d5399b5/index.m3u8",
+          "quality": "HD",
+          "protocol": "HLS",
+          "encoding": "H264",
+          "mimeType": "application/x-mpegURL",
+          "presentation": "DEFAULT",
+          "streaming": "HLS",
+          "dvr": false,
+          "live": true,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "drmList": [
+            {
+              "type": "FAIRPLAY",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/streaming/v1/SRG/getckc?contentId=RTS1DRM&keyId=a4de6060-e533-46ca-9cc1-0f043b903416",
+              "certificateUrl": "https://srg.live.ott.irdeto.com/licenseServer/streaming/v1/SRG/getcertificate?applicationId=live"
+            }
+          ]
+        },
+        {
+          "url": "https://lsvs-rts1-d.akamaized.net/out/v1/9bd2958c2c564691b8dd08fc652d4d6e/index.mpd?dw=7201",
+          "quality": "HD",
+          "protocol": "DASH-DVR",
+          "encoding": "H264",
+          "mimeType": "application/dash+xml",
+          "presentation": "DEFAULT",
+          "streaming": "DASH",
+          "dvr": true,
+          "live": true,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "drmList": [
+            {
+              "type": "WIDEVINE",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/widevine/v1/SRG/license?contentId=RTS1DRM",
+              "widevineSecurityLevel": "L3"
+            },
+            {
+              "type": "PLAYREADY",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/playready/v1/SRG/license?contentId=RTS1DRM"
+            }
+          ]
+        },
+        {
+          "url": "https://lsvs-rts1-d.akamaized.net/out/v1/9bd2958c2c564691b8dd08fc652d4d6e/index.mpd",
+          "quality": "HD",
+          "protocol": "DASH",
+          "encoding": "H264",
+          "mimeType": "application/dash+xml",
+          "presentation": "DEFAULT",
+          "streaming": "DASH",
+          "dvr": false,
+          "live": true,
+          "mediaContainer": "NONE",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "drmList": [
+            {
+              "type": "WIDEVINE",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/widevine/v1/SRG/license?contentId=RTS1DRM",
+              "widevineSecurityLevel": "L3"
+            },
+            {
+              "type": "PLAYREADY",
+              "licenseUrl": "https://srg.live.ott.irdeto.com/licenseServer/playready/v1/SRG/license?contentId=RTS1DRM"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -23,6 +23,7 @@ by folder write access (see [Folder permissions](#folder-permissions)).
 | **GET**    | `/console/bin`                                 | Page     | Renders the bin (recently deleted media).                                                 |
 | **GET**    | `/console/editor/{id?}`                        | Page     | Opens the media editor (empty for new, populated for an existing id). Accepts `folderId`. |
 | **GET**    | `/console/editor/{id}/duplicate`               | Page     | Opens the editor pre-filled from an existing id (id cleared) for duplication.             |
+| **GET**    | `/console/editor/import`                       | Page     | Opens the editor pre-filled with data imported from the Integration Layer. Requires `urn`, accepts `folderId`; answers `502` when the URN cannot be resolved. |
 | **GET**    | `/console/fragments/media-grid`                | Fragment | Paginated media grid. Accepts `page`, `pageSize`, `folderId`, and `deleted`.              |
 | **GET**    | `/console/fragments/folder-grid`               | Fragment | Grid of subfolders. Accepts `id` (parent folder, omitted for root).                       |
 | **GET**    | `/console/fragments/folder-picker`             | Fragment | Folder picker dialog for moving a media item. Accepts `mediaId` and `folderId`.           |

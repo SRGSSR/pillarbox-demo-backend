@@ -3,7 +3,8 @@
 {%  import "./media-form.macros.peb" %}
 {# @pebvariable name="item" type="ch.srgssr.pillarbox.backend.domain.model.Media" #}
 {# @pebvariable name="folderId" type="java.lang.String" #}
-{% set breadcrumb_current = item.id is empty ? "New Media" : "Edit Media" %}
+{# @pebvariable name="exists" type="java.lang.Boolean" #}
+{% set breadcrumb_current = exists ? "Edit Media" : "New Media" %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/modules/media/editor.page.css">
@@ -18,9 +19,9 @@
 
     <header class="editor-toolbar">
       <span class="editor-title">
-        {% if item.id is empty %}New Media{% else %}{{ item.metadata.title | default(item.id) }}{% endif %}
+        {% if exists %}{{ item.metadata.title | default(item.id) }}{% else %}New Media{% endif %}
       </span>
-      <button type="submit" class="btn-primary">{{ item.id is empty ? "Publish" : "Save Changes" }}</button>
+      <button type="submit" class="btn-primary">{{ exists ? "Save Changes" : "Publish" }}</button>
     </header>
 
     <nav class="editor-tabs" role="tablist">

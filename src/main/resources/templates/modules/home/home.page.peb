@@ -72,6 +72,11 @@
           <span class="material-symbols-outlined">create_new_folder</span>
           New Folder
         </button>
+        <button class="btn dropdown-item" type="button"
+                onclick="this.closest('[popover]').hidePopover(); document.getElementById('urn-import-dialog').showModal()">
+          <span class="material-symbols-outlined">cloud_download</span>
+          Import from URN
+        </button>
       </div>
       {% endif %}
     </div>
@@ -104,6 +109,22 @@
     <input type="hidden" name="parentId" value="{{ folder.id | default('') }}">
     <footer>
       <button type="submit" class="btn btn-primary">Create Folder</button>
+    </footer>
+  </form>
+</dialog>
+<dialog closedby="any" id="urn-import-dialog" class="urn-import-dialog">
+  <form method="get" action="/console/editor/import">
+    <button type="button" class="btn-icon dialog-close" aria-label="Close" onclick="this.closest('dialog').close()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+    <h3>Import from URN</h3>
+    <div class="field">
+      <label for="urn-import-urn">URN</label>
+      <input id="urn-import-urn" name="urn" type="text" required pattern="urn:.+" placeholder="e.g. urn:rts:video:3608506" autocomplete="off" autofocus>
+    </div>
+    <input type="hidden" name="folderId" value="{{ folder.id | default('') }}">
+    <footer>
+      <button type="submit" class="btn btn-primary">Import</button>
     </footer>
   </form>
 </dialog>

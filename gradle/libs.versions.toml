@@ -2,10 +2,10 @@
 #Plugins
 detekt = "2.0.0-alpha.5"
 kotlin = "2.4.0"
-kover = "0.9.8"
+kover = "0.9.9"
 ktlint = "14.2.0"
 ktlint-cli = "1.8.0"
-shadow = "9.5.1"
+shadow = "9.6.0"
 versions-plugin = "0.54.0"
 
 # Libs
@@ -15,7 +15,7 @@ hikaricp = "7.1.0"
 json-schema-validator = "3.0.6"
 jsoup = "1.22.2"
 koin = "4.2.2"
-kotest = "6.2.2"
+kotest = "6.2.3"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
 ktor = "3.4.0"

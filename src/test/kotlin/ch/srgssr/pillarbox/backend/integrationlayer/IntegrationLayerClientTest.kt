@@ -29,7 +29,7 @@ class IntegrationLayerClientTest :
       val engine =
         MockEngine { request ->
           request.url.toString() shouldBe
-            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn:rsi:video:3845234"
+            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn:rsi:video:3845234?forceLocation=CH"
           respond(
             content = IntegrationLayerFixtures.vodComposition,
             status = HttpStatusCode.OK,
@@ -62,7 +62,7 @@ class IntegrationLayerClientTest :
       val engine =
         MockEngine { request ->
           request.url.toString() shouldBe
-            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn%3F%23%2F%25:video:1"
+            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn%3F%23%2F%25:video:1?forceLocation=CH"
           respond(
             content = IntegrationLayerFixtures.vodComposition,
             status = HttpStatusCode.OK,

@@ -27,6 +27,7 @@ class IntegrationLayerClient(
     val response =
       httpClient.get(config.baseUrl) {
         url.appendPathSegments(listOf("integrationlayer", "2.0", "mediaComposition", "byUrn", urn), encodeSlash = true)
+        url.parameters.append("forceLocation", "CH")
       }
 
     return if (response.status.isSuccess()) response.body() else null

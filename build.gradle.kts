@@ -127,23 +127,27 @@ ktlint {
 // TASKS — FRONTEND BUILD
 // ==============================================================================
 
-val npmInstall by tasks.registering(Exec::class) {
-  description = "Install frontend dependencies"
-  commandLine("npm", "ci")
-  inputs.file("package.json")
-  inputs.file("package-lock.json")
-  outputs.dir("node_modules")
-}
+val npmInstall =
+  tasks
+    .register<Exec>("npmInstall") {
+      description = "Install frontend dependencies"
+      commandLine("npm", "ci")
+      inputs.file("package.json")
+      inputs.file("package-lock.json")
+      outputs.dir("node_modules")
+    }.get()
 
-val buildFrontend by tasks.registering(Exec::class) {
-  dependsOn(npmInstall)
-  dependsOn("processResources")
-  commandLine("npm", "run", "build")
-  inputs.dir("src/main/resources/static/js")
-  inputs.dir("src/main/resources/static/css")
-  outputs.dir("build/resources/main/static/js")
-  outputs.dir("build/resources/main/static/css")
-}
+val buildFrontend =
+  tasks
+    .register<Exec>("buildFrontend") {
+      dependsOn(npmInstall)
+      dependsOn("processResources")
+      commandLine("npm", "run", "build")
+      inputs.dir("src/main/resources/static/js")
+      inputs.dir("src/main/resources/static/css")
+      outputs.dir("build/resources/main/static/js")
+      outputs.dir("build/resources/main/static/css")
+    }.get()
 
 tasks.named("classes") {
   dependsOn(buildFrontend)
@@ -154,9 +158,10 @@ tasks.named("classes") {
 // ==============================================================================
 
 tasks.shadowJar {
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
   mergeServiceFiles {
     include("META-INF/services/**")
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
   }
   archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
   manifest { attributes["Main-Class"] = application.mainClass.get() }
@@ -219,19 +224,21 @@ tasks.named<JavaExec>("run") {
 // TASKS — RELEASE
 // ==============================================================================
 
-val updateVersion by tasks.registering {
-  doLast {
-    val version = project.findProperty("version")?.toString()
-    val propertiesFile = file("gradle.properties")
-    val properties = Properties()
-    propertiesFile.inputStream().use { properties.load(it) }
-    if (properties["version"] != version) {
-      properties.setProperty("version", version)
-      propertiesFile.outputStream().use { properties.store(it, null) }
-      println("Version updated to $version in gradle.properties")
-    }
-  }
-}
+val updateVersion =
+  tasks
+    .register("updateVersion") {
+      doLast {
+        val version = project.findProperty("version")?.toString()
+        val propertiesFile = file("gradle.properties")
+        val properties = Properties()
+        propertiesFile.inputStream().use { properties.load(it) }
+        if (properties["version"] != version) {
+          properties.setProperty("version", version)
+          propertiesFile.outputStream().use { properties.store(it, null) }
+          println("Version updated to $version in gradle.properties")
+        }
+      }
+    }.get()
 
 tasks.register("release") {
   dependsOn("build", updateVersion)

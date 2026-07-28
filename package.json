@@ -16,7 +16,7 @@
     "@semantic-release/release-notes-generator": "^14.1.1",
     "conventional-changelog-conventionalcommits": "^10.2.1",
     "esbuild": "^0.28.1",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "glob": "^13.0.6",
     "semantic-release": "^25.0.8",
     "stylelint": "^17.14.1",

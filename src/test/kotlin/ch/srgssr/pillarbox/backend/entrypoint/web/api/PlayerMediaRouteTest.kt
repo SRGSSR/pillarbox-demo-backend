@@ -202,6 +202,133 @@ class PlayerMediaRouteTest :
         response.drm shouldBe MediaLibrary.WidevineL1
       }
     }
+
+    should("select an unprotected source by preset priority for the web platform") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withMp4()
+            withDash()
+            withHls()
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val response =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url { parameters.append("platform", "web") }
+            }.body<PlayerMediaResponseV1>()
+
+        response.source shouldBe MediaLibrary.Hls.toPlayerMediaSourceV1()
+        response.drm shouldBe null
+      }
+    }
+
+    should("override the android preset DRM with the drm query parameter") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withDash(MediaLibrary.FairPlay)
+            withHls()
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val response =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url {
+                parameters.append("platform", "android")
+                parameters.append("drm", "com.apple.fps")
+              }
+            }.body<PlayerMediaResponseV1>()
+
+        response.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        response.drm shouldBe MediaLibrary.FairPlay
+      }
+    }
+
+    should("override the apple preset stream types with the stream-type query parameter") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withDash(MediaLibrary.FairPlay)
+            withHls()
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val response =
+          client
+            .get("/v1/player/media/${media.id}") {
+              url {
+                parameters.append("platform", "apple")
+                parameters.append("stream-type", "application/dash+xml")
+              }
+            }.body<PlayerMediaResponseV1>()
+
+        response.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        response.drm shouldBe MediaLibrary.FairPlay
+      }
+    }
+
+    should("fall back to the X-Target-Platform header when the platform parameter is absent") {
+      testApplicationContext {
+        val media =
+          mediaFixture {
+            withMp4()
+            withDash()
+            withHls()
+          }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        val response =
+          client
+            .get("/v1/player/media/${media.id}") {
+              header("X-Target-Platform", "android")
+            }.body<PlayerMediaResponseV1>()
+
+        response.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
+        response.drm shouldBe null
+      }
+    }
+
+    should("return BAD_REQUEST when the target platform is unknown") {
+      testApplicationContext {
+        val media = mediaFixture { withHls() }
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.get("/v1/player/media/${media.id}") {
+          url { parameters.append("platform", "playstation") }
+        } shouldHaveStatus HttpStatusCode.BadRequest
+
+        client.get("/v1/player/media/${media.id}") {
+          url { parameters.append("platform", "web,android") }
+        } shouldHaveStatus HttpStatusCode.BadRequest
+
+        client.get("/v1/player/media") {
+          header("X-Target-Platform", "playstation")
+        } shouldHaveStatus HttpStatusCode.BadRequest
+      }
+    }
   })
 
 /**

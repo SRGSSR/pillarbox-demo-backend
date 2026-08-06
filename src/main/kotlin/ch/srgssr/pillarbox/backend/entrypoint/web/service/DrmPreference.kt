@@ -1,5 +1,7 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.service
 
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.DrmSystems
+
 /**
  * A client's preference for a specific DRM key system, optionally
  * constrained to a maximum security level.
@@ -20,8 +22,8 @@ data class DrmPreference(
  */
 private val minSecurityLevels: Map<String, String> =
   mapOf(
-    "com.widevine.alpha" to "L3",
-    "com.microsoft.playready" to "SL2000",
+    DrmSystems.WIDEVINE to "L3",
+    DrmSystems.PLAYREADY to "SL2000",
   )
 
 /**
@@ -29,16 +31,16 @@ private val minSecurityLevels: Map<String, String> =
  */
 private val robustnessToLevel: Map<Pair<String, String>, String> =
   mapOf(
-    ("com.widevine.alpha" to "SW_SECURE_CRYPTO") to "L3",
-    ("com.widevine.alpha" to "SW_SECURE_DECODE") to "L3",
-    ("com.widevine.alpha" to "HW_SECURE_CRYPTO") to "L2",
-    ("com.widevine.alpha" to "HW_SECURE_DECODE") to "L2",
-    ("com.widevine.alpha" to "HW_SECURE_ALL") to "L1",
-    ("com.microsoft.playready" to "SW_SECURE_CRYPTO") to "SL2000",
-    ("com.microsoft.playready" to "SW_SECURE_DECODE") to "SL2000",
-    ("com.microsoft.playready" to "HW_SECURE_CRYPTO") to "SL2000",
-    ("com.microsoft.playready" to "HW_SECURE_DECODE") to "SL2000",
-    ("com.microsoft.playready" to "HW_SECURE_ALL") to "SL3000",
+    (DrmSystems.WIDEVINE to "SW_SECURE_CRYPTO") to "L3",
+    (DrmSystems.WIDEVINE to "SW_SECURE_DECODE") to "L3",
+    (DrmSystems.WIDEVINE to "HW_SECURE_CRYPTO") to "L2",
+    (DrmSystems.WIDEVINE to "HW_SECURE_DECODE") to "L2",
+    (DrmSystems.WIDEVINE to "HW_SECURE_ALL") to "L1",
+    (DrmSystems.PLAYREADY to "SW_SECURE_CRYPTO") to "SL2000",
+    (DrmSystems.PLAYREADY to "SW_SECURE_DECODE") to "SL2000",
+    (DrmSystems.PLAYREADY to "HW_SECURE_CRYPTO") to "SL2000",
+    (DrmSystems.PLAYREADY to "HW_SECURE_DECODE") to "SL2000",
+    (DrmSystems.PLAYREADY to "HW_SECURE_ALL") to "SL3000",
   )
 
 /**

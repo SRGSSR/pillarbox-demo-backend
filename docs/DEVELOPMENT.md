@@ -239,6 +239,10 @@ level.
 Native levels (`L1`, `L2`, `L3`, `SL2000`, `SL3000`) are still accepted and passed through
 unchanged.
 
+When no security level is provided for a known key system, the weakest level of that system is
+assumed (Widevine `L3`, PlayReady `SL2000`), so sources requiring a stronger level are excluded.
+Unknown key systems remain unconstrained and match any security level.
+
 [folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/FolderRoute.kt
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/MediaRoute.kt
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/PlayerMediaRoute.kt

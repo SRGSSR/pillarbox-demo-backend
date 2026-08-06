@@ -4,14 +4,25 @@ package ch.srgssr.pillarbox.backend.entrypoint.web.service
  * A client's preference for a specific DRM key system, optionally
  * constrained to a maximum security level.
  *
- * @property keySystem The  key system for this preference.
- * @property maxSecurityLevel The highest acceptable security level for this key system,
- *                            or `null` if unconstrained.
+ * @property keySystem The key system for this preference.
+ * @property maxSecurityLevel The highest acceptable security level for this key system.
+ *                            Defaults to the weakest known level of [keySystem],
+ *                            or `null` for unknown key systems (unconstrained).
  */
 data class DrmPreference(
   val keySystem: String,
-  val maxSecurityLevel: String? = null,
+  val maxSecurityLevel: String? = minSecurityLevels[keySystem],
 )
+
+/**
+ * The weakest security level of each known key system, used as the default
+ * [DrmPreference.maxSecurityLevel] when a client does not provide one.
+ */
+private val minSecurityLevels: Map<String, String> =
+  mapOf(
+    "com.widevine.alpha" to "L3",
+    "com.microsoft.playready" to "SL2000",
+  )
 
 /**
  * Maps EME robustness levels to DRM-specific security levels per key system.
@@ -41,10 +52,10 @@ fun String.toDrmPreference(): DrmPreference {
 
   val (keySystem, level) = split(";", limit = 2).map { it.trim() }
 
-  return DrmPreference(
-    keySystem,
-    level.takeIf { isNotEmpty() }?.let { robustnessToLevel[keySystem to level] ?: level },
-  )
+  return level
+    .takeIf { it.isNotEmpty() }
+    ?.let { DrmPreference(keySystem, robustnessToLevel[keySystem to it] ?: it) }
+    ?: DrmPreference(keySystem)
 }
 
 /**

@@ -44,7 +44,9 @@ class AuthRouteTest :
               parameters.append("state", "fake-state")
             }
           }
-        response shouldHaveStatus HttpStatusCode.Unauthorized
+        response shouldHaveStatus HttpStatusCode.Found
+        response.headers[HttpHeaders.Location] shouldContain
+          mockServer.authorizationEndpointUrl("pillarbox-realm").toString()
         client.cookies("http://localhost").find { it.name == "PILLARBOX_SESSION_ID" } shouldBe null
       }
     }

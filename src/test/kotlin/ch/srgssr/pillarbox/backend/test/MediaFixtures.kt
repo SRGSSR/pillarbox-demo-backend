@@ -24,6 +24,8 @@ object MediaLibrary {
   val WidevineL3 =
     DrmConfig(keySystem = "com.widevine.alpha", licenseUrl = "https://wv.license.com", securityLevel = "L3")
   val PlayReady = DrmConfig(keySystem = "com.microsoft.playready", licenseUrl = "https://pr.license.com")
+  val PlayReadySL2000 =
+    DrmConfig(keySystem = "com.microsoft.playready", licenseUrl = "https://pr.license.com", securityLevel = "SL2000")
   val PlayReadySL3000 =
     DrmConfig(keySystem = "com.microsoft.playready", licenseUrl = "https://pr.license.com", securityLevel = "SL3000")
   val FairPlay = DrmConfig(keySystem = "com.apple.fps", licenseUrl = "https://fp.license.com")

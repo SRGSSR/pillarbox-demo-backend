@@ -116,8 +116,7 @@ class PlayerMediaRouteTest :
             .get("/v1/player/media/${media.id}") {
               url {
                 parameters.append("stream-type", "application/x-mpegURL,video/mp4")
-                parameters.append("drm", "com.widevine.alpha,com.apple.fps")
-                parameters.append("security-level", "L3")
+                parameters.append("drm", "com.widevine.alpha;L3,com.apple.fps")
               }
             }.body<PlayerMediaResponseV1>()
 
@@ -130,9 +129,8 @@ class PlayerMediaRouteTest :
               url {
                 parameters.append("stream-type", "application/dash+xml")
                 parameters.append("stream-type", "application/x-mpegURL")
-                parameters.append("drm", "com.widevine.alpha")
+                parameters.append("drm", "com.widevine.alpha;L3")
                 parameters.append("drm", "com.apple.fps")
-                parameters.append("security-level", "L3")
               }
             }.body<PlayerMediaResponseV1>()
         multiResponse.source shouldBe MediaLibrary.Dash.toPlayerMediaSourceV1()
@@ -176,7 +174,7 @@ class PlayerMediaRouteTest :
       }
     }
 
-    should("prefer query parameters over headers for stream-type, drm, and security-level") {
+    should("prefer query parameters over headers for stream-type and drm") {
       testApplicationContext {
         val media =
           mediaFixture {
@@ -194,8 +192,7 @@ class PlayerMediaRouteTest :
             .get("/v1/player/media/${media.id}") {
               url {
                 parameters.append("stream-type", "application/dash+xml")
-                parameters.append("drm", "com.widevine.alpha")
-                parameters.append("security-level", "L1")
+                parameters.append("drm", "com.widevine.alpha;L1")
               }
               header("X-Accept-Stream-Type", "application/x-mpegURL")
               header("X-Accept-DRM", "com.widevine.alpha;L3")

@@ -2,6 +2,7 @@ package ch.srgssr.pillarbox.backend.entrypoint.web.service
 
 import ch.srgssr.pillarbox.backend.domain.model.DrmConfig
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.DrmSystems
 
 /**
  * Selects the best [MediaSource] from a list given a client's stream and DRM capabilities.
@@ -142,12 +143,12 @@ private object SecurityLevels {
   /** Maps `(keySystem, level)` pairs to their numeric rank. */
   private val rankings: Map<Pair<String, String>, Int> =
     mapOf(
-      ("com.widevine.alpha" to "L1") to 1,
-      ("com.widevine.alpha" to "L2") to 2,
-      ("com.widevine.alpha" to "L3") to 3,
-      ("com.microsoft.playready" to "SL3000") to 1,
-      ("com.microsoft.playready" to "SL2000") to 2,
-      ("com.microsoft.playready" to "SL150") to 3,
+      (DrmSystems.WIDEVINE to "L1") to 1,
+      (DrmSystems.WIDEVINE to "L2") to 2,
+      (DrmSystems.WIDEVINE to "L3") to 3,
+      (DrmSystems.PLAYREADY to "SL3000") to 1,
+      (DrmSystems.PLAYREADY to "SL2000") to 2,
+      (DrmSystems.PLAYREADY to "SL150") to 3,
     )
 
   /**

@@ -6,14 +6,16 @@ import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.DrmSystems
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.MimeTypes
 
 private val supportedStreamings = listOf("HLS", "DASH", "PROGRESSIVE")
 
 private val drmKeySystems =
   mapOf(
-    "FAIRPLAY" to "com.apple.fps",
-    "WIDEVINE" to "com.widevine.alpha",
-    "PLAYREADY" to "com.microsoft.playready",
+    "FAIRPLAY" to DrmSystems.FAIRPLAY,
+    "WIDEVINE" to DrmSystems.WIDEVINE,
+    "PLAYREADY" to DrmSystems.PLAYREADY,
   )
 
 /**
@@ -68,9 +70,9 @@ private fun Resource.toMediaSource(mediaType: String?): MediaSource =
 
 private fun Resource.defaultMimeType(mediaType: String?): String? =
   when (streaming) {
-    "HLS" -> "application/x-mpegURL"
-    "DASH" -> "application/dash+xml"
-    "PROGRESSIVE" -> if (mediaType == "AUDIO") "audio/mp4" else "video/mp4"
+    "HLS" -> MimeTypes.HLS_LEGACY
+    "DASH" -> MimeTypes.DASH
+    "PROGRESSIVE" -> if (mediaType == "AUDIO") MimeTypes.M4A else MimeTypes.MP4
     else -> null
   }
 

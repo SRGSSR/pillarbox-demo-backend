@@ -1,8 +1,10 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerResponse
+import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaPreferences
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaSourceSelector
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.toDrmPreferences
+import ch.srgssr.pillarbox.backend.entrypoint.web.service.toPlatformPreferences
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
 import ch.srgssr.pillarbox.backend.io.parseHeaderList
 import ch.srgssr.pillarbox.backend.io.parseParamList
@@ -35,6 +37,8 @@ fun Route.playerMedia(
   route("v1/player/") {
     route("media") {
       get {
+        if (!call.request.hasKnownPlatform()) return@get call.respond(HttpStatusCode.BadRequest, "Unknown platform")
+
         with(call.request.queryParameters.toQuerySlice()) {
           val mediaSourceSelector = call.request.toMediaSourceSelector()
           val query = call.request.queryParameters["q"]
@@ -47,6 +51,8 @@ fun Route.playerMedia(
       }
 
       get("/{id}") {
+        if (!call.request.hasKnownPlatform()) return@get call.respond(HttpStatusCode.BadRequest, "Unknown platform")
+
         val id = call.parameters.getOrFail("id")
 
         val media =
@@ -60,6 +66,8 @@ fun Route.playerMedia(
 
     route("folder") {
       get("/{id}/media") {
+        if (!call.request.hasKnownPlatform()) return@get call.respond(HttpStatusCode.BadRequest, "Unknown platform")
+
         val id = call.parameters.getOrFail("id")
         if (!folderRepository.exists(id)) return@get call.respond(HttpStatusCode.NotFound)
 
@@ -87,10 +95,12 @@ fun Route.playerMedia(
  * @return A [MediaSourceSelector] configured with the client's preferences.
  */
 private fun ApplicationRequest.toMediaSourceSelector() =
-  MediaSourceSelector(
-    toMimeTypePreferences(),
-    toDrmPreferences(),
-  )
+  this.toMediaPreferences().let {
+    MediaSourceSelector(
+      it.mimeTypePreferences,
+      it.drmPreferences,
+    )
+  }
 
 /**
  * Extracts the client's preferred MIME types from the `stream-type` query parameter,
@@ -115,3 +125,43 @@ private fun ApplicationRequest.toDrmPreferences() =
     .parseParamList("drm")
     .ifEmpty { call.request.headers.parseHeaderList("X-Accept-DRM") }
     .toDrmPreferences()
+
+/**
+ * Extracts the client's target platform from the `platform` query parameter,
+ * falling back to the `X-Target-Platform` header if the parameter is absent or blank.
+ *
+ * @return The raw platform identifier, or `null` if the client targets no platform.
+ */
+private fun ApplicationRequest.toPlatform() =
+  queryParameters["platform"]?.trim()?.takeIf { it.isNotEmpty() }
+    ?: call.request.headers["X-Target-Platform"]
+      ?.trim()
+      ?.takeIf { it.isNotEmpty() }
+
+/**
+ * Checks that the targeted platform has a ready-made preset, so that a client typo
+ * is reported instead of silently yielding an empty set of preferences.
+ *
+ * @return `true` if the client targets no platform or a known one.
+ */
+private fun ApplicationRequest.hasKnownPlatform() =
+  toPlatform()?.lowercase()?.let { it in MediaPreferences.knownPlatforms } ?: true
+
+/**
+ * Combines the request's explicit stream-type and DRM preferences with the platform preset
+ * from the `platform` query parameter (or `X-Target-Platform` header).
+ *
+ * Explicit preferences take precedence; the preset fills whichever list the client omitted.
+ *
+ * @return The effective [MediaPreferences] for this request.
+ */
+private fun ApplicationRequest.toMediaPreferences(): MediaPreferences {
+  val platformPreferences = toPlatform()?.toPlatformPreferences() ?: MediaPreferences()
+
+  return MediaPreferences(
+    mimeTypePreferences =
+      this.toMimeTypePreferences().takeIf { it.isNotEmpty() }
+        ?: platformPreferences.mimeTypePreferences,
+    drmPreferences = this.toDrmPreferences().takeIf { it.isNotEmpty() } ?: platformPreferences.drmPreferences,
+  )
+}

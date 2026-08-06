@@ -198,6 +198,7 @@ If neither is supplied, the API returns a media item without a source.
 |---------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `stream-type` | `application/dash+xml`             | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
 | `drm`         | `com.widevine.alpha;HW_SECURE_ALL` | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
+| `platform`    | `android`                          | Target platform whose ready-made preferences are used as defaults. One of `android`, `apple`, `web`.                                |
 
 Example:
 
@@ -212,6 +213,7 @@ curl --request GET \
 |------------------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `X-Accept-Stream-Type` | `application/dash+xml`             | Preferred MIME type (e.g., DASH, HLS). Comma-separated for multiple values.                                                         |
 | `X-Accept-DRM`         | `com.widevine.alpha;HW_SECURE_ALL` | Preferred DRM key system, optionally followed by `;` and the highest supported security level. Comma-separated for multiple values. |
+| `X-Target-Platform`    | `android`                          | Target platform whose ready-made preferences are used as defaults. One of `android`, `apple`, `web`.                                |
 
 Example:
 
@@ -220,6 +222,21 @@ curl --request GET \
   --url http://localhost:8080/v1/player/media/urn:pillarbox:video:12345 \
   --header 'X-Accept-Stream-Type: application/dash+xml' \
   --header 'X-Accept-DRM: com.widevine.alpha;HW_SECURE_ALL'
+```
+
+**Platform Presets**
+
+The `platform` parameter and `X-Target-Platform` header select a ready-made preference list for
+the target platform: stream types and DRM systems a typical `android`, `apple`, or `web` client
+supports, in a sensible priority order. Explicit `stream-type` and `drm` values take precedence:
+each one replaces the corresponding part of the preset, while the preset fills whatever is
+omitted.
+
+Only one platform can be targeted at a time, unknown platforms are rejected with `400 Bad Request`.
+
+```bash
+curl --request GET \
+  --url 'http://localhost:8080/v1/player/media/urn:pillarbox:video:12345?platform=android'
 ```
 
 **Security Levels**

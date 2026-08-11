@@ -1,6 +1,6 @@
 [versions]
 #Plugins
-detekt = "2.0.0-alpha.5"
+detekt = "2.0.0-alpha.6"
 kotlin = "2.4.10"
 kover = "0.9.9"
 ktlint = "14.2.0"

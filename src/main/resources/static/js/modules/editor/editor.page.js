@@ -1,6 +1,8 @@
 import "../../layouts/dashboard.layout.js";
 import htmx from "htmx.org";
 import dot from 'dot-object';
+import { initJsonView } from "./json-view.js";
+import { createJsonEditor } from "../../shared/components/json-editor.component.js";
 
 /**
  * Maps input[type] values to their corresponding coercion functions.
@@ -97,10 +99,13 @@ htmx.defineExtension('dot-json', {
    * @param {XMLHttpRequest} xhr - The XMLHttpRequest instance.
    * @param {Object} parameters - The default htmx parameters (unused, replaced by DOM collection).
    * @param {HTMLElement} elt - The element that triggered the request.
-   * @returns {string} A JSON string of the coerced and dot-expanded parameters.
+   * @returns {string} A JSON string of the coerced and dot-expanded parameters,
+   *   or the JSON editor text verbatim while the JSON view is active.
    */
   encodeParameters(xhr, parameters, elt) {
     xhr.setRequestHeader('Content-Type', 'application/json');
+
+    if (jsonView?.active()) return jsonView.text();
 
     return JSON.stringify(dot.object(collectParams(elt)), stripNullsFromArrays);
   }
@@ -243,6 +248,26 @@ tabButtons.forEach((btn, i) => {
 document.addEventListener('htmx:afterSettle', updateTabCounts);
 
 const form = document.querySelector('.media-form');
+
+const customData = document.querySelector('#panel-customdata .json-editor');
+const customDataEditor =
+  customData ? createJsonEditor(customData, 'metadata.customData') : null;
+
+/**
+ * The JSON view over this form, sharing the serialization used by the
+ * dot-json extension on submit. Custom data is attached from its editor,
+ * mirroring the json coercion applied to it on submit.
+ */
+const jsonView = initJsonView(() => {
+  const payload = dot.object(collectParams(form));
+  const custom = customDataEditor?.read();
+
+  if (custom?.valid && custom.value !== undefined) {
+    payload.metadata = {...payload.metadata, customData: custom.value};
+  }
+
+  return JSON.stringify(payload, stripNullsFromArrays, 2);
+});
 
 /**
  * Toggles the `tab-in-error` class on a tab button based on whether its

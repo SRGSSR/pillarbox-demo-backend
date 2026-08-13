@@ -21,6 +21,9 @@
       <span class="editor-title">
         {% if exists %}{{ item.metadata.title | default(item.id) }}{% else %}New Media{% endif %}
       </span>
+      <button type="button" id="view-toggle" class="btn-icon" aria-pressed="false">
+        <span class="material-symbols-outlined">data_object</span><span class="view-toggle-label">JSON</span>
+      </button>
       <button type="submit" class="btn-primary">{{ exists ? "Save Changes" : "Publish" }}</button>
     </header>
 
@@ -159,8 +162,17 @@
     {# ── Custom Data ─────────────────────────────────────────── #}
     <div class="tab-panel" id="panel-customdata" role="tabpanel" aria-labelledby="tab-btn-customdata" hidden>
       <article class="tab-section">
-        {{ inputJson("metadata.customData", "Custom Data", item.metadata.customData, rows=12) }}
+        <div class="field">
+          <label for="metadata.customData">Custom Data</label>
+          {% include "../../shared/components/json-editor.component.peb" with {"value": item.metadata.customData} %}
+        </div>
       </article>
+    </div>
+
+    {# ── JSON view ────────────────────────────────────────────── #}
+    <div class="json-view" hidden>
+      <p>Edit the JSON payload. Switching back to the form view will discard the current changes.</p>
+      {% include "../../shared/components/json-editor.component.peb" %}
     </div>
 
     {# ── Datalists ────────────────────────────────────────────── #}
@@ -229,4 +241,15 @@
 
   </form>
 </main>
+
+<dialog closedby="any" id="json-discard-dialog" class="json-discard-dialog">
+  <form method="dialog">
+    <h3>Discard JSON changes?</h3>
+    <p>Changes made in the JSON view are not applied to the form. Save from the JSON view to keep them.</p>
+    <footer>
+      <button value="cancel" class="btn">Cancel</button>
+      <button value="discard" class="btn btn-danger">Discard</button>
+    </footer>
+  </form>
+</dialog>
 {% endblock %}

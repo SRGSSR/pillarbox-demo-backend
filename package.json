@@ -25,8 +25,10 @@
     "stylelint-order": "^8.1.1"
   },
   "dependencies": {
+    "codejar": "^4.3.0",
     "dot-object": "^2.1.5",
     "htmx.org": "^2.0.10",
-    "open-props": "^1.7.23"
+    "open-props": "^1.7.23",
+    "prismjs": "^1.30.0"
   }
 }

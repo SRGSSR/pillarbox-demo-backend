@@ -1,0 +1,91 @@
+/* ── JSON editor ── */
+
+.json-editor {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--size-1);
+
+  min-width: 0;
+  min-height: 0;
+}
+
+.json-editor[hidden] {
+  display: none;
+}
+
+/* ── Code surface — mirrors .field input styling ── */
+
+.json-editor-code {
+  max-inline-size: none;
+  min-block-size: var(--size-12);
+  margin: 0;
+  padding: var(--size-2) var(--size-3);
+  border: var(--border-size-1) solid transparent;
+  border-radius: var(--radius-2);
+
+  font-family: var(--font-mono);
+  font-size: var(--font-size-0);
+  line-height: var(--font-lineheight-3);
+  color: var(--text-1);
+  tab-size: 2;
+
+  background-color: var(--surface-2);
+
+  transition:
+    border-color 0.2s var(--ease-out-3),
+    background-color 0.15s var(--ease-out-3),
+    box-shadow 0.2s var(--ease-out-3);
+}
+
+.json-editor-code:focus {
+  border-color: var(--accent);
+  background-color: var(--surface-1);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-softer);
+}
+
+/* ── Error state — mirrors .field :user-invalid styling ── */
+
+.json-editor-code[aria-invalid="true"] {
+  background-color: color-mix(in srgb, var(--red-6) 8%, var(--surface-2));
+}
+
+.json-editor-code[aria-invalid="true"]:focus {
+  border-color: var(--red-5);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red-5) 20%, transparent);
+}
+
+.field:has(.json-editor-code[aria-invalid="true"]) label {
+  color: var(--red-5);
+}
+
+.json-editor-error {
+  margin: 0;
+  font-size: var(--font-size-0);
+  color: var(--red-5);
+  max-inline-size: none;
+}
+
+/* ── Syntax tokens ── */
+
+.json-editor-code .token.property {
+  color: var(--accent-text);
+}
+
+.json-editor-code .token.string {
+  color: light-dark(var(--green-8), var(--green-4));
+}
+
+.json-editor-code .token.number {
+  color: light-dark(var(--blue-8), var(--blue-4));
+}
+
+.json-editor-code .token.boolean,
+.json-editor-code .token.null {
+  color: light-dark(var(--purple-8), var(--purple-4));
+}
+
+.json-editor-code .token.punctuation,
+.json-editor-code .token.operator {
+  color: var(--text-3);
+}

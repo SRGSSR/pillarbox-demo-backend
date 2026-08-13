@@ -39,14 +39,6 @@
 </div>
 {% endmacro %}
 
-{% macro inputJson(name, label, value, rows=3, required=false) %}
-<div class="field">
-  <label for="{{ name }}">{{ label }}</label>
-  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
-            {% if required %}required{% endif %} data-type="json">{{ value }}</textarea>
-</div>
-{% endmacro %}
-
 {% macro inputCheckbox(name, label, checked=false) %}
 <div class="field">
     <label class="checkbox">

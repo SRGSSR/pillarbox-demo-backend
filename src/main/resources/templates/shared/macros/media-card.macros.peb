@@ -28,7 +28,7 @@
     {% endif %}
     <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
     <p>
-      {% if not media.deleted %}
+      {% if not media.deleted and not media.expired %}
       <button class="btn-icon"
               data-copy-url="/v1/player/media/{{ media.id }}"
               title="Copy Player API URL">
@@ -38,6 +38,9 @@
       {{ media.id }}
     </p>
     <ul class="tag-list">
+      {% if media.expired %}
+      <li class="expired">Expired</li>
+      {% endif %}
       {% for tag in media.tags %}
       <li>{{ tag }}</li>
       {% endfor %}

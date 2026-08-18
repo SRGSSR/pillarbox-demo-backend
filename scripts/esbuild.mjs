@@ -32,7 +32,7 @@ await esbuild.build({
   format: 'esm',
   chunkNames: 'js/chunks/[name]-[hash]',
   platform: 'browser',
-  target: ['es2020'],
+  target: ['es2022'],
   logLevel: 'info',
   plugins: [ktorStaticUrlPlugin]
 });

@@ -10,6 +10,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toQuerySlice
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
@@ -43,7 +44,7 @@ fun Route.media(mediaRepository: MediaRepository) {
           val query = call.request.queryParameters["q"]
           call.respond(
             mediaRepository
-              .findActiveMedia(query, limit, offset)
+              .findMedia(query, limit, offset, filter = { MediaVisibility.ACTIVE })
               .map { it.toMediaResponseV1() },
           )
         }
@@ -54,7 +55,7 @@ fun Route.media(mediaRepository: MediaRepository) {
 
         val media =
           mediaRepository.findOne {
-            (MediaTable.id eq id) and (MediaTable.deleted eq false)
+            (MediaTable.id eq id) and MediaVisibility.ACTIVE
           } ?: return@get call.respond(HttpStatusCode.NotFound)
 
         call.respond(media.toMediaResponseV1())

@@ -3,6 +3,8 @@ import htmx from "htmx.org";
 import dot from 'dot-object';
 import { initJsonView } from "./json-view.js";
 import { createJsonEditor } from "../../shared/components/json-editor.component.js";
+import { parseJsonValue } from "../../shared/parseJsonValue.js";
+import { toInstant } from "../../shared/toInstant.js";
 
 /**
  * Maps input[type] values to their corresponding coercion functions.
@@ -15,11 +17,12 @@ const TYPE_COERCERS = {
 
 /**
  * Maps data-type attribute values to their corresponding coercion functions.
- * @type {Record<string, function(string): *>}
+ * @type {Record<string, function(HTMLInputElement): *>}
  */
 const DATA_TYPE_COERCERS = {
-  json: (value) => parseJsonValue(value),
-  array: (value) => value.split(',').map(v => v.trim()),
+  json: (input) => parseJsonValue(input.value),
+  array: (input) => input.value.split(',').map(v => v.trim()),
+  instant: (input) => toInstant(input.value, input.dataset.timeZone),
 };
 
 /**
@@ -37,22 +40,7 @@ function coerceValue(input) {
 
   const dataCoercer = DATA_TYPE_COERCERS[input.getAttribute('data-type')];
 
-  return dataCoercer ? dataCoercer(input.value) : input.value;
-}
-
-/**
- * Safely parses a JSON string, returning null if parsing fails.
- * @param {string} value - The JSON string to parse.
- * @returns {*|null} The parsed value, or null if parsing fails.
- */
-function parseJsonValue(value) {
-  try {
-    return JSON.parse(value);
-  } catch (e) {
-    console.error(e);
-
-    return null;
-  }
+  return dataCoercer ? dataCoercer(input) : input.value;
 }
 
 /**

@@ -18,7 +18,7 @@ import ch.srgssr.pillarbox.backend.persistence.folder.FolderPermissionRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderTable
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
-import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import ch.srgssr.pillarbox.backend.persistence.team.TeamRepository
 import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.http.HttpStatusCode
@@ -100,7 +100,7 @@ fun Route.folder(
                 folderId = id,
                 limit,
                 offset,
-                filter = { MediaTable.deleted eq false },
+                filter = { MediaVisibility.ACTIVE },
               ).map { it.toMediaResponseV1() }
               .items
               .toList(),

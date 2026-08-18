@@ -175,6 +175,7 @@ form[data-submitted] .field:has(:invalid) label {
   .form-row,
   .form-row-half,
   .form-row-two-one,
+  .form-row-two-one-one,
   .form-row-three-one,
   .form-row-one-two,
   .form-row-compact,

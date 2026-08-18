@@ -12,6 +12,9 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.exposed.v1.core.eq
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 private fun media(
   id: String,
@@ -20,12 +23,14 @@ private fun media(
   description: String? = null,
   tags: List<String> = emptyList(),
   deleted: Boolean = false,
+  expiresAt: Instant? = null,
 ) = Media(
   id = id,
   tags = tags,
   sources = listOf(MediaLibrary.Dash),
   metadata = MediaMetadata(title = title, subtitle = subtitle, description = description),
   deleted = deleted,
+  expiresAt = expiresAt,
 )
 
 class MediaRepositoryTest :
@@ -109,6 +114,29 @@ class MediaRepositoryTest :
           .search("glacier", filter = { MediaTable.deleted eq false })
           .items
           .map { it.id } shouldContainExactly listOf("live")
+      }
+    }
+
+    should("keep expired media out of the playable visibility only") {
+      testApplicationContext {
+        startApplication()
+        repository.save(media(id = "undated", title = "Glacier hike"))
+        repository.save(media(id = "future", title = "Glacier walk", expiresAt = Clock.System.now() + 1.hours))
+        repository.save(media(id = "expired", title = "Glacier melt", expiresAt = Clock.System.now() - 1.hours))
+        repository.save(media(id = "binned", title = "Glacier descent", deleted = true))
+
+        // Listing and searching narrow through the same predicate.
+        for (query in listOf(null, "glacier")) {
+          repository
+            .findMedia(query, filter = { MediaVisibility.PLAYABLE })
+            .map { it.id } shouldContainExactlyInAnyOrder listOf("undated", "future")
+          repository
+            .findMedia(query, filter = { MediaVisibility.ACTIVE })
+            .map { it.id } shouldContainExactlyInAnyOrder listOf("undated", "future", "expired")
+          repository
+            .findMedia(query, filter = { MediaVisibility.DELETED })
+            .map { it.id } shouldContainExactly listOf("binned")
+        }
       }
     }
 

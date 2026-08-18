@@ -57,6 +57,7 @@ class MediaRepository(
       deleted = this[MediaTable.deleted],
       createdAt = this[MediaTable.createdAt].toKotlinInstant(),
       lastModified = this[MediaTable.lastModified].toKotlinInstant(),
+      expiresAt = this[MediaTable.expiresAt]?.toKotlinInstant(),
     )
 
   /**
@@ -73,6 +74,7 @@ class MediaRepository(
     builder[MediaTable.deleted] = item.deleted
     builder[MediaTable.createdAt] = Clock.System.now().toUtcOffsetDateTime()
     builder[MediaTable.lastModified] = Clock.System.now().toUtcOffsetDateTime()
+    builder[MediaTable.expiresAt] = item.expiresAt?.toUtcOffsetDateTime()
   }
 
   /**
@@ -84,6 +86,7 @@ class MediaRepository(
       it[MediaTable.sources] = item.sources
       it[MediaTable.metadata] = item.metadata
       it[MediaTable.lastModified] = Clock.System.now().toUtcOffsetDateTime()
+      it[MediaTable.expiresAt] = item.expiresAt?.toUtcOffsetDateTime()
     }
 
   /**
@@ -127,7 +130,7 @@ class MediaRepository(
    */
   suspend fun softDelete(id: String): Boolean =
     query {
-      MediaTable.update({ (MediaTable.id eq id) and (MediaTable.deleted eq false) }) {
+      MediaTable.update({ (MediaTable.id eq id) and MediaVisibility.ACTIVE }) {
         it[deleted] = true
         it[lastModified] = Clock.System.now().toUtcOffsetDateTime()
       } > 0
@@ -141,7 +144,7 @@ class MediaRepository(
    */
   suspend fun restore(id: String): Boolean =
     query {
-      MediaTable.update({ (MediaTable.id eq id) and (MediaTable.deleted eq true) }) {
+      MediaTable.update({ (MediaTable.id eq id) and MediaVisibility.DELETED }) {
         it[deleted] = false
         it[lastModified] = Clock.System.now().toUtcOffsetDateTime()
       } > 0
@@ -168,7 +171,7 @@ class MediaRepository(
       MediaTable
         .join(FolderMediaTable, JoinType.INNER, MediaTable.id, FolderMediaTable.mediaId)
         .selectAll()
-        .where { (FolderMediaTable.folderId eq folderId) and (MediaTable.deleted eq false) }
+        .where { (FolderMediaTable.folderId eq folderId) and MediaVisibility.ACTIVE }
         .apply { filter?.let { andWhere(it) } }
         .apply { sort?.let { orderBy(*it.toTypedArray()) } }
         .paginated(limit, offset)
@@ -176,21 +179,23 @@ class MediaRepository(
     }
 
   /**
-   * Retrieves a page of active (non-deleted) media, narrowed by an optional full-text [query].
+   * Retrieves a page of media, narrowed by an optional full-text [query] and [filter].
    *
    * @param query Optional search text; blank or `null` lists the page unfiltered.
    * @param limit The maximum number of items to return.
    * @param offset The number of items to skip before returning results.
+   * @param filter An optional filter predicate.
    * @return The matching [Media] items, most relevant first when searching.
    */
-  suspend fun findActiveMedia(
+  suspend fun findMedia(
     query: String?,
     limit: Int = 100,
     offset: Long = 0,
+    filter: (() -> Op<Boolean>)? = null,
   ): List<Media> =
     when {
-      query.isNullOrBlank() -> getAll(limit, offset, filter = { MediaTable.deleted eq false }).toList()
-      else -> search(query, limit, offset, filter = { MediaTable.deleted eq false }).items
+      query.isNullOrBlank() -> getAll(limit, offset, filter).toList()
+      else -> search(query, limit, offset, filter).items
     }
 
   /**
@@ -212,7 +217,7 @@ class MediaRepository(
       MediaTable
         .join(FolderMediaTable, JoinType.LEFT, MediaTable.id, FolderMediaTable.mediaId)
         .selectAll()
-        .where { FolderMediaTable.mediaId.isNull() and (MediaTable.deleted eq false) }
+        .where { FolderMediaTable.mediaId.isNull() and MediaVisibility.ACTIVE }
         .apply { filter?.let { andWhere(it) } }
         .apply { sort?.let { orderBy(*it.toTypedArray()) } }
         .paginated(limit, offset)

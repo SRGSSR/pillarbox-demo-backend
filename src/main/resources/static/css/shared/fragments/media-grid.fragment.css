@@ -139,6 +139,11 @@
   background: var(--surface-3);
 }
 
+.media-card > header ul.tag-list li.expired {
+  color: var(--accent-text);
+  background: var(--accent-softer);
+}
+
 /* ── Action bar ── */
 .media-card > footer.actions {
   display: flex;

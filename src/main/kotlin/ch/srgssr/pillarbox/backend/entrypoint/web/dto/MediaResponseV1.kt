@@ -33,6 +33,7 @@ data class MediaResponseV1(
   val deleted: Boolean,
   val createdAt: Instant,
   val lastModified: Instant,
+  val expiresAt: Instant?,
 )
 
 /**
@@ -51,4 +52,5 @@ fun Media.toMediaResponseV1() =
     deleted = this.deleted,
     createdAt = this.createdAt,
     lastModified = this.lastModified,
+    expiresAt = this.expiresAt,
   )

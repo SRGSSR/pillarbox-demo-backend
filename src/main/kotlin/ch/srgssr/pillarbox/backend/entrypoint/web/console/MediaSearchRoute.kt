@@ -7,12 +7,11 @@ import ch.srgssr.pillarbox.backend.log.debug
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
-import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import io.ktor.server.htmx.hx
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.utils.io.ExperimentalKtorApi
-import org.jetbrains.exposed.v1.core.eq
 
 private object MediaSearchRoute
 
@@ -45,7 +44,7 @@ fun Route.mediaSearchFragments(
             buildMap { folderId?.let { put("folderId", it) } },
           )
 
-      val result = mediaRepository.search(query, limit, offset, filter = { MediaTable.deleted eq false })
+      val result = mediaRepository.search(query, limit, offset, filter = { MediaVisibility.ACTIVE })
       val mediaIds = result.items.map { it.id }
       val foldersByMedia = folderRepository.findFoldersOf(mediaIds)
 

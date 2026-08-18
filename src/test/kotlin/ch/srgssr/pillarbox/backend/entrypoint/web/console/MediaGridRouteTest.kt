@@ -29,6 +29,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import org.jsoup.Jsoup
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 
 class MediaGridRouteTest :
   ShouldSpec({
@@ -52,6 +54,30 @@ class MediaGridRouteTest :
         val doc = Jsoup.parse(response.bodyAsText())
 
         doc.count(".media-card") shouldBe 5
+      }
+    }
+
+    should("mark expired media and hide its player URL") {
+      testApplicationContext {
+        login()
+
+        val expired = mediaFixture { expiresAt = Clock.System.now() - 1.hours }
+        val live = mediaFixture { expiresAt = Clock.System.now() + 1.hours }
+
+        for (media in listOf(expired, live)) {
+          client.hxPost("${Navigation.CONSOLE}/actions/media") {
+            contentType(ContentType.Application.Json)
+            setBody(media)
+          }
+        }
+
+        val doc = Jsoup.parse(client.hxGet("${Navigation.CONSOLE}/fragments/media-grid").bodyAsText())
+
+        doc.count(".media-card") shouldBe 2
+        doc.count("#media-card-${expired.id} .tag-list li.expired") shouldBe 1
+        doc.count("#media-card-${expired.id} [data-copy-url]") shouldBe 0
+        doc.count("#media-card-${live.id} .tag-list li.expired") shouldBe 0
+        doc.count("#media-card-${live.id} [data-copy-url]") shouldBe 1
       }
     }
 

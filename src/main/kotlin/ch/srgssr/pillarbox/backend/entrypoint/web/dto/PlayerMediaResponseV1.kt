@@ -9,6 +9,8 @@ import ch.srgssr.pillarbox.backend.domain.model.TimeRange
 import ch.srgssr.pillarbox.backend.entrypoint.web.service.MediaSourceSelector
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 
 /**
  * Data Transfer Object (V1) optimized for media playback.
@@ -87,7 +89,11 @@ fun Media.toPlayerResponse(selector: MediaSourceSelector): PlayerMediaResponseV1
     subtitles = metadata.subtitles,
     chapters = metadata.chapters,
     timeRanges = metadata.timeRanges,
-    customData = metadata.customData,
+    customData =
+      buildJsonObject {
+        metadata.customData?.forEach { (k, v) -> put(k, v) }
+        expiresAt?.let { put("expiresAt", JsonPrimitive(it.toEpochMilliseconds())) }
+      }.takeIf { it.isNotEmpty() },
   )
 }
 

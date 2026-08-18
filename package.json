@@ -28,6 +28,7 @@
     "dot-object": "^2.1.5",
     "htmx.org": "^2.0.10",
     "open-props": "^1.7.23",
-    "prismjs": "^1.30.0"
+    "prismjs": "^1.30.0",
+    "temporal-polyfill": "^1.0.4"
   }
 }

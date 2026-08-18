@@ -1,5 +1,8 @@
 package ch.srgssr.pillarbox.backend.entrypoint.web.api
 
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.AssignMediaRequestV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderRequestV1
+import ch.srgssr.pillarbox.backend.entrypoint.web.dto.FolderResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.PlayerMediaResponseV1
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.toPlayerMediaSourceV1
@@ -12,6 +15,7 @@ import ch.srgssr.pillarbox.backend.test.token
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -23,6 +27,8 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 
 class PlayerMediaRouteTest :
   ShouldSpec({
@@ -94,6 +100,74 @@ class PlayerMediaRouteTest :
         }
 
         client.getPlayerMediaPageV1(limit = 1, offset = 20).size shouldBe 0
+      }
+    }
+
+    should("hide expired media from the player API") {
+      testApplicationContext {
+        val expired =
+          mediaFixture {
+            id = "expired"
+            expiresAt = Clock.System.now() - 1.hours
+          }
+        val live =
+          mediaFixture {
+            id = "live"
+            expiresAt = Clock.System.now() + 1.hours
+          }
+
+        for (media in listOf(expired, live)) {
+          client.post("/v1/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(media.toMediaRequestV1())
+          } shouldHaveStatus HttpStatusCode.Created
+        }
+
+        client.get("/v1/player/media/${expired.id}") shouldHaveStatus HttpStatusCode.NotFound
+        client.get("/v1/player/media/${live.id}") shouldHaveStatus HttpStatusCode.OK
+
+        client
+          .getPlayerMediaPageV1(limit = 10, offset = 0)
+          .map { it.identifier } shouldContainExactly listOf(live.id)
+      }
+    }
+
+    should("hide expired media from a player folder listing") {
+      testApplicationContext {
+        val expired =
+          mediaFixture {
+            id = "expired"
+            expiresAt = Clock.System.now() - 1.hours
+          }
+        val live = mediaFixture { id = "live" }
+
+        val folder =
+          client
+            .post("/v1/folder") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = "Season 1"))
+            }.body<FolderResponseV1>()
+
+        for (media in listOf(expired, live)) {
+          client.post("/v1/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(media.toMediaRequestV1())
+          } shouldHaveStatus HttpStatusCode.Created
+
+          client.post("/v1/folder/${folder.id}/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(AssignMediaRequestV1(mediaId = media.id))
+          } shouldHaveStatus HttpStatusCode.Created
+        }
+
+        client
+          .get("/v1/player/folder/${folder.id}/media")
+          .body<List<PlayerMediaResponseV1>>()
+          .map { it.identifier } shouldContainExactly listOf(live.id)
       }
     }
 

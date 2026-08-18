@@ -9,6 +9,9 @@ import ch.srgssr.pillarbox.backend.test.mediaFixture
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlin.time.Instant
 
 private data class SourceSelectionCase(
   val name: String,
@@ -345,5 +348,62 @@ class PlayerMediaResponseV1Test :
       response.title shouldBe "Title"
       response.description shouldBe "Description"
       response.episodeNumber shouldBe 1
+    }
+
+    context("expiration in custom data") {
+      val selector = MediaSourceSelector(emptyList(), emptyList())
+
+      should("expose the expiration as epoch milliseconds") {
+        val media = mediaFixture { expiresAt = Instant.parse("2026-06-06T12:32:00Z") }
+
+        val response = media.toPlayerResponse(selector)
+
+        response.customData shouldBe
+          buildJsonObject {
+            put("expiresAt", JsonPrimitive(1780749120000L))
+          }
+      }
+
+      should("keep the custom data defined on the metadata") {
+        val media =
+          mediaFixture {
+            expiresAt = Instant.parse("2026-06-06T12:32:00Z")
+            metadata =
+              metadata.copy(
+                customData =
+                  buildJsonObject {
+                    put("analyticsId", JsonPrimitive("abc"))
+                  },
+              )
+          }
+
+        val response = media.toPlayerResponse(selector)
+
+        response.customData shouldBe
+          buildJsonObject {
+            put("analyticsId", JsonPrimitive("abc"))
+            put("expiresAt", JsonPrimitive(1780749120000L))
+          }
+      }
+
+      should("omit the expiration when the media never expires") {
+        val media =
+          mediaFixture {
+            metadata =
+              metadata.copy(
+                customData =
+                  buildJsonObject {
+                    put("analyticsId", JsonPrimitive("abc"))
+                  },
+              )
+          }
+
+        val response = media.toPlayerResponse(selector)
+
+        response.customData shouldBe
+          buildJsonObject {
+            put("analyticsId", JsonPrimitive("abc"))
+          }
+      }
     }
   })

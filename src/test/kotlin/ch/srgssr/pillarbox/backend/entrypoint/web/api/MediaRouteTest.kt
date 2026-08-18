@@ -14,6 +14,7 @@ import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -28,6 +29,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlin.time.Instant
 
 class MediaRouteTest :
   ShouldSpec({
@@ -153,6 +155,29 @@ class MediaRouteTest :
         client.post("/v1/media/does-not-exist/restore") {
           bearerAuth(tokenWithRoles(setOf(Role.ADMIN)))
         } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
+    should("round-trip the expiry and keep serving expired media") {
+      testApplicationContext {
+        val expiresAt = Instant.parse("2020-06-06T12:32:00Z")
+        val media = mediaFixture { this.expiresAt = expiresAt }
+
+        client.post("/v1/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(media.toMediaRequestV1())
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client
+          .get("/v1/media/${media.id}") { bearerAuth(token) }
+          .body<MediaResponseV1>()
+          .expiresAt shouldBe expiresAt
+
+        client
+          .get("/v1/media") { bearerAuth(token) }
+          .body<List<MediaResponseV1>>()
+          .map { it.id } shouldContainExactly listOf(media.id)
       }
     }
 

@@ -11,6 +11,7 @@ import ch.srgssr.pillarbox.backend.io.parseParamList
 import ch.srgssr.pillarbox.backend.persistence.folder.FolderRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.response.respond
@@ -44,7 +45,7 @@ fun Route.playerMedia(
           val query = call.request.queryParameters["q"]
           call.respond(
             mediaRepository
-              .findActiveMedia(query, limit, offset)
+              .findMedia(query, limit, offset, filter = { MediaVisibility.PLAYABLE })
               .map { it.toPlayerResponse(mediaSourceSelector) },
           )
         }
@@ -57,7 +58,7 @@ fun Route.playerMedia(
 
         val media =
           mediaRepository.findOne {
-            (MediaTable.id eq id) and (MediaTable.deleted eq false)
+            (MediaTable.id eq id) and MediaVisibility.PLAYABLE
           } ?: return@get call.respond(HttpStatusCode.NotFound)
 
         call.respond(media.toPlayerResponse(call.request.toMediaSourceSelector()))
@@ -79,7 +80,7 @@ fun Route.playerMedia(
                 folderId = id,
                 limit,
                 offset,
-                filter = { MediaTable.deleted eq false },
+                filter = { MediaVisibility.PLAYABLE },
               ).items
               .map { it.toPlayerResponse(mediaSourceSelector) },
           )

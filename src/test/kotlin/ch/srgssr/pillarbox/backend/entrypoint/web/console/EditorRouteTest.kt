@@ -23,6 +23,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import org.jsoup.Jsoup
+import kotlin.time.Instant
 
 class EditorRouteTest :
   ShouldSpec({
@@ -67,6 +68,29 @@ class EditorRouteTest :
         doc["input[name='metadata.title']"].first()?.attributes()["value"] shouldBe media.metadata.title
         doc["input[name='metadata.subtitle']"].first()?.attributes()["value"] shouldBe media.metadata.subtitle
         doc["input[name='id']"].first()?.attributes()["value"] shouldBe media.id
+      }
+    }
+
+    should("populate the expiry field in the display time zone") {
+      testApplicationContext {
+        login()
+        // 12:32 UTC in June is 14:32 in Zurich, which is what the control must show.
+        val media = mediaFixture { expiresAt = Instant.parse("2026-06-06T12:32:00Z") }
+
+        client.hxPost("${Navigation.CONSOLE}/actions/media") {
+          contentType(ContentType.Application.Json)
+          setBody(media)
+        }
+
+        val response = client.get("${Navigation.CONSOLE}/editor/${media.id}")
+        response shouldHaveStatus HttpStatusCode.OK
+
+        val doc = Jsoup.parse(response.bodyAsText())
+        val expiresAt = doc["input[name='expiresAt']"].first()
+
+        expiresAt?.attributes()?.get("type") shouldBe "datetime-local"
+        expiresAt?.attributes()?.get("value") shouldBe "2026-06-06T14:32"
+        expiresAt?.attributes()?.get("data-time-zone") shouldBe "Europe/Zurich"
       }
     }
 

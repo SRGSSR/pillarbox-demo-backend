@@ -4,6 +4,7 @@ import ch.srgssr.pillarbox.backend.domain.model.Media
 import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * Data Transfer Object (V1) representing a media request from the admin web entry point.
@@ -23,6 +24,7 @@ data class MediaRequestV1(
   val tags: List<String> = emptyList(),
   val sources: List<MediaSource> = emptyList(),
   val metadata: MediaMetadata,
+  val expiresAt: Instant? = null,
 ) {
   /**
    * Maps the [MediaRequestV1] DTO to the internal [Media] domain model.
@@ -38,5 +40,6 @@ data class MediaRequestV1(
       tags = tags,
       sources = sources,
       metadata = metadata,
+      expiresAt = expiresAt,
     )
 }

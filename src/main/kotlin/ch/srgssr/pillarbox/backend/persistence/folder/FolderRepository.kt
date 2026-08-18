@@ -3,6 +3,7 @@ package ch.srgssr.pillarbox.backend.persistence.folder
 import ch.srgssr.pillarbox.backend.db.ExposedRepository
 import ch.srgssr.pillarbox.backend.domain.model.Folder
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
 import org.jetbrains.exposed.v1.core.ResultRow
@@ -193,12 +194,12 @@ class FolderRepository(
       if (folderId != null) {
         (MediaTable leftJoin FolderMediaTable)
           .selectAll()
-          .where { (MediaTable.deleted eq false) and (FolderMediaTable.folderId eq folderId) }
+          .where { MediaVisibility.ACTIVE and (FolderMediaTable.folderId eq folderId) }
           .count()
       } else {
         (MediaTable leftJoin FolderMediaTable)
           .selectAll()
-          .where { (MediaTable.deleted eq false) and FolderMediaTable.mediaId.isNull() }
+          .where { MediaVisibility.ACTIVE and FolderMediaTable.mediaId.isNull() }
           .count()
       }
     }
@@ -218,7 +219,7 @@ class FolderRepository(
         val mediaCount = FolderMediaTable.mediaId.count()
         (MediaTable innerJoin FolderMediaTable)
           .select(FolderMediaTable.folderId, mediaCount)
-          .where { (MediaTable.deleted eq false) and (FolderMediaTable.folderId inList named) }
+          .where { MediaVisibility.ACTIVE and (FolderMediaTable.folderId inList named) }
           .groupBy(FolderMediaTable.folderId)
           .forEach { row ->
             results[row[FolderMediaTable.folderId]] = row[mediaCount]
@@ -229,7 +230,7 @@ class FolderRepository(
         results[null] =
           (MediaTable leftJoin FolderMediaTable)
             .selectAll()
-            .where { (MediaTable.deleted eq false) and FolderMediaTable.mediaId.isNull() }
+            .where { MediaVisibility.ACTIVE and FolderMediaTable.mediaId.isNull() }
             .count()
       }
 

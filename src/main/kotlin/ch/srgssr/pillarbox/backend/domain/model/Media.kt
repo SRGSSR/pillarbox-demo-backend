@@ -17,6 +17,7 @@ import kotlin.uuid.Uuid
  * @property deleted Whether the media has been deleted or not.
  * @property createdAt The time when the media was created.
  * @property lastModified The time when the media was last modified.
+ * @property expiresAt The [Instant] representing expiration time of the media.
  */
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
@@ -28,7 +29,13 @@ data class Media(
   val deleted: Boolean = false,
   val createdAt: Instant = Clock.System.now(),
   val lastModified: Instant = Clock.System.now(),
-)
+  val expiresAt: Instant? = null,
+) {
+  /**
+   * Returns `true` if the current system time has surpassed the [expiresAt] threshold.
+   */
+  val expired: Boolean get() = expiresAt?.let { it <= Clock.System.now() } ?: false
+}
 
 /**
  * Information about a specific streamable source.

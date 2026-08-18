@@ -13,6 +13,7 @@ import ch.srgssr.pillarbox.backend.entrypoint.web.api.team
 import ch.srgssr.pillarbox.backend.entrypoint.web.api.user
 import ch.srgssr.pillarbox.backend.entrypoint.web.console.console
 import ch.srgssr.pillarbox.backend.entrypoint.web.utils.PillarboxPebbleExtension
+import ch.srgssr.pillarbox.backend.entrypoint.web.utils.toDisplayConfig
 import ch.srgssr.pillarbox.backend.integrationlayer.integrationLayerModule
 import ch.srgssr.pillarbox.backend.io.httpClientModule
 import ch.srgssr.pillarbox.backend.io.jsonModule
@@ -55,13 +56,15 @@ fun Application.module() {
     gzip()
   }
 
+  val displayConfig = environment.config.toDisplayConfig()
+
   install(Pebble) {
     loader(
       ClasspathLoader().apply {
         prefix = "templates"
       },
     )
-    extension(PillarboxPebbleExtension())
+    extension(PillarboxPebbleExtension(displayConfig.timeZone))
   }
 
   install(Koin) {

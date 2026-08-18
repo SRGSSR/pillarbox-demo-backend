@@ -40,6 +40,11 @@ object MediaTable : Table("pb_media") {
   val lastModified = timestampWithTimeZone("last_modified")
 
   /**
+   * The time when this media will expire.
+   */
+  val expiresAt = timestampWithTimeZone("expires_at").nullable()
+
+  /**
    * List of available delivery sources.
    * Stored as a JSONB list of [MediaSource] objects.
    */

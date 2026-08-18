@@ -12,6 +12,7 @@ import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import ch.srgssr.pillarbox.backend.persistence.media.MediaRepository
 import ch.srgssr.pillarbox.backend.persistence.media.MediaTable
+import ch.srgssr.pillarbox.backend.persistence.media.MediaVisibility
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.htmx.hx
 import io.ktor.server.response.respond
@@ -45,7 +46,7 @@ fun Route.mediaGridFragments(mediaRepository: MediaRepository) {
       val result =
         when {
           query != null -> mediaRepository.search(query, limit, offset, filter = { MediaTable.deleted eq deleted })
-          deleted -> mediaRepository.getAllPaginated(limit, offset, filter = { MediaTable.deleted eq true })
+          deleted -> mediaRepository.getAllPaginated(limit, offset, filter = { MediaVisibility.DELETED })
           folderId != null -> mediaRepository.findMediaInFolder(folderId, limit, offset)
           else -> mediaRepository.findMediaWithoutFolder(limit, offset)
         }

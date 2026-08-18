@@ -8,6 +8,7 @@ import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack
 import ch.srgssr.pillarbox.backend.domain.model.TimeRange
 import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
+import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -63,6 +64,7 @@ class MediaBuilder {
   private val chapters = mutableListOf<Chapter>()
   private val timeRanges = mutableListOf<TimeRange>()
   var metadata = MediaMetadata(title = "Default Test Title")
+  var expiresAt: Instant? = null
 
   fun withSource(source: MediaSource) =
     apply {
@@ -100,6 +102,7 @@ class MediaBuilder {
           chapters = chapters.ifEmpty { null },
           timeRanges = timeRanges.ifEmpty { null },
         ),
+      expiresAt = expiresAt,
     )
 }
 
@@ -111,4 +114,5 @@ fun Media.toMediaRequestV1() =
     tags = tags,
     sources = sources,
     metadata = metadata,
+    expiresAt = expiresAt,
   )

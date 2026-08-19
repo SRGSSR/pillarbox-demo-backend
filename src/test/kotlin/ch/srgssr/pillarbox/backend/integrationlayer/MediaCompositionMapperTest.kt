@@ -8,6 +8,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -27,6 +28,7 @@ class MediaCompositionMapperTest :
         media.metadata.seasonNumber shouldBe 2
         media.metadata.episodeNumber shouldBe 7
         media.tags shouldBe emptyList()
+        media.expiresAt.shouldBeNull()
       }
 
       should("fall back to the lead when the description is blank") {
@@ -100,6 +102,10 @@ class MediaCompositionMapperTest :
         media.metadata.episodeNumber.shouldBeNull()
         media.metadata.chapters.shouldBeNull()
         media.metadata.subtitles.shouldBeNull()
+      }
+
+      should("map the chapter validity end to the expiration date") {
+        media.expiresAt shouldBe Instant.parse("2026-07-15T00:00:00+02:00")
       }
     }
 

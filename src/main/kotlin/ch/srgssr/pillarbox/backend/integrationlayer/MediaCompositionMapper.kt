@@ -44,6 +44,7 @@ fun MediaComposition.toMedia(): Media? {
         subtitles = chapter.toSubtitleTracks().ifEmpty { null },
         chapters = chapter.toChapters().ifEmpty { null },
       ),
+    expiresAt = chapter.validTo,
   )
 }
 

@@ -19,6 +19,8 @@
       "imageTitle": "RTS 1",
       "type": "LIVESTREAM",
       "date": "2026-07-08T00:00:00+02:00",
+      "validFrom": "2026-07-08T00:00:00+02:00",
+      "validTo": "2026-07-15T00:00:00+02:00",
       "duration": 0,
       "playableAbroad": false,
       "displayable": true,

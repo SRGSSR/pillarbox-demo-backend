@@ -1,6 +1,7 @@
 package ch.srgssr.pillarbox.backend.integrationlayer
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * The Integration Layer media composition returned for a URN lookup.
@@ -38,6 +39,8 @@ data class MediaComposition(
  * @property description A detailed description of the content.
  * @property imageUrl URL to an image representing the chapter.
  * @property mediaType The kind of media, either `VIDEO` or `AUDIO`.
+ * @property validFrom The start of the validity period for this chapter.
+ * @property validTo The end of the validity period for this chapter.
  * @property subtitleList The external subtitle tracks available for the chapter.
  * @property resourceList The playable stream resources, best variants first.
  * @property segmentList The logical segments contained in the chapter.
@@ -50,6 +53,8 @@ data class CompositionChapter(
   val description: String? = null,
   val imageUrl: String? = null,
   val mediaType: String? = null,
+  val validFrom: Instant? = null,
+  val validTo: Instant? = null,
   val subtitleList: List<Subtitle> = emptyList(),
   val resourceList: List<Resource> = emptyList(),
   val segmentList: List<Segment> = emptyList(),

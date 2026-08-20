@@ -60,10 +60,10 @@
 }
 
 .json-editor-error {
+  max-inline-size: none;
   margin: 0;
   font-size: var(--font-size-0);
   color: var(--red-5);
-  max-inline-size: none;
 }
 
 /* ── Syntax tokens ── */

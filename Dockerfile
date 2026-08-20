@@ -1,7 +1,7 @@
 ARG NODE_VERSION=24
 FROM node:${NODE_VERSION}-alpine AS node
 
-FROM eclipse-temurin:24-jdk-alpine AS build
+FROM eclipse-temurin:26-jdk-alpine AS build
 WORKDIR /app
 
 COPY --from=node /usr/local /usr/local
@@ -21,7 +21,7 @@ COPY scripts ./scripts
 
 RUN ./gradlew build -x test -x check
 
-FROM eclipse-temurin:24-jre-alpine
+FROM eclipse-temurin:26-jre-alpine
 VOLUME /tmp
 COPY --from=build /app/build/libs/app.jar app.jar
-ENTRYPOINT ["sh", "-c", "java -Dsun.net.inetaddr.ttl=5 -Dsun.net.inetaddr.negative.ttl=10 -jar /app.jar"]
+ENTRYPOINT ["sh", "-c", "java --enable-native-access=ALL-UNNAMED -Dsun.net.inetaddr.ttl=5 -Dsun.net.inetaddr.negative.ttl=10 -jar /app.jar"]

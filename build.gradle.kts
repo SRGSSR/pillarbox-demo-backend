@@ -25,7 +25,7 @@ group = "ch.srgssr.pillarbox"
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(24)
+    languageVersion = JavaLanguageVersion.of(26)
   }
 }
 
@@ -174,6 +174,13 @@ tasks.shadowJar {
 tasks.withType<Test> {
   useJUnitPlatform()
   finalizedBy("koverXmlReport")
+
+  // Guava (via Testcontainers) calls sun.misc.Unsafe, and Netty loads a native
+  // library. Both warn on JDK 24+.
+  jvmArgs(
+    "--sun-misc-unsafe-memory-access=allow",
+    "--enable-native-access=ALL-UNNAMED",
+  )
 }
 
 // ==============================================================================
@@ -195,6 +202,9 @@ tasks.named<JavaExec>("run") {
   ): String = System.getenv(key) ?: localEnv.getProperty(key) ?: default
 
   val isDev = getEnv("DEVELOPMENT", "true").toBoolean()
+
+  // Netty loads a native library, which warns on JDK 24+.
+  jvmArgs("--enable-native-access=ALL-UNNAMED")
 
   // --- Ktor ---
   systemProperty("io.ktor.development", isDev)

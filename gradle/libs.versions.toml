@@ -15,6 +15,7 @@ hikaricp = "7.1.0"
 json-schema-validator = "3.0.6"
 jsoup = "1.23.1"
 koin = "4.2.2"
+konsist = "0.17.3"
 kotest = "6.2.4"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
@@ -59,6 +60,7 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 # Tests
 json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 kotest-assertions-ktor = { module = "io.kotest:kotest-assertions-ktor", version.ref = "kotest" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }

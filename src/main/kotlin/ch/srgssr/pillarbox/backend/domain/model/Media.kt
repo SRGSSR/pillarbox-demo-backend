@@ -35,6 +35,14 @@ data class Media(
    * Returns `true` if the current system time has surpassed the [expiresAt] threshold.
    */
   val expired: Boolean get() = expiresAt?.let { it <= Clock.System.now() } ?: false
+
+  /**
+   * Whether this media may be served at [at].
+   *
+   * @param at The instant the media would be served.
+   * @return `true` if the media is not deleted and not past its expiration date.
+   */
+  fun isPlayable(at: Instant): Boolean = !deleted && (expiresAt == null || expiresAt > at)
 }
 
 /**

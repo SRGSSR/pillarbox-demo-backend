@@ -1,7 +1,7 @@
 package ch.srgssr.pillarbox.backend.test
 
+import ch.srgssr.pillarbox.backend.adapter.persistence.team.TeamRepository
 import ch.srgssr.pillarbox.backend.domain.model.Team
-import ch.srgssr.pillarbox.backend.persistence.team.TeamRepository
 import io.ktor.server.testing.ApplicationTestBuilder
 
 fun teamFixture(

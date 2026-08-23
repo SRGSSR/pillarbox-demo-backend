@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.domain.model
 
+import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
@@ -46,3 +47,17 @@ data class Session(
    */
   override fun toString(): String = "Session(publicId=$publicId, oidcSub=$oidcSub, expiresAt=$expiresAt)"
 }
+
+/**
+ * Type-safe wrapper for a session identifier used within the session cookie.
+ *
+ * This distinguishes the session ID from other string-based data during
+ * serialization and cookie handling in Ktor.
+ *
+ * @property value The raw session ID string stored in the cookie. Defaults to a random UUID string.
+ */
+@Serializable
+@OptIn(ExperimentalUuidApi::class)
+data class SessionId(
+  val value: String = Uuid.random().toString(),
+)

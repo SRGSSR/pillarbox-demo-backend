@@ -1,7 +1,7 @@
 package ch.srgssr.pillarbox.backend.test
 
+import ch.srgssr.pillarbox.backend.adapter.web.api.Navigation
 import ch.srgssr.pillarbox.backend.domain.model.Role
-import ch.srgssr.pillarbox.backend.entrypoint.web.api.Navigation
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies

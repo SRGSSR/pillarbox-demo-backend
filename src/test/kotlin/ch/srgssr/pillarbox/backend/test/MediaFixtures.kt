@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.test
 
+import ch.srgssr.pillarbox.backend.adapter.web.api.dto.MediaRequestV1
 import ch.srgssr.pillarbox.backend.domain.model.Chapter
 import ch.srgssr.pillarbox.backend.domain.model.DrmConfig
 import ch.srgssr.pillarbox.backend.domain.model.Media
@@ -7,7 +8,6 @@ import ch.srgssr.pillarbox.backend.domain.model.MediaMetadata
 import ch.srgssr.pillarbox.backend.domain.model.MediaSource
 import ch.srgssr.pillarbox.backend.domain.model.SubtitleTrack
 import ch.srgssr.pillarbox.backend.domain.model.TimeRange
-import ch.srgssr.pillarbox.backend.entrypoint.web.dto.MediaRequestV1
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid

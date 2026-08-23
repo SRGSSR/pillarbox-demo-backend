@@ -1,0 +1,63 @@
+package ch.srgssr.pillarbox.backend.bootstrap
+
+import ch.srgssr.pillarbox.backend.adapter.persistence.DatabaseConfig
+import ch.srgssr.pillarbox.backend.adapter.persistence.EncryptionService
+import ch.srgssr.pillarbox.backend.adapter.persistence.runMigration
+import ch.srgssr.pillarbox.backend.adapter.persistence.toDatabaseConfig
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
+import io.ktor.server.config.ApplicationConfig
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.koin.dsl.module
+import org.koin.dsl.onClose
+import javax.sql.DataSource
+
+/**
+ * Defines the Koin module for database infrastructure.
+ *
+ * This module provides:
+ *   1. The [DatabaseConfig] with the configuration parameters for the database.
+ *   1. A [DataSource] (HikariCP) configured using the loaded [DatabaseConfig].
+ *   2. An Exposed [Database] instance, which automatically triggers [runMigration] on the
+ *      data source before establishing the connection.
+ *   3. An [EncryptionService] for protecting credential values stored at rest.
+ *
+ * @return A Koin [Module] containing the database infrastructure definitions.
+ */
+fun databaseModule() =
+  module {
+    single { get<ApplicationConfig>().toDatabaseConfig() }
+    single { EncryptionService(get()) }
+
+    single<DataSource> {
+      val dbConfig = get<DatabaseConfig>()
+
+      HikariDataSource(
+        HikariConfig().apply {
+          driverClassName = dbConfig.driverClassName
+          jdbcUrl = dbConfig.jdbcUrl
+          username = dbConfig.username
+          password = dbConfig.password
+
+          maximumPoolSize = dbConfig.poolSize
+          connectionTimeout = dbConfig.connectionTimeout
+          idleTimeout = dbConfig.idleTimeout
+
+          // Apply JDBC properties
+          dbConfig.dataSourceProperties.forEach { (key, value) ->
+            addDataSourceProperty(key, value)
+          }
+
+          validate()
+        },
+      )
+    } onClose {
+      (it as? HikariDataSource)?.close()
+    }
+
+    single {
+      val dataSource = get<DataSource>()
+      dataSource.runMigration()
+      Database.connect(dataSource)
+    }
+  }

@@ -9,7 +9,7 @@ media management within the [Pillarbox](https://pillarbox.ch) ecosystem.
 
 **Prerequisites and Requirements**
 
-- **JDK 24** or higher
+- **JDK 26** or higher
 - **Node.js 24** or higher
 - **Docker & Docker Compose**: Required for running the local environment. On Linux, follow these
   [post-installation][docker-post-install] steps to allow your user to run Docker commands without

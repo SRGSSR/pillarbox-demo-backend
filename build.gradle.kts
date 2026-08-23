@@ -58,6 +58,7 @@ dependencies {
   testImplementation(libs.bundles.ktor.test)
   testImplementation(libs.json.schema.validator)
   testImplementation(libs.jsoup)
+  testImplementation(libs.konsist)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.mock.oauth2.server)
   testImplementation(libs.mockk)
@@ -79,7 +80,7 @@ kotlin {
 // ==============================================================================
 
 application {
-  mainClass.set("$group.backend.ApplicationKt")
+  mainClass.set("$group.backend.bootstrap.ApplicationKt")
 }
 
 // ==============================================================================

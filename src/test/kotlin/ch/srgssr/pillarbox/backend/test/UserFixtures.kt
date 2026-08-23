@@ -1,12 +1,12 @@
 package ch.srgssr.pillarbox.backend.test
 
-import ch.srgssr.pillarbox.backend.db.DatabaseConfig
-import ch.srgssr.pillarbox.backend.db.EncryptionService
+import ch.srgssr.pillarbox.backend.adapter.persistence.DatabaseConfig
+import ch.srgssr.pillarbox.backend.adapter.persistence.EncryptionService
+import ch.srgssr.pillarbox.backend.adapter.persistence.session.SessionRepository
+import ch.srgssr.pillarbox.backend.adapter.persistence.user.UserRepository
 import ch.srgssr.pillarbox.backend.domain.model.Role
 import ch.srgssr.pillarbox.backend.domain.model.Session
 import ch.srgssr.pillarbox.backend.domain.model.User
-import ch.srgssr.pillarbox.backend.persistence.session.SessionRepository
-import ch.srgssr.pillarbox.backend.persistence.user.UserRepository
 import io.ktor.server.testing.ApplicationTestBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 

@@ -6,7 +6,8 @@ import "./fragments/folder-permissions.fragment.js";
 import "../../shared/fragments/media-grid.fragment.js";
 
 /**
- * Copies the media player API URL to the clipboard when a copy button is clicked.
+ * Copies the media player API URL to the clipboard when a copy button is
+ * clicked, then closes the popover menu hosting the button, if any.
  * @listens document#click
  */
 document.addEventListener("click", function(e) {
@@ -18,5 +19,6 @@ document.addEventListener("click", function(e) {
     `${window.location.origin}${button.dataset.copyUrl}`
   );
 
-  showSnackbar("Link Copied!", button);
+  showSnackbar("Link Copied!", button.closest(".media-card"));
+  button.closest("[popover]")?.hidePopover();
 });

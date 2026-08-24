@@ -77,7 +77,8 @@ class MediaGridRouteTest :
         doc.count("#media-card-${expired.id} .tag-list li.expired") shouldBe 1
         doc.count("#media-card-${expired.id} [data-copy-url]") shouldBe 0
         doc.count("#media-card-${live.id} .tag-list li.expired") shouldBe 0
-        doc.count("#media-card-${live.id} [data-copy-url]") shouldBe 1
+        doc.select("#media-card-${live.id} [data-copy-url]").map { it.attr("data-copy-url") } shouldBe
+          listOf("android", "apple", "web").map { "/v1/player/media/${live.id}?platform=$it" }
       }
     }
 

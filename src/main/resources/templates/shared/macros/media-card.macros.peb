@@ -29,11 +29,19 @@
     <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
     <p>
       {% if not media.deleted and not media.expired %}
-      <button class="btn-icon"
-              data-copy-url="/v1/player/media/{{ media.id }}"
+      <button class="btn-icon" type="button" popovertarget="copy-menu-{{ media.id }}" aria-expanded="false"
               title="Copy Player API URL">
         <span class="material-symbols-outlined">link</span>
       </button>
+      {# A span, not a div: block content would implicitly close the enclosing <p>. #}
+      <span class="dropdown" popover id="copy-menu-{{ media.id }}">
+        {% for platform in ["android", "apple", "web"] %}
+        <button class="btn dropdown-item" type="button"
+                data-copy-url="/v1/player/media/{{ media.id }}?platform={{ platform }}">
+          {{ platform | capitalize }}
+        </button>
+        {% endfor %}
+      </span>
       {% endif %}
       {{ media.id }}
     </p>

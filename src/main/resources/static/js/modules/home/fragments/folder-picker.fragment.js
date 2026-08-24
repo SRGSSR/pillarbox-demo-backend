@@ -83,7 +83,7 @@ document.addEventListener("click", function(e) {
     swap: "none",
   }).then(() => {
     dialog.close();
-    showSnackbar(`Moved to "${folderName}"`, confirmBtn);
+    showSnackbar(`Moved to "${folderName}"`);
   });
 });
 
@@ -96,5 +96,5 @@ document.addEventListener("htmx:afterRequest", function(e) {
   if (!e.target.classList.contains("folder-picker-unassign") || !e.detail.successful) return;
 
   document.getElementById("move-folder-dialog")?.close();
-  showSnackbar("Removed from folder", e.target);
+  showSnackbar("Removed from folder");
 });

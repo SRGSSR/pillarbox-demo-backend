@@ -18,6 +18,12 @@
     overlay 0.2s allow-discrete;
 }
 
+#snackbar.is-pinned {
+  inset-block-start: var(--size-4);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}
+
 @starting-style {
   #snackbar:popover-open {
     translate: -50% -100%;

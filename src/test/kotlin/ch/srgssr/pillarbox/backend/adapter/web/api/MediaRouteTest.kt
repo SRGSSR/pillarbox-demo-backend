@@ -1,5 +1,8 @@
 package ch.srgssr.pillarbox.backend.adapter.web.api
 
+import ch.srgssr.pillarbox.backend.adapter.web.api.dto.AssignMediaRequestV1
+import ch.srgssr.pillarbox.backend.adapter.web.api.dto.FolderRequestV1
+import ch.srgssr.pillarbox.backend.adapter.web.api.dto.FolderResponseV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.MediaResponseV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.TagActionV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.TagBatchUpdateRequestV1
@@ -15,6 +18,7 @@ import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -25,6 +29,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -36,7 +41,7 @@ class MediaRouteTest :
     should("return an empty list if no media is stored") {
       testApplicationContext {
         val response =
-          client.get("/v1/media") {
+          client.get("/v1/media?visibility=active") {
             bearerAuth(token)
           }
 
@@ -175,7 +180,7 @@ class MediaRouteTest :
           .expiresAt shouldBe expiresAt
 
         client
-          .get("/v1/media") { bearerAuth(token) }
+          .get("/v1/media?visibility=active") { bearerAuth(token) }
           .body<List<MediaResponseV1>>()
           .map { it.id } shouldContainExactly listOf(media.id)
       }
@@ -242,7 +247,7 @@ class MediaRouteTest :
       testApplicationContext {
         val readerToken = tokenWithRoles(emptySet())
 
-        client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/media?visibility=active") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.get("/v1/media/any-media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NotFound
         client.post("/v1/media") {
           bearerAuth(readerToken)
@@ -268,7 +273,7 @@ class MediaRouteTest :
           setBody(fixture.toMediaRequestV1())
         } shouldHaveStatus HttpStatusCode.Created
 
-        client.get("/v1/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/media?visibility=active") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.get("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.delete("/v1/media/${fixture.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
         client.post("/v1/media/${fixture.id}/restore") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.Forbidden
@@ -307,7 +312,67 @@ class MediaRouteTest :
         restoredMedia.id shouldBe fixture.id
       }
     }
+
+    should("list media by visibility") {
+      testApplicationContext {
+        val kept = mediaFixture { id = "visibility-kept" }
+        val binned = mediaFixture { id = "visibility-binned" }
+        listOf(kept, binned).forEach { fixture ->
+          client.post("/v1/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(fixture.toMediaRequestV1())
+          } shouldHaveStatus HttpStatusCode.Created
+        }
+        client.delete("/v1/media/${binned.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
+
+        client.get("/v1/media?visibility=active") { bearerAuth(token) }.ids() shouldContainExactly listOf(kept.id)
+        client.get("/v1/media?visibility=deleted") { bearerAuth(token) }.ids() shouldContainExactly listOf(binned.id)
+        client.get("/v1/media") { bearerAuth(token) }.ids() shouldContainExactlyInAnyOrder listOf(kept.id, binned.id)
+        client.get("/v1/media?visibility=bogus") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.BadRequest
+      }
+    }
+
+    should("list media by folder scope") {
+      testApplicationContext {
+        val loose = mediaFixture { id = "scope-loose" }
+        val filed = mediaFixture { id = "scope-filed" }
+        listOf(loose, filed).forEach { fixture ->
+          client.post("/v1/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(fixture.toMediaRequestV1())
+          } shouldHaveStatus HttpStatusCode.Created
+        }
+        val folder =
+          client
+            .post("/v1/folder") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = "Scope"))
+            }.body<FolderResponseV1>()
+        client.post("/v1/folder/${folder.id}/media") {
+          bearerAuth(token)
+          contentType(ContentType.Application.Json)
+          setBody(AssignMediaRequestV1(mediaId = filed.id))
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.get("/v1/media?visibility=active&scope=unassigned") { bearerAuth(token) }.ids() shouldContainExactly
+          listOf(loose.id)
+        client.get("/v1/media?visibility=active") { bearerAuth(token) }.ids() shouldContainExactlyInAnyOrder
+          listOf(loose.id, filed.id)
+        client.get("/v1/media?visibility=active&scope=bogus") { bearerAuth(token) } shouldHaveStatus
+          HttpStatusCode.BadRequest
+      }
+    }
   })
+
+/**
+ * Reads a media listing response and returns the ids it contains.
+ *
+ * @return The ids of the listed media, in response order.
+ */
+private suspend fun HttpResponse.ids(): List<String> = body<List<MediaResponseV1>>().map { it.id }
 
 /**
  * Extension to fetch media with pagination parameters.
@@ -319,6 +384,7 @@ suspend fun HttpClient.getMediaPageV1(
 ): List<MediaResponseV1> =
   get("/v1/media") {
     url {
+      parameters.append("visibility", "active")
       parameters.append("limit", limit.toString())
       parameters.append("offset", offset.toString())
     }

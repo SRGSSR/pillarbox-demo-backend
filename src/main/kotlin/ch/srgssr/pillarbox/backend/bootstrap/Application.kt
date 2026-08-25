@@ -92,7 +92,7 @@ fun Application.module() {
   // Setup HTTP Routing
   routing {
     auth(get(), get(), get())
-    media(get())
+    media(get(), get())
     folder(get(), get(), get(), get(), get())
     user(get(), get())
     team(get(), get())

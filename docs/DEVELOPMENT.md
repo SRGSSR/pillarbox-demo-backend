@@ -17,26 +17,26 @@ Fragment and action endpoints are driven by HTMX. Mutating actions require the `
 restoring from the bin requires the `Admin` role; folder and media mutations are additionally gated
 by folder write access (see [Folder permissions](#folder-permissions)).
 
-| Method     | Endpoint                                       | Type     | Description                                                                               |
-|------------|------------------------------------------------|----------|-------------------------------------------------------------------------------------------|
-| **GET**    | `/console`                                     | Page     | Renders the main dashboard/home page. Accepts `folderId` to open a folder.                |
-| **GET**    | `/console/bin`                                 | Page     | Renders the bin (recently deleted media).                                                 |
-| **GET**    | `/console/editor/{id?}`                        | Page     | Opens the media editor (empty for new, populated for an existing id). Accepts `folderId`. |
-| **GET**    | `/console/editor/{id}/duplicate`               | Page     | Opens the editor pre-filled from an existing id (id cleared) for duplication.             |
+| Method     | Endpoint                                       | Type     | Description                                                                                                                                                   |
+|------------|------------------------------------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **GET**    | `/console`                                     | Page     | Renders the main dashboard/home page. Accepts `folderId` to open a folder.                                                                                    |
+| **GET**    | `/console/bin`                                 | Page     | Renders the bin (recently deleted media).                                                                                                                     |
+| **GET**    | `/console/editor/{id?}`                        | Page     | Opens the media editor (empty for new, populated for an existing id). Accepts `folderId`.                                                                     |
+| **GET**    | `/console/editor/{id}/duplicate`               | Page     | Opens the editor pre-filled from an existing id (id cleared) for duplication.                                                                                 |
 | **GET**    | `/console/editor/import`                       | Page     | Opens the editor pre-filled with data imported from the Integration Layer. Requires `urn`, accepts `folderId`; answers `502` when the URN cannot be resolved. |
-| **GET**    | `/console/fragments/media-grid`                | Fragment | Paginated media grid. Accepts `page`, `pageSize`, `folderId`, and `deleted`.              |
-| **GET**    | `/console/fragments/folder-grid`               | Fragment | Grid of subfolders. Accepts `id` (parent folder, omitted for root).                       |
-| **GET**    | `/console/fragments/folder-picker`             | Fragment | Folder picker dialog for moving a media item. Accepts `mediaId` and `folderId`.           |
-| **GET**    | `/console/fragments/folder-picker-child`       | Fragment | Lazily loads child folders in the picker. Accepts `id` and `currentFolderId`.             |
-| **GET**    | `/console/fragments/editor/{fragment}`         | Fragment | Returns a set of input fields for a specific editor row type.                             |
-| **POST**   | `/console/actions/folder`                      | Action   | Creates a folder.                                                                         |
-| **PATCH**  | `/console/actions/folder/{id}`                 | Action   | Renames a folder.                                                                         |
-| **DELETE** | `/console/actions/folder/{id}`                 | Action   | Deletes a folder.                                                                         |
-| **POST**   | `/console/actions/folder/{id}/media`           | Action   | Assigns a media item to a folder.                                                         |
-| **DELETE** | `/console/actions/folder/{id}/media/{mediaId}` | Action   | Removes a media item's assignment from a folder.                                          |
-| **POST**   | `/console/actions/media`                       | Action   | Saves a media entity (create/update) and triggers a client-side redirect.                 |
-| **DELETE** | `/console/actions/media/{id}`                  | Action   | Soft-deletes a media entity (moves it to the bin).                                        |
-| **POST**   | `/console/actions/media/{id}/restore`          | Action   | Restores a deleted media entity from the bin. Requires the `Admin` role.                  |
+| **GET**    | `/console/fragments/media-grid`                | Fragment | Paginated media grid. Accepts `page`, `pageSize`, `folderId`, and `deleted`.                                                                                  |
+| **GET**    | `/console/fragments/folder-grid`               | Fragment | Grid of subfolders. Accepts `id` (parent folder, omitted for root).                                                                                           |
+| **GET**    | `/console/fragments/folder-picker`             | Fragment | Folder picker dialog for moving a media item. Accepts `mediaId` and `folderId`.                                                                               |
+| **GET**    | `/console/fragments/folder-picker-child`       | Fragment | Lazily loads child folders in the picker. Accepts `id` and `currentFolderId`.                                                                                 |
+| **GET**    | `/console/fragments/editor/{fragment}`         | Fragment | Returns a set of input fields for a specific editor row type.                                                                                                 |
+| **POST**   | `/console/actions/folder`                      | Action   | Creates a folder.                                                                                                                                             |
+| **PATCH**  | `/console/actions/folder/{id}`                 | Action   | Renames a folder.                                                                                                                                             |
+| **DELETE** | `/console/actions/folder/{id}`                 | Action   | Deletes a folder.                                                                                                                                             |
+| **POST**   | `/console/actions/folder/{id}/media`           | Action   | Assigns a media item to a folder.                                                                                                                             |
+| **DELETE** | `/console/actions/folder/{id}/media/{mediaId}` | Action   | Removes a media item's assignment from a folder.                                                                                                              |
+| **POST**   | `/console/actions/media`                       | Action   | Saves a media entity (create/update) and triggers a client-side redirect.                                                                                     |
+| **DELETE** | `/console/actions/media/{id}`                  | Action   | Soft-deletes a media entity (moves it to the bin).                                                                                                            |
+| **POST**   | `/console/actions/media/{id}/restore`          | Action   | Restores a deleted media entity from the bin. Requires the `Admin` role.                                                                                      |
 
 ## REST API
 
@@ -86,14 +86,23 @@ curl -v --request POST \
 All endpoints below require the `Authorization: Bearer $TOKEN` header. You can find all the
 definitions in [MediaRoute.kt][media-route-kt].
 
-| Method     | Endpoint                 | Description                                                |
-|------------|--------------------------|------------------------------------------------------------|
-| **GET**    | `/v1/media`              | List all media (supports `limit` and `offset` queries).    |
-| **GET**    | `/v1/media/{id}`         | Retrieve a specific media entity by ID.                    |
-| **POST**   | `/v1/media`              | Create or fully update a media entity.                     |
-| **PATCH**  | `/v1/media/{id}/tags`    | Batch update tags for a specific media entity.             |
-| **DELETE** | `/v1/media/{id}`         | Soft-delete a media entity (moves it to the bin).          |
-| **POST**   | `/v1/media/{id}/restore` | Restore a deleted media entity. Requires the `Admin` role. |
+| Method     | Endpoint                 | Description                                                                                          |
+|------------|--------------------------|------------------------------------------------------------------------------------------------------|
+| **GET**    | `/v1/media`              | List media. Accepts `limit`, `offset`, `q` for a text search, `visibility`, and `scope`.             |
+| **GET**    | `/v1/media/{id}`         | Retrieve a specific media entity by ID.                                                              |
+| **POST**   | `/v1/media`              | Create or fully update a media entity.                                                               |
+| **POST**   | `/v1/media-import`       | Import a media from the Integration Layer by `urn` (upserts by id). Answers `502` on an unknown URN. |
+| **PATCH**  | `/v1/media/{id}/tags`    | Batch update tags for a specific media entity.                                                       |
+| **DELETE** | `/v1/media/{id}`         | Soft-delete a media entity (moves it to the bin).                                                    |
+| **POST**   | `/v1/media/{id}/restore` | Restore a deleted media entity. Requires the `Admin` role.                                           |
+
+Listings accept a `visibility` query parameter: `active` for media that are not in the bin,
+`deleted` for the bin, or omit it to list both.
+
+`/v1/media` also accepts a `scope` query parameter: `all` for every media regardless of folder
+(the default when omitted), or `unassigned` for media assigned to no folder.
+
+Any other value for `visibility` or `scope` answers `400`.
 
 Mutations (`POST`, `PATCH`, `DELETE`) require the `Write` role and are additionally gated by the
 write access of the media's folder (see [Folder permissions](#folder-permissions)). Restoring from
@@ -102,21 +111,22 @@ the bin is reserved for the `Admin` role.
 #### Folder API
 
 Folders provide a hierarchical way to organise media items. They support nesting via a `parentId`
-field. You can find all the definitions in [FolderRoute.kt][folder-route-kt].
+field. Every folder response carries a `mediaCount`: the number of active media in the folder and
+all of its subfolders. You can find all the definitions in [FolderRoute.kt][folder-route-kt].
 
-| Method     | Endpoint                                    | Description                                                                                |
-|------------|---------------------------------------------|--------------------------------------------------------------------------------------------|
-| **GET**    | `/v1/folder`                                | List folders. Accepts `limit` and `offset` for pagination; `parentId` to filter by parent. |
-| **GET**    | `/v1/folder/{id}`                           | Retrieve a specific folder by ID.                                                          |
-| **GET**    | `/v1/folder/{id}/media`                     | List media items assigned to a folder. Accepts `limit` and `offset`.                       |
-| **POST**   | `/v1/folder`                                | Create a new folder.                                                                       |
-| **PATCH**  | `/v1/folder/{id}`                           | Update an existing folder.                                                                 |
-| **DELETE** | `/v1/folder/{id}`                           | Delete a folder.                                                                           |
-| **POST**   | `/v1/folder/{id}/media`                     | Assign a media item to a folder.                                                           |
-| **DELETE** | `/v1/folder/{id}/media/{mediaId}`           | Remove a media item's assignment from a folder.                                            |
-| **GET**    | `/v1/folder/{id}/permission`                | List the grants effective on a folder (its own grants plus inherited ancestor grants).     |
-| **POST**   | `/v1/folder/{id}/permission`                | Add an access grant to a folder.                                                           |
-| **DELETE** | `/v1/folder/{id}/permission/{permissionId}` | Remove a grant from a folder.                                                              |
+| Method     | Endpoint                                    | Description                                                                                  |
+|------------|---------------------------------------------|----------------------------------------------------------------------------------------------|
+| **GET**    | `/v1/folder`                                | List folders. Accepts `limit` and `offset` for pagination; `parentId` to filter by parent.   |
+| **GET**    | `/v1/folder/{id}`                           | Retrieve a specific folder by ID.                                                            |
+| **GET**    | `/v1/folder/{id}/media`                     | List media items assigned to a folder. Accepts `limit`, `offset`, `q`, and `visibility`.     |
+| **POST**   | `/v1/folder`                                | Create a new folder.                                                                         |
+| **PATCH**  | `/v1/folder/{id}`                           | Update an existing folder.                                                                   |
+| **DELETE** | `/v1/folder/{id}`                           | Delete a folder.                                                                             |
+| **POST**   | `/v1/folder/{id}/media`                     | Assign a media item to a folder.                                                             |
+| **DELETE** | `/v1/folder/{id}/media/{mediaId}`           | Remove a media item's assignment from a folder.                                              |
+| **GET**    | `/v1/folder/{id}/permission`                | List the grants effective on a folder (its own grants plus inherited ancestor grants).       |
+| **POST**   | `/v1/folder/{id}/permission`                | Add an access grant to a folder.                                                             |
+| **DELETE** | `/v1/folder/{id}/permission/{permissionId}` | Remove a grant from a folder.                                                                |
 
 #### Folder permissions
 

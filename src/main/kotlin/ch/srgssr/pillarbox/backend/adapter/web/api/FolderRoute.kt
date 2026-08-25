@@ -7,6 +7,7 @@ import ch.srgssr.pillarbox.backend.adapter.web.api.dto.toFolderPermissionRespons
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.toFolderResponseV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.adapter.web.http.AuthenticatedUserPlugin
+import ch.srgssr.pillarbox.backend.adapter.web.http.toMediaVisibility
 import ch.srgssr.pillarbox.backend.adapter.web.http.toQuerySlice
 import ch.srgssr.pillarbox.backend.adapter.web.http.withFolderWrite
 import ch.srgssr.pillarbox.backend.adapter.web.http.withMediaWrite
@@ -63,19 +64,17 @@ fun Route.folder(
           call.request.queryParameters["parentId"]?.let { FolderScope.In(it) }
             ?: FolderScope.Anywhere
 
-        call.respond(
-          folderCatalog
-            .list(scope, call.request.queryParameters.toQuerySlice())
-            .map { it.toFolderResponseV1() },
-        )
+        val folders = folderCatalog.list(scope, call.request.queryParameters.toQuerySlice())
+        val counts = folderCatalog.countMediaIn(*folders.map { it.id }.toTypedArray())
+        call.respond(folders.map { it.toFolderResponseV1(counts[it.id] ?: 0L) })
       }
 
       get("/{id}") {
         val id = call.parameters.getOrFail("id")
 
-        when (val folder = folderCatalog.find(id)?.toFolderResponseV1()) {
+        when (val folder = folderCatalog.find(id)) {
           null -> call.respond(HttpStatusCode.NotFound)
-          else -> call.respond(folder)
+          else -> call.respond(folder.toFolderResponseV1(folderCatalog.countMediaIn(id)))
         }
       }
 
@@ -84,9 +83,13 @@ fun Route.folder(
         if (!folderCatalog.exists(id)) return@get call.respond(HttpStatusCode.NotFound)
 
         val slice = call.request.queryParameters.toQuerySlice()
+        val query = call.request.queryParameters["q"]
+        val visibility =
+          call.request.queryParameters.toMediaVisibility()
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Unknown visibility; use 'active' or 'deleted'")
         call.respond(
           mediaCatalog
-            .page(MediaCriteria(scope = FolderScope.In(id)), slice)
+            .page(MediaCriteria(visibility = visibility, scope = FolderScope.In(id), text = query), slice)
             .map { it.toMediaResponseV1() }
             .items,
         )
@@ -98,7 +101,7 @@ fun Route.folder(
           withFolderWrite(folder.parentId) {
             call.respond(
               HttpStatusCode.Created,
-              folderCatalog.save(folder).toFolderResponseV1(),
+              folderCatalog.save(folder).toFolderResponseV1(folderCatalog.countMediaIn(folder.id)),
             )
           }
         }
@@ -113,7 +116,7 @@ fun Route.folder(
           withFolderWrite(id, folder.parentId.takeIf { moved }) {
             call.respond(
               HttpStatusCode.Created,
-              folderCatalog.save(folder).toFolderResponseV1(),
+              folderCatalog.save(folder).toFolderResponseV1(folderCatalog.countMediaIn(folder.id)),
             )
           }
         }

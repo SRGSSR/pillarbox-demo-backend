@@ -11,6 +11,7 @@ import ch.srgssr.pillarbox.backend.domain.port.FolderCatalog
 import ch.srgssr.pillarbox.backend.time.toKotlinInstant
 import ch.srgssr.pillarbox.backend.time.toUtcOffsetDateTime
 import kotlinx.coroutines.flow.toList
+import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -225,7 +226,8 @@ class FolderRepository(
     }
 
   /**
-   * Counts the number of non-deleted media items in a folder, or unassigned media if [folderId] is `null`.
+   * Counts the active media items in a folder and all of its descendants,
+   * or unassigned media if [folderId] is `null`.
    *
    * @param folderId The folder ID to count media for, or `null` to count media not assigned to any folder.
    * @return The number of matching media items.
@@ -233,20 +235,14 @@ class FolderRepository(
   override suspend fun countMediaIn(folderId: String?): Long =
     query(readOnly = true) {
       if (folderId != null) {
-        (MediaTable leftJoin FolderMediaTable)
-          .selectAll()
-          .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and (FolderMediaTable.folderId eq folderId) }
-          .count()
+        countMediaInSubtrees(listOf(folderId))[folderId] ?: 0L
       } else {
-        (MediaTable leftJoin FolderMediaTable)
-          .selectAll()
-          .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and FolderMediaTable.mediaId.isNull() }
-          .count()
+        countUnassignedMedia()
       }
     }
 
   /**
-   * Counts the number of non-deleted media items in each of the given folders,
+   * Counts the active media items in each of the given folders and their descendants,
    * and optionally unassigned media if `null` is included.
    *
    * @param folderIds The folder IDs to count media for; include `null` to count unassigned media.
@@ -256,27 +252,47 @@ class FolderRepository(
     query(readOnly = true) {
       val named = folderIds.filterNotNull().distinct()
       val results = named.associateWith { 0L }.toMutableMap<String?, Long>()
-      if (named.isNotEmpty()) {
-        val mediaCount = FolderMediaTable.mediaId.count()
-        (MediaTable innerJoin FolderMediaTable)
-          .select(FolderMediaTable.folderId, mediaCount)
-          .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and (FolderMediaTable.folderId inList named) }
-          .groupBy(FolderMediaTable.folderId)
-          .forEach { row ->
-            results[row[FolderMediaTable.folderId]] = row[mediaCount]
-          }
-      }
+      results.putAll(countMediaInSubtrees(named))
 
       if (null in folderIds) {
-        results[null] =
-          (MediaTable leftJoin FolderMediaTable)
-            .selectAll()
-            .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and FolderMediaTable.mediaId.isNull() }
-            .count()
+        results[null] = countUnassignedMedia()
       }
 
       results
     }
+
+  /**
+   * Counts the active media assigned to each folder in [folderIds] or to any of its descendants.
+   *
+   * Uses [FolderAncestorView]: joining the media's folder as `descendant_id` and grouping by the
+   * ancestor `id` attributes each media item to every folder on its path, including its own.
+   * Must be called inside a transaction.
+   *
+   * @param folderIds The folders to count media for.
+   * @return A map from folder ID to media count. Folders without media are absent.
+   */
+  private fun countMediaInSubtrees(folderIds: List<String>): Map<String, Long> {
+    if (folderIds.isEmpty()) return emptyMap()
+    val mediaCount = FolderMediaTable.mediaId.count()
+    return FolderMediaTable
+      .join(MediaTable, JoinType.INNER, FolderMediaTable.mediaId, MediaTable.id)
+      .join(FolderAncestorView, JoinType.INNER, FolderMediaTable.folderId, FolderAncestorView.descendantId)
+      .select(FolderAncestorView.id, mediaCount)
+      .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and (FolderAncestorView.id inList folderIds) }
+      .groupBy(FolderAncestorView.id)
+      .associate { row -> row[FolderAncestorView.id] to row[mediaCount] }
+  }
+
+  /**
+   * Counts the active media not assigned to any folder. Must be called inside a transaction.
+   *
+   * @return The number of unassigned active media items.
+   */
+  private fun countUnassignedMedia(): Long =
+    (MediaTable leftJoin FolderMediaTable)
+      .selectAll()
+      .where { MediaVisibility.ACTIVE.toPredicate(clock.now()) and FolderMediaTable.mediaId.isNull() }
+      .count()
 
   /**
    * Counts the number of direct subfolders of a folder, or root-level folders if [folderId] is `null`.

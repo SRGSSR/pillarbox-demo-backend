@@ -116,17 +116,17 @@ interface FolderCatalog {
   ): Boolean
 
   /**
-   * Counts the active media in a folder, or the unassigned media for `null`.
+   * Counts the active media in a folder and all of its descendants, or the unassigned media for `null`.
    *
-   * @param folderId The folder to count, or `null` for unassigned media.
+   * @param folderId The folder whose subtree to count, or `null` for unassigned media.
    * @return The number of matching media items.
    */
   suspend fun countMediaIn(folderId: String?): Long
 
   /**
-   * Counts the active media in each of the given folders in a single lookup.
+   * Counts the active media in each of the given folders and their descendants in a single lookup.
    *
-   * @param folderIds The folders to count; include `null` to count unassigned media.
+   * @param folderIds The folders whose subtrees to count; include `null` to count unassigned media.
    * @return A map from folder id (or `null`) to media count.
    */
   suspend fun countMediaIn(vararg folderIds: String?): Map<String?, Long>

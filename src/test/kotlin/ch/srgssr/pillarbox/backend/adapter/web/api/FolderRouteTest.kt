@@ -22,6 +22,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -181,7 +182,7 @@ class FolderRouteTest :
 
         val folderMedia =
           client
-            .get("/v1/folder/${folder.id}/media") { bearerAuth(token) }
+            .get("/v1/folder/${folder.id}/media?visibility=active") { bearerAuth(token) }
             .body<List<MediaResponseV1>>()
 
         folderMedia.size shouldBe 1
@@ -217,7 +218,7 @@ class FolderRouteTest :
         } shouldHaveStatus HttpStatusCode.NoContent
 
         client
-          .get("/v1/folder/${folder.id}/media") { bearerAuth(token) }
+          .get("/v1/folder/${folder.id}/media?visibility=active") { bearerAuth(token) }
           .body<List<MediaResponseV1>>()
           .shouldBeEmpty()
       }
@@ -344,7 +345,8 @@ class FolderRouteTest :
 
         client.get("/v1/folder") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
         client.get("/v1/folder/${folder.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
-        client.get("/v1/folder/${folder.id}/media") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.OK
+        client.get("/v1/folder/${folder.id}/media?visibility=active") { bearerAuth(token) } shouldHaveStatus
+          HttpStatusCode.OK
         client.patch("/v1/folder/${folder.id}") {
           bearerAuth(token)
           contentType(ContentType.Application.Json)
@@ -353,7 +355,87 @@ class FolderRouteTest :
         client.delete("/v1/folder/${folder.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
       }
     }
+
+    should("report the media count of a folder and its subfolders") {
+      testApplicationContext {
+        suspend fun createFolder(
+          name: String,
+          parentId: String? = null,
+        ): FolderResponseV1 =
+          client
+            .post("/v1/folder") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = name, parentId = parentId))
+            }.body()
+
+        val parent = createFolder("Parent")
+        parent.mediaCount shouldBe 0
+        val child = createFolder("Child", parent.id)
+
+        listOf("count-parent" to parent.id, "count-child-1" to child.id, "count-child-2" to child.id)
+          .forEach { (mediaId, folderId) ->
+            client.post("/v1/media") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(mediaFixture { id = mediaId }.toMediaRequestV1())
+            } shouldHaveStatus HttpStatusCode.Created
+            client.post("/v1/folder/$folderId/media") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(AssignMediaRequestV1(mediaId = mediaId))
+            } shouldHaveStatus HttpStatusCode.Created
+          }
+
+        client.get("/v1/folder/${parent.id}") { bearerAuth(token) }.body<FolderResponseV1>().mediaCount shouldBe 3
+        client.get("/v1/folder/${child.id}") { bearerAuth(token) }.body<FolderResponseV1>().mediaCount shouldBe 2
+
+        val listed = client.get("/v1/folder") { bearerAuth(token) }.body<List<FolderResponseV1>>()
+        listed.associate { it.id to it.mediaCount } shouldBe mapOf(parent.id to 3L, child.id to 2L)
+      }
+    }
+
+    should("list folder media by visibility") {
+      testApplicationContext {
+        val folder =
+          client
+            .post("/v1/folder") {
+              bearerAuth(token)
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = "Visibility"))
+            }.body<FolderResponseV1>()
+        val kept = mediaFixture { id = "folder-visibility-kept" }
+        val binned = mediaFixture { id = "folder-visibility-binned" }
+        listOf(kept, binned).forEach { fixture ->
+          client.post("/v1/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(fixture.toMediaRequestV1())
+          } shouldHaveStatus HttpStatusCode.Created
+          client.post("/v1/folder/${folder.id}/media") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(AssignMediaRequestV1(mediaId = fixture.id))
+          } shouldHaveStatus HttpStatusCode.Created
+        }
+        client.delete("/v1/media/${binned.id}") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.NoContent
+
+        val path = "/v1/folder/${folder.id}/media"
+        client.get("$path?visibility=active") { bearerAuth(token) }.mediaIds() shouldBe listOf(kept.id)
+        client.get("$path?visibility=deleted") { bearerAuth(token) }.mediaIds() shouldBe listOf(binned.id)
+        client.get(path) { bearerAuth(token) }.mediaIds().toSet() shouldBe
+          setOf(kept.id, binned.id)
+        client.get("$path?visibility=bogus") { bearerAuth(token) } shouldHaveStatus HttpStatusCode.BadRequest
+      }
+    }
   })
+
+/**
+ * Reads a media listing response and returns the ids it contains.
+ *
+ * @return The ids of the listed media, in response order.
+ */
+private suspend fun HttpResponse.mediaIds(): List<String> = body<List<MediaResponseV1>>().map { it.id }
 
 suspend fun HttpClient.getFolderPageV1(
   limit: Int,

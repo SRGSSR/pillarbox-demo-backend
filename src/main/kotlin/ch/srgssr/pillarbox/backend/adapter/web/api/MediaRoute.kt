@@ -1,12 +1,16 @@
 package ch.srgssr.pillarbox.backend.adapter.web.api
 
+import ch.srgssr.pillarbox.backend.adapter.web.api.dto.ImportMediaRequestV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.MediaRequestV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.TagBatchUpdateRequestV1
 import ch.srgssr.pillarbox.backend.adapter.web.api.dto.toMediaResponseV1
 import ch.srgssr.pillarbox.backend.adapter.web.http.AuthenticatedUserPlugin
+import ch.srgssr.pillarbox.backend.adapter.web.http.toFolderScope
+import ch.srgssr.pillarbox.backend.adapter.web.http.toMediaVisibility
 import ch.srgssr.pillarbox.backend.adapter.web.http.toQuerySlice
 import ch.srgssr.pillarbox.backend.adapter.web.http.withMediaWrite
 import ch.srgssr.pillarbox.backend.adapter.web.http.withRole
+import ch.srgssr.pillarbox.backend.application.media.ImportMediaFromUrn
 import ch.srgssr.pillarbox.backend.domain.catalog.MediaCriteria
 import ch.srgssr.pillarbox.backend.domain.catalog.MediaVisibility
 import ch.srgssr.pillarbox.backend.domain.model.Role
@@ -30,9 +34,13 @@ import io.ktor.server.util.getOrFail
  * from granted editors and administrators.
  *
  * @param mediaCatalog The repository used to manage media entities.
+ * @param importMediaFromUrn The use case that fetches a media from the Integration Layer by URN.
  */
 @SuppressWarnings("LongMethod")
-fun Route.media(mediaCatalog: MediaCatalog) {
+fun Route.media(
+  mediaCatalog: MediaCatalog,
+  importMediaFromUrn: ImportMediaFromUrn,
+) {
   authenticate("pillarbox-jwt", "pillarbox-session") {
     route("v1/media") {
       install(AuthenticatedUserPlugin)
@@ -40,9 +48,15 @@ fun Route.media(mediaCatalog: MediaCatalog) {
       get {
         val slice = call.request.queryParameters.toQuerySlice()
         val query = call.request.queryParameters["q"]
+        val visibility =
+          call.request.queryParameters.toMediaVisibility()
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Unknown visibility; use 'active' or 'deleted'")
+        val scope =
+          call.request.queryParameters.toFolderScope()
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Unknown scope; use 'all' or 'unassigned'")
         call.respond(
           mediaCatalog
-            .page(MediaCriteria(text = query), slice)
+            .page(MediaCriteria(visibility = visibility, scope = scope, text = query), slice)
             .items
             .map { it.toMediaResponseV1() },
         )
@@ -62,8 +76,6 @@ fun Route.media(mediaCatalog: MediaCatalog) {
         post {
           val media = call.receive<MediaRequestV1>().toMedia()
 
-          // Saving is an upsert: overwriting an existing media is governed by its folder,
-          // while a brand-new id has nothing to protect yet.
           withMediaWrite(media.id.takeIf { mediaCatalog.exists(it) }) {
             mediaCatalog.save(media)
             call.respond(HttpStatusCode.Created, media.toMediaResponseV1())
@@ -102,6 +114,26 @@ fun Route.media(mediaCatalog: MediaCatalog) {
             .takeIf { it }
             ?.let { call.respond(HttpStatusCode.Created) }
             ?: call.respond(HttpStatusCode.NotFound)
+        }
+      }
+    }
+
+    route("v1/media-import") {
+      install(AuthenticatedUserPlugin)
+
+      withRole(Role.WRITE) {
+        post {
+          val request = call.receive<ImportMediaRequestV1>()
+          if (request.urn.isBlank()) return@post call.respond(HttpStatusCode.BadRequest)
+
+          withMediaWrite(request.urn.takeIf { mediaCatalog.exists(it) }) {
+            val import =
+              importMediaFromUrn(request.urn)
+                ?: return@withMediaWrite call.respond(HttpStatusCode.BadGateway)
+
+            val media = mediaCatalog.save(import.media)
+            call.respond(HttpStatusCode.Created, media.toMediaResponseV1())
+          }
         }
       }
     }

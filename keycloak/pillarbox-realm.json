@@ -15,6 +15,7 @@
       "publicClient": true,
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
+      "attributes": { "oauth2.device.authorization.grant.enabled": "true" },
       "redirectUris": ["http://localhost:8080/*"],
       "webOrigins": ["http://localhost:8080"],
       "protocolMappers": [

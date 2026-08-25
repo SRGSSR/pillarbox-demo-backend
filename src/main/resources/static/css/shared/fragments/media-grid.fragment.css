@@ -35,6 +35,7 @@
   grid-template-columns: 160px 1fr auto;
   align-items: center;
 
+  padding: var(--size-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-2);
 
@@ -58,11 +59,8 @@
 /* ── Thumbnail ── */
 .media-card figure {
   overflow: hidden;
-
-  height: 96px;
   margin: 0;
-  border-radius: var(--radius-2) 0 0 var(--radius-2);
-
+  border-radius: var(--radius-2);
   background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
 }
 
@@ -81,7 +79,7 @@
   display: grid;
   gap: 4px;
   min-width: 0;
-  padding: var(--size-3) var(--size-4);
+  padding: 0 var(--size-4);
 }
 
 .media-card > header h3 {
@@ -149,6 +147,5 @@
   display: flex;
   flex-shrink: 0;
   gap: 2px;
-  padding-right: var(--size-3);
 }
 

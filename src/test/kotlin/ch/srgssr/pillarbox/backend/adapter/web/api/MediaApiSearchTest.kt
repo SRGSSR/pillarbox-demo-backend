@@ -42,7 +42,7 @@ class MediaApiSearchTest :
 
         val results =
           client
-            .get("/v1/media?q=alps") { bearerAuth(token) }
+            .get("/v1/media?visibility=active&q=alps") { bearerAuth(token) }
             .body<List<MediaResponseV1>>()
 
         results.map { it.id } shouldBe listOf(alps.id)

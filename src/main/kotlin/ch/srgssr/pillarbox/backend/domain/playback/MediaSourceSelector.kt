@@ -13,8 +13,8 @@ import ch.srgssr.pillarbox.backend.domain.model.MediaSource
  * 1. The source's MIME type must appear in [mimeTypes].
  * 2. The source must be unprotected, or have at least one DRM config compatible with [drmPreferences].
  * 3. DRM-protected sources rank above unprotected ones (when DRM preferences are expressed).
- * 4. Lower index in [mimeTypes] = higher MIME-type priority.
- * 5. Lower index in [drmPreferences] = higher DRM priority.
+ * 4. The most restrictive compatible security level wins, across key systems.
+ * 5. Lower index in [mimeTypes] = higher MIME-type priority.
  *
  * @property mimeTypes Prioritised list of accepted MIME types (e.g. "application/dash+xml").
  * @property drmPreferences Prioritised list of accepted DRM preferences.
@@ -88,6 +88,13 @@ class MediaSourceSelector(
     }
 
   /**
+   * Numeric rank of this config's security level (lower = stronger),
+   * or `null` if the level is absent or unknown for its key system.
+   */
+  private val DrmConfig.securityRank: Int?
+    get() = SecurityLevels.rankOf(keySystem, securityLevel)
+
+  /**
    * Returns a copy of this source containing only the [DrmConfig] entries
    * that are compatible with the client's [drmPreferences].
    */
@@ -98,33 +105,40 @@ class MediaSourceSelector(
    * Builds the [Comparator] used to rank eligible sources.
    *
    * Sources are compared by:
-   * 1. **DRM presence** – protected sources rank first over unprotected ones.
-   * 2. **MIME-type priority** – lower index in [mimeTypes] is better.
-   * 3. **DRM priority** – lowest compatible index in [drmPreferences] wins.
+   * 1. **DRM presence**: protected sources rank first over unprotected ones.
+   * 2. **Security level**: the most restrictive compatible [DrmConfig] wins, across key systems.
+   * 3. **MIME-type priority**: lower index in [mimeTypes] is better.
+   *
+   * @return The comparator ordering the best source first.
    */
   private fun selectionOrder(): Comparator<MediaSource> =
     compareBy(
       { if (it.drmConfigs.isEmpty()) 1 else 0 },
+      { it.bestDrmSecurityRank() },
       { mimeTypes.indexOfFirst { mt -> it.mimeType?.equals(mt, ignoreCase = true) == true } },
-      { it.bestDrmPriority() },
     )
 
   /**
-   * Returns the best (lowest) DRM preference index across all compatible [DrmConfig] entries
-   * of this source, or [Int.MAX_VALUE] if none match.
+   * Returns the rank of the most restrictive [DrmConfig] of this source (lower = stronger).
+   * Configs with an absent or unknown level rank last. Callers must invoke [retainCompatibleDrm]
+   * first so only compatible configs are considered.
+   *
+   * @return The lowest security rank, or [Int.MAX_VALUE] if the source has no ranked config.
    */
-  private fun MediaSource.bestDrmPriority(): Int =
-    drmConfigs.minOfOrNull { config ->
-      drmPreferences.indexOfFirst { it.isCompatibleWith(config) }
-    } ?: Int.MAX_VALUE
+  private fun MediaSource.bestDrmSecurityRank(): Int =
+    drmConfigs.minOfOrNull { it.securityRank ?: Int.MAX_VALUE } ?: Int.MAX_VALUE
 
   /**
-   * Returns the first [DrmConfig] from this source that matches the client's [drmPreferences],
-   * respecting preference order, or `null` if the source is unprotected.
+   * Returns the [DrmConfig] to hand to the client: the first preference in [drmPreferences]
+   * order that matches, and within it the most restrictive compatible config.
+   *
+   * @return The chosen config, or `null` if the source is unprotected.
    */
   private fun MediaSource.preferredDrm(): DrmConfig? =
     drmPreferences.firstNotNullOfOrNull { pref ->
-      drmConfigs.find { pref.isCompatibleWith(it) }
+      drmConfigs
+        .filter { pref.isCompatibleWith(it) }
+        .minByOrNull { it.securityRank ?: Int.MAX_VALUE }
     }
 }
 
@@ -155,12 +169,13 @@ private object SecurityLevels {
    * or `null` if the combination is unknown.
    *
    * @param keySystem The DRM key system identifier (e.g. `"com.widevine.alpha"`).
-   * @param level The security level string (e.g. `"L1"`, `"SL3000"`).
+   * @param level The security level string (e.g. `"L1"`, `"SL3000"`), or `null`.
+   * @return The numeric rank, or `null` if unknown.
    */
   fun rankOf(
     keySystem: String,
-    level: String,
-  ): Int? = rankings[keySystem to level]
+    level: String?,
+  ): Int? = level?.let { rankings[keySystem to it] }
 
   /**
    * Checks whether the [actual] security level of the client is strong enough

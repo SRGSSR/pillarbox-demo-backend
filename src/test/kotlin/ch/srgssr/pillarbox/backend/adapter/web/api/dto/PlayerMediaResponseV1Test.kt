@@ -172,16 +172,52 @@ class PlayerMediaResponseV1Test :
           expectedDrm = null,
         ),
         SourceSelectionCase(
-          name = "prefer the source whose DRM key system appears earlier in the priority list when mimeTypes are equal",
+          name = "prefer the source with a ranked security level over one without when mimeTypes are equal",
           media =
             mediaFixture {
               withDash(MediaLibrary.FairPlay)
-              withDash(MediaLibrary.Widevine)
+              withDash(MediaLibrary.WidevineL3)
             },
           mimeTypes = listOf("application/dash+xml"),
-          drm = listOf("com.widevine.alpha", "com.apple.fps"),
+          drm = listOf("com.apple.fps", "com.widevine.alpha;L1"),
           expectedSource = MediaLibrary.Dash.toPlayerMediaSourceV1(),
-          expectedDrm = MediaLibrary.Widevine,
+          expectedDrm = MediaLibrary.WidevineL3,
+        ),
+        SourceSelectionCase(
+          name = "prefer the most restrictive security level over the mimeType priority",
+          media =
+            mediaFixture {
+              withDash(MediaLibrary.WidevineL3)
+              withHls(MediaLibrary.WidevineL1)
+            },
+          mimeTypes = listOf("application/dash+xml", "application/x-mpegURL"),
+          drm = listOf("com.widevine.alpha;L1"),
+          expectedSource = MediaLibrary.Hls.toPlayerMediaSourceV1(),
+          expectedDrm = MediaLibrary.WidevineL1,
+        ),
+        SourceSelectionCase(
+          name = "prefer the most restrictive security level across key systems over the DRM priority",
+          media =
+            mediaFixture {
+              withDash(MediaLibrary.PlayReadySL2000)
+              withHls(MediaLibrary.WidevineL1)
+            },
+          mimeTypes = listOf("application/dash+xml", "application/x-mpegURL"),
+          drm = listOf("com.microsoft.playready;SL2000", "com.widevine.alpha;L1"),
+          expectedSource = MediaLibrary.Hls.toPlayerMediaSourceV1(),
+          expectedDrm = MediaLibrary.WidevineL1,
+        ),
+        SourceSelectionCase(
+          name = "fall back to the mimeType priority when security levels are equal",
+          media =
+            mediaFixture {
+              withDash(MediaLibrary.WidevineL3)
+              withHls(MediaLibrary.WidevineL3)
+            },
+          mimeTypes = listOf("application/x-mpegURL", "application/dash+xml"),
+          drm = listOf("com.widevine.alpha;L1"),
+          expectedSource = MediaLibrary.Hls.toPlayerMediaSourceV1(),
+          expectedDrm = MediaLibrary.WidevineL3,
         ),
         SourceSelectionCase(
           name = "return null source when all sources are protected and keySystems is empty",

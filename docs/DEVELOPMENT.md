@@ -270,6 +270,15 @@ When no security level is provided for a known key system, the weakest level of 
 assumed (Widevine `L3`, PlayReady `SL2000`), so sources requiring a stronger level are excluded.
 Unknown key systems remain unconstrained and match any security level.
 
+**Source Selection**
+
+Among the sources that match an accepted stream type and a compatible DRM configuration, the
+API picks the winner in this order:
+
+1. DRM-protected sources rank above unprotected ones (when DRM preferences are given).
+2. The source whose DRM requires the most restrictive security level wins.
+3. The stream type listed first in `stream-type` wins.
+
 [folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/FolderRoute.kt
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/MediaRoute.kt
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/PlayerMediaRoute.kt

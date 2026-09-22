@@ -6,11 +6,11 @@ kover = "0.9.9"
 ktlint = "14.2.0"
 ktlint-cli = "1.8.0"
 shadow = "9.6.1"
-versions-plugin = "0.62.0"
+versions-plugin = "0.64.0"
 
 # Libs
 exposed = "1.5.0"
-flyway = "13.6.0"
+flyway = "13.7.0"
 hikaricp = "7.1.0"
 json-schema-validator = "3.0.7"
 jsoup = "1.23.2"

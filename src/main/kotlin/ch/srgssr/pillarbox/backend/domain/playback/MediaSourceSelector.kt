@@ -16,6 +16,9 @@ import ch.srgssr.pillarbox.backend.domain.model.MediaSource
  * 4. The most restrictive compatible security level wins, across key systems.
  * 5. Lower index in [mimeTypes] = higher MIME-type priority.
  *
+ * The same "most restrictive first" rule picks the DRM config handed back for the winning source,
+ * so [drmPreferences] order only breaks ties between equally restrictive configs.
+ *
  * @property mimeTypes Prioritised list of accepted MIME types (e.g. "application/dash+xml").
  * @property drmPreferences Prioritised list of accepted DRM preferences.
  */
@@ -119,27 +122,28 @@ class MediaSourceSelector(
     )
 
   /**
-   * Returns the rank of the most restrictive [DrmConfig] of this source (lower = stronger).
-   * Configs with an absent or unknown level rank last. Callers must invoke [retainCompatibleDrm]
-   * first so only compatible configs are considered.
+   * Returns the rank of the [DrmConfig] this source would hand to the client (lower = stronger),
+   * so a source is ranked by the very config it ends up serving.
    *
-   * @return The lowest security rank, or [Int.MAX_VALUE] if the source has no ranked config.
+   * @return The rank of the [preferredDrm], or [Int.MAX_VALUE] if the source has no ranked config.
    */
-  private fun MediaSource.bestDrmSecurityRank(): Int =
-    drmConfigs.minOfOrNull { it.securityRank ?: Int.MAX_VALUE } ?: Int.MAX_VALUE
+  private fun MediaSource.bestDrmSecurityRank(): Int = preferredDrm()?.securityRank ?: Int.MAX_VALUE
 
   /**
-   * Returns the [DrmConfig] to hand to the client: the first preference in [drmPreferences]
-   * order that matches, and within it the most restrictive compatible config.
+   * Returns the [DrmConfig] to hand to the client: the most restrictive compatible config across
+   * key systems, falling back to [drmPreferences] order when several are equally restrictive.
+   * Configs with an absent or unknown level rank last. Callers must invoke [retainCompatibleDrm]
+   * first so only compatible configs are considered.
    *
    * @return The chosen config, or `null` if the source is unprotected.
    */
   private fun MediaSource.preferredDrm(): DrmConfig? =
-    drmPreferences.firstNotNullOfOrNull { pref ->
-      drmConfigs
-        .filter { pref.isCompatibleWith(it) }
-        .minByOrNull { it.securityRank ?: Int.MAX_VALUE }
-    }
+    drmConfigs.minWithOrNull(
+      compareBy(
+        { it.securityRank ?: Int.MAX_VALUE },
+        { config -> drmPreferences.indexOfFirst { it.isCompatibleWith(config) } },
+      ),
+    )
 }
 
 /**

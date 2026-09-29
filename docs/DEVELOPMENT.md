@@ -279,6 +279,12 @@ API picks the winner in this order:
 2. The source whose DRM requires the most restrictive security level wins.
 3. The stream type listed first in `stream-type` wins.
 
+The DRM configuration returned for the winning source follows the same rule: the most restrictive
+compatible configuration wins, across key systems. A client sending
+`com.microsoft.playready;SL2000,com.widevine.alpha;L1` therefore gets the Widevine `L1`
+configuration, even though PlayReady was listed first. The `drm` order only breaks ties between
+equally restrictive configurations.
+
 [folder-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/FolderRoute.kt
 [media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/MediaRoute.kt
 [player-media-route-kt]: ../src/main/kotlin/ch/srgssr/pillarbox/backend/entrypoint/web/api/PlayerMediaRoute.kt

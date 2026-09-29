@@ -120,7 +120,15 @@ class PlayerMediaResponseV1Test :
           expectedDrm = null,
         ),
         SourceSelectionCase(
-          name = "prefer the keySystem that appears earlier in the priority list",
+          name = "prefer the most restrictive DRM config of a source over the keySystem priority",
+          media = mediaFixture { withDash(MediaLibrary.PlayReadySL2000, MediaLibrary.WidevineL1) },
+          mimeTypes = listOf("application/dash+xml"),
+          drm = listOf("com.microsoft.playready;SL2000", "com.widevine.alpha;L1"),
+          expectedSource = MediaLibrary.Dash.toPlayerMediaSourceV1(),
+          expectedDrm = MediaLibrary.WidevineL1,
+        ),
+        SourceSelectionCase(
+          name = "prefer the keySystem that appears earlier in the priority list when security levels are equal",
           media = mediaFixture { withDash(MediaLibrary.FairPlay, MediaLibrary.Widevine) },
           mimeTypes = listOf("application/dash+xml"),
           drm = listOf("com.widevine.alpha", "com.apple.fps"),

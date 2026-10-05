@@ -3,7 +3,7 @@
 {# @pebvariable name="memberCount" type="java.lang.Long" #}
 {# @pebvariable name="nextUrl" type="java.lang.String" #}
 {# @pebvariable name="canManage" type="java.lang.Boolean" #}
-<tr id="team-row-{{ team.id }}" class="team-row"{% if nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="revealed" hx-swap="afterend" hx-select=".team-row"{% endif %}>
+<tr id="team-row-{{ team.id }}" class="team-row"{% if nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="intersect once" hx-swap="afterend" hx-select=".team-row"{% endif %}>
   <td>
     <span class="cell-identity">
       <span class="avatar"><span class="material-symbols-outlined" aria-hidden="true">group</span></span>

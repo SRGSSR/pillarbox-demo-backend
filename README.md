@@ -28,15 +28,18 @@ For more details on installing and using the `.nvmrc` file see the official
 
 ### Local Development
 
-Use the convenience script to orchestrate the local environment. This script starts the Docker
-containers, launches the background compiler for hot-reloading, and runs the Ktor application.
+Use the convenience script to orchestrate the local environment. It starts the Docker
+containers, then runs the development loop in `scripts/dev.mjs`:
+
+- Templates and CSS/JS changes show on the next browser refresh.
+- A Kotlin or other resource change compiles once and restarts the application.
+- A compile error keeps the previous version running.
+- Type `rs` and Enter to restart by hand.
 
 ```bash
-# Standard start (cleans up Docker on exit)
-./start
-
-# Keep Docker containers running after exiting the app
-./start --keep
+./start              # cleans up Docker on exit
+./start --keep       # keep the Docker containers running after the app exits
+./start --port 8090  # listen on another port
 ```
 
 If you prefer to manage the infrastructure and application lifecycles independently, you can

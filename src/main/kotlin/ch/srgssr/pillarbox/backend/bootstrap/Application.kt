@@ -26,11 +26,14 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.routing.routing
 import io.pebbletemplates.pebble.loader.ClasspathLoader
+import io.pebbletemplates.pebble.loader.FileLoader
+import io.pebbletemplates.pebble.loader.Loader
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import java.io.File
 
 /**
  * The main entry point for the Pillarbox Backend application.
@@ -52,11 +55,8 @@ fun Application.module() {
   val displayConfig = environment.config.toDisplayConfig()
 
   install(Pebble) {
-    loader(
-      ClasspathLoader().apply {
-        prefix = "templates"
-      },
-    )
+    loader(this@module.templateLoader())
+    cacheActive(!this@module.developmentMode)
     extension(PillarboxPebbleExtension(displayConfig.timeZone))
   }
 
@@ -102,6 +102,22 @@ fun Application.module() {
 
   monitor.subscribe(ApplicationStopped) {
     stopKoin()
+  }
+}
+
+/**
+ * Where Pebble reads the pages from. In development it reads the sources, so an edited template
+ * shows on the next refresh without a restart.
+ *
+ * @return The loader.
+ */
+private fun Application.templateLoader(): Loader<String> {
+  // The working directory is the project root when the application runs from `./start`.
+  val sources = File("src/main/resources/templates")
+  return if (developmentMode && sources.isDirectory) {
+    FileLoader(sources.absolutePath)
+  } else {
+    ClasspathLoader().apply { prefix = "templates" }
   }
 }
 

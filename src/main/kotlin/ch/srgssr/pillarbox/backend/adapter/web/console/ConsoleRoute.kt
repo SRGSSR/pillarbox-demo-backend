@@ -8,9 +8,11 @@ import ch.srgssr.pillarbox.backend.domain.port.FolderGrants
 import ch.srgssr.pillarbox.backend.domain.port.MediaCatalog
 import ch.srgssr.pillarbox.backend.domain.port.TeamCatalog
 import ch.srgssr.pillarbox.backend.domain.port.UserCatalog
+import io.ktor.http.CacheControl
 import io.ktor.server.auth.authenticate
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.application
 import io.ktor.server.routing.route
 
 /**
@@ -34,7 +36,13 @@ fun Route.console(
   authenticate("pillarbox-session") {
     install(AuthenticatedUserPlugin)
 
-    staticResources("/static", "static")
+    staticResources("/static", "static") {
+      // In development the bundles keep their name across rebuilds, so the browser asks again
+      // every time instead of keeping a stale copy.
+      if (application.developmentMode) {
+        cacheControl { listOf(CacheControl.NoCache(null)) }
+      }
+    }
 
     route(Navigation.CONSOLE) {
       homePage(mediaCatalog, folderCatalog, folderGrants, userCatalog, teamCatalog)

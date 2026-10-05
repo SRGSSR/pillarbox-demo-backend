@@ -7,7 +7,7 @@
 {% set nextUrl = hasMore ? "/console/fragments/user-table?page=" + nextPage + "&pageSize=" + result.limit + "&q=" + (q | urlencode) : null %}
 
 {%- for user in result.items -%}
-<tr class="user-row"{% if loop.last and nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="revealed" hx-swap="afterend" hx-select=".user-row"{% endif %}>
+<tr class="user-row"{% if loop.last and nextUrl is not empty %} hx-get="{{ nextUrl }}" hx-trigger="intersect once" hx-swap="afterend" hx-select=".user-row"{% endif %}>
   <td>
     <span class="cell-identity">
       {{ avatar(initials=user.initials) }}

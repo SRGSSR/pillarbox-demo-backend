@@ -30,7 +30,7 @@
     <p>
       {% if not media.deleted and not media.expired %}
       <button class="btn-icon" type="button" popovertarget="copy-menu-{{ media.id }}" aria-expanded="false"
-              title="Copy Player API URL">
+              title="Copy Player API URL or Media Id">
         <span class="material-symbols-outlined">link</span>
       </button>
       {# A span, not a div: block content would implicitly close the enclosing <p>. #}
@@ -41,6 +41,9 @@
           {{ platform | capitalize }}
         </button>
         {% endfor %}
+        <button class="btn dropdown-item" type="button" data-copy-id="{{ media.id }}">
+          Media Id
+        </button>
       </span>
       {% endif %}
       {{ media.id }}

@@ -26,7 +26,17 @@
       {{ folderName }}
     </p>
     {% endif %}
-    <h3>{{ media.metadata.title | default('Untitled Asset') }}</h3>
+    <h3>
+      {% if readOnly %}
+      {{ media.metadata.title | default('Untitled Asset') }}
+      {% else %}
+      {# Stretched over the whole card, see .media-card-link. #}
+      <a class="media-card-link" draggable="false"
+         href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+        {{ media.metadata.title | default('Untitled Asset') }}
+      </a>
+      {% endif %}
+    </h3>
     <p>
       {% if not media.deleted and not media.expired %}
       <button class="btn-icon" type="button" popovertarget="copy-menu-{{ media.id }}" aria-expanded="false"

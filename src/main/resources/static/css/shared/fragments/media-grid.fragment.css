@@ -31,6 +31,8 @@
 
 /* ── Media card ── */
 .media-card {
+  position: relative;
+
   display: grid;
   grid-template-columns: 160px 1fr auto;
   align-items: center;
@@ -54,6 +56,34 @@
 .media-card.dragging {
   cursor: grabbing;
   opacity: 0.45;
+}
+
+/* The title link covers the whole card so a click anywhere opens the editor.
+   Buttons sit above it. */
+.media-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.media-card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.media-card-link:focus-visible {
+  outline: none;
+}
+
+.media-card:has(.media-card-link:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.media-card .btn-icon {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Thumbnail ── */

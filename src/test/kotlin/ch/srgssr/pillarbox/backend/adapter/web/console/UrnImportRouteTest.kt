@@ -75,10 +75,10 @@ class UrnImportRouteTest :
         val doc = Jsoup.parse(response.bodyAsText())
 
         doc["input[name='id']"].first()?.attributes()["value"] shouldBe "urn:rsi:video:3845234"
-        doc["input[name='metadata.title']"].first()?.attributes()["value"] shouldBe "Telegiornale flash"
+        doc["input[name='metadata.title']"].first()?.attributes()["value"] shouldBe "Telegiornale, 12:30"
         doc["input[name='metadata.subtitle']"].first()?.attributes()["value"] shouldBe "Telegiornale"
         doc["input[name='sources[0].url']"].first()?.attributes()["value"] shouldBe
-          "https://rsivod.akamaized.net/out/v1/telegiornale/index.m3u8"
+          "https://rsi-vod-il-amd.akamaized.net/ww/3845234/20260828232303/master.m3u8?start=0.0&end=666.0"
         doc["input[name='metadata.chapters[0].title']"].shouldNotBeEmpty()
         doc["input[name='metadata.subtitles[0].url']"].shouldNotBeEmpty()
       }
@@ -143,7 +143,7 @@ class UrnImportRouteTest :
 
         client.hxPost("${Navigation.CONSOLE}/actions/media") {
           contentType(ContentType.Application.Json)
-          setBody(Media(id = "urn:rsi:video:3845234", metadata = MediaMetadata(title = "Telegiornale flash")))
+          setBody(Media(id = "urn:rsi:video:3845234", metadata = MediaMetadata(title = "Telegiornale, 12:30")))
         } shouldHaveStatus HttpStatusCode.OK
 
         val reimportResponse = client.get("${Navigation.CONSOLE}/editor/import?urn=urn:rsi:video:3845234")
@@ -175,7 +175,7 @@ class UrnImportRouteTest :
         Jsoup
           .parse(editorResponse.bodyAsText())["input[name='metadata.title']"]
           .first()
-          ?.attributes()["value"] shouldBe "Telegiornale flash"
+          ?.attributes()["value"] shouldBe "Telegiornale, 12:30"
       }
     }
   })

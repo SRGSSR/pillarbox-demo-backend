@@ -22,8 +22,8 @@ private val drmKeySystems =
  * Converts an Integration Layer media composition into a [Media] item.
  *
  * Maps the main chapter's metadata, one source per supported streaming
- * method (preferring DVR and HD variants), DRM configurations, segments
- * as chapters, and VTT subtitle tracks.
+ * method (preferring DVR and HD variants), DRM configurations, the chapters
+ * cut from the main chapter, and VTT subtitle tracks.
  *
  * @return The mapped media, or null when the composition has no chapter.
  */
@@ -42,7 +42,7 @@ fun MediaComposition.toMedia(): Media? {
         seasonNumber = episode?.seasonNumber,
         episodeNumber = episode?.number,
         subtitles = chapter.toSubtitleTracks().ifEmpty { null },
-        chapters = chapter.toChapters().ifEmpty { null },
+        chapters = chaptersOf(chapter).ifEmpty { null },
       ),
     expiresAt = chapter.validTo,
   )
@@ -86,16 +86,22 @@ private fun Drm.toDrmConfig(): DrmConfig? =
     )
   }
 
-private fun CompositionChapter.toChapters(): List<Chapter> =
-  segmentList
-    .filter { it.urn != urn }
-    .mapNotNull { segment ->
+/**
+ * Maps the chapters cut from [fullLength] to [Chapter] items.
+ *
+ * @param fullLength The full-length chapter whose chapters are mapped.
+ * @return The chapters positioned within [fullLength], empty when it has none.
+ */
+private fun MediaComposition.chaptersOf(fullLength: CompositionChapter): List<Chapter> =
+  chapterList
+    .filter { it.fullLengthUrn == fullLength.urn }
+    .mapNotNull { chapter ->
       Chapter(
-        identifier = segment.urn,
-        title = segment.title,
-        posterUrl = segment.imageUrl,
-        startTime = segment.markIn ?: return@mapNotNull null,
-        endTime = segment.markOut ?: return@mapNotNull null,
+        identifier = chapter.urn,
+        title = chapter.title,
+        posterUrl = chapter.imageUrl,
+        startTime = chapter.fullLengthMarkIn ?: return@mapNotNull null,
+        endTime = chapter.fullLengthMarkOut ?: return@mapNotNull null,
       )
     }
 

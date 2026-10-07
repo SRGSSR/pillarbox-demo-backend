@@ -19,6 +19,9 @@ class IntegrationLayerClient(
   /**
    * Fetches the media composition identified by the given URN.
    *
+   * Requests the chapter-only composition so that a chapter URN resolves to the
+   * chapter itself rather than to its full-length media.
+   *
    * @param urn The URN of the media (e.g., `urn:rts:video:3608506`).
    *
    * @return The decoded composition, or null when the URN is not found.
@@ -28,6 +31,7 @@ class IntegrationLayerClient(
       httpClient.get(config.baseUrl) {
         url.appendPathSegments(listOf("integrationlayer", "2.0", "mediaComposition", "byUrn", urn), encodeSlash = true)
         url.parameters.append("forceLocation", "CH")
+        url.parameters.append("onlyChapters", "true")
       }
 
     return if (response.status.isSuccess()) response.body() else null

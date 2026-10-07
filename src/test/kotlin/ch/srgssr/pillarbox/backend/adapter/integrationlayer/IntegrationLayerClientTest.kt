@@ -29,7 +29,7 @@ class IntegrationLayerClientTest :
       val engine =
         MockEngine { request ->
           request.url.toString() shouldBe
-            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn:rsi:video:3845234?forceLocation=CH"
+            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn:rsi:video:3845234?forceLocation=CH&onlyChapters=true"
           respond(
             content = IntegrationLayerFixtures.vodComposition,
             status = HttpStatusCode.OK,
@@ -41,7 +41,7 @@ class IntegrationLayerClientTest :
       val composition = client.findMediaComposition("urn:rsi:video:3845234")
 
       composition.shouldNotBeNull().chapterUrn shouldBe "urn:rsi:video:3845234"
-      composition.chapterList shouldBe composition.chapterList.filter { it.urn == "urn:rsi:video:3845234" }
+      composition.mainChapter.shouldNotBeNull().urn shouldBe "urn:rsi:video:3845234"
     }
 
     should("return null when the URN is not found") {
@@ -62,7 +62,7 @@ class IntegrationLayerClientTest :
       val engine =
         MockEngine { request ->
           request.url.toString() shouldBe
-            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn%3F%23%2F%25:video:1?forceLocation=CH"
+            "https://il.example.ch/integrationlayer/2.0/mediaComposition/byUrn/urn%3F%23%2F%25:video:1?forceLocation=CH&onlyChapters=true"
           respond(
             content = IntegrationLayerFixtures.vodComposition,
             status = HttpStatusCode.OK,

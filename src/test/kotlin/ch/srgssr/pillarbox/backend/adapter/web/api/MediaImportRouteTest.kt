@@ -104,13 +104,13 @@ class MediaImportRouteTest :
 
         val imported = response.body<MediaResponseV1>()
         imported.id shouldBe VOD_URN
-        imported.metadata.title shouldBe "Telegiornale flash"
+        imported.metadata.title shouldBe "Telegiornale, 12:30"
 
         val fetched =
           client
             .get("/v1/media/$VOD_URN") { bearerAuth(token) }
             .body<MediaResponseV1>()
-        fetched.metadata.title shouldBe "Telegiornale flash"
+        fetched.metadata.title shouldBe "Telegiornale, 12:30"
       }
     }
 

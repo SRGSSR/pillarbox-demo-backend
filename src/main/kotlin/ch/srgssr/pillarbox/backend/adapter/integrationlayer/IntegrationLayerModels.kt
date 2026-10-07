@@ -12,7 +12,8 @@ import kotlin.time.Instant
  * @property chapterUrn The URN of the requested (main) chapter.
  * @property episode The episode the media belongs to, if any.
  * @property show The show the media belongs to, if any.
- * @property chapterList The physical chapters carrying the playable resources.
+ * @property chapterList The requested chapter, its full-length media, and the chapters
+ *           of that full-length media.
  */
 @Serializable
 data class MediaComposition(
@@ -31,7 +32,7 @@ data class MediaComposition(
 }
 
 /**
- * A physical media chapter with its descriptive fields and stream resources.
+ * A media chapter with its descriptive fields and stream resources.
  *
  * @property urn The unique URN of the chapter.
  * @property title The display title of the chapter.
@@ -43,7 +44,9 @@ data class MediaComposition(
  * @property validTo The end of the validity period for this chapter.
  * @property subtitleList The external subtitle tracks available for the chapter.
  * @property resourceList The playable stream resources, best variants first.
- * @property segmentList The logical segments contained in the chapter.
+ * @property fullLengthUrn The URN of the full-length media this chapter is cut from, if any.
+ * @property fullLengthMarkIn The start position in the full-length media, in milliseconds.
+ * @property fullLengthMarkOut The end position in the full-length media, in milliseconds.
  */
 @Serializable
 data class CompositionChapter(
@@ -57,25 +60,9 @@ data class CompositionChapter(
   val validTo: Instant? = null,
   val subtitleList: List<Subtitle> = emptyList(),
   val resourceList: List<Resource> = emptyList(),
-  val segmentList: List<Segment> = emptyList(),
-)
-
-/**
- * A logical segment within a chapter, delimited by mark-in/mark-out positions.
- *
- * @property urn The unique URN of the segment.
- * @property title The display title of the segment.
- * @property imageUrl URL to an image representing the segment.
- * @property markIn The start position in milliseconds.
- * @property markOut The end position in milliseconds.
- */
-@Serializable
-data class Segment(
-  val urn: String,
-  val title: String,
-  val imageUrl: String? = null,
-  val markIn: Long? = null,
-  val markOut: Long? = null,
+  val fullLengthUrn: String? = null,
+  val fullLengthMarkIn: Long? = null,
+  val fullLengthMarkOut: Long? = null,
 )
 
 /**

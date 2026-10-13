@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.adapter.integrationlayer
 
+import ch.srgssr.pillarbox.backend.domain.model.TimeRange
 import ch.srgssr.pillarbox.backend.test.IntegrationLayerFixtures
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -8,6 +9,8 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlin.time.Instant
 
 private val json = Json { ignoreUnknownKeys = true }
@@ -53,6 +56,11 @@ class MediaCompositionMapperTest :
         chapters.first().startTime shouldBe 46600
         chapters.first().endTime shouldBe 156256
         chapters.first().posterUrl shouldBe "https://il.rsi.ch/rsi-api/resize/image/v2/WEBVISUAL/3878975"
+      }
+
+      should("leave the viewport empty and put the token type in the custom data") {
+        media.metadata.viewport.shouldBeNull()
+        media.metadata.customData shouldBe buildJsonObject { put("tokenType", JsonPrimitive("NONE")) }
       }
 
       should("map the VTT subtitle track") {
@@ -102,6 +110,15 @@ class MediaCompositionMapperTest :
 
       should("map the chapter validity end to the expiration date") {
         media.expiresAt shouldBe Instant.parse("2026-07-15T00:00:00+02:00")
+      }
+    }
+
+    context("360° composition") {
+      val media = decode(IntegrationLayerFixtures.video360Composition).toMedia().shouldNotBeNull()
+
+      should("set a monoscopic viewport") {
+        media.id shouldBe "urn:rts:video:8414077"
+        media.metadata.viewport shouldBe "MONOSCOPIC"
       }
     }
 
@@ -196,6 +213,62 @@ class MediaCompositionMapperTest :
           .shouldNotBeNull()
           .map { it.url } shouldContainExactly
           listOf("https://subtitles.com/track.vtt")
+      }
+
+      should("put the token type and the block reason in the custom data") {
+        val composition =
+          MediaComposition(
+            chapterUrn = "urn:rts:video:1",
+            chapterList =
+              listOf(
+                CompositionChapter(
+                  urn = "urn:rts:video:1",
+                  title = "Blocked",
+                  blockReason = "GEOBLOCK",
+                  resourceList =
+                    listOf(Resource(url = "https://stream.com/index.m3u8", streaming = "HLS", tokenType = "AKAMAI")),
+                ),
+              ),
+          )
+
+        val media = composition.toMedia().shouldNotBeNull()
+        media.metadata.customData shouldBe
+          buildJsonObject {
+            put("tokenType", JsonPrimitive("AKAMAI"))
+            put("blockReason", JsonPrimitive("GEOBLOCK"))
+          }
+      }
+
+      should("map blocked segments and credits to time ranges") {
+        val composition =
+          MediaComposition(
+            chapterUrn = "urn:rts:video:1",
+            chapterList =
+              listOf(
+                CompositionChapter(
+                  urn = "urn:rts:video:1",
+                  title = "Match",
+                  segmentList =
+                    listOf(
+                      Segment(markIn = 0, markOut = 1000),
+                      Segment(markIn = 1000, markOut = 2000, blockReason = "GEOBLOCK"),
+                    ),
+                  timeIntervalList =
+                    listOf(
+                      TimeInterval(type = "OPENING_CREDITS", markIn = 0, markOut = 500),
+                      TimeInterval(type = "CLOSING_CREDITS", markIn = 2500, markOut = 3000),
+                    ),
+                ),
+              ),
+          )
+
+        val media = composition.toMedia().shouldNotBeNull()
+        media.metadata.timeRanges shouldBe
+          listOf(
+            TimeRange(startTime = 1000, endTime = 2000, type = "BLOCKED"),
+            TimeRange(startTime = 0, endTime = 500, type = "OPENING_CREDITS"),
+            TimeRange(startTime = 2500, endTime = 3000, type = "CLOSING_CREDITS"),
+          )
       }
 
       should("skip unsupported streaming methods and unknown DRM types") {

@@ -42,8 +42,11 @@ data class MediaComposition(
  * @property mediaType The kind of media, either `VIDEO` or `AUDIO`.
  * @property validFrom The start of the validity period for this chapter.
  * @property validTo The end of the validity period for this chapter.
+ * @property blockReason Why the chapter cannot be played (e.g., `GEOBLOCK`, `LEGAL`), if blocked.
  * @property subtitleList The external subtitle tracks available for the chapter.
  * @property resourceList The playable stream resources, best variants first.
+ * @property segmentList The logical segments within the chapter.
+ * @property timeIntervalList The opening and closing credits of the chapter.
  * @property fullLengthUrn The URN of the full-length media this chapter is cut from, if any.
  * @property fullLengthMarkIn The start position in the full-length media, in milliseconds.
  * @property fullLengthMarkOut The end position in the full-length media, in milliseconds.
@@ -58,11 +61,42 @@ data class CompositionChapter(
   val mediaType: String? = null,
   val validFrom: Instant? = null,
   val validTo: Instant? = null,
+  val blockReason: String? = null,
   val subtitleList: List<Subtitle> = emptyList(),
   val resourceList: List<Resource> = emptyList(),
+  val segmentList: List<Segment> = emptyList(),
+  val timeIntervalList: List<TimeInterval> = emptyList(),
   val fullLengthUrn: String? = null,
   val fullLengthMarkIn: Long? = null,
   val fullLengthMarkOut: Long? = null,
+)
+
+/**
+ * A logical segment within a chapter.
+ *
+ * @property markIn The start position in milliseconds.
+ * @property markOut The end position in milliseconds.
+ * @property blockReason Why the segment cannot be played (e.g., `GEOBLOCK`, `LEGAL`), if blocked.
+ */
+@Serializable
+data class Segment(
+  val markIn: Long? = null,
+  val markOut: Long? = null,
+  val blockReason: String? = null,
+)
+
+/**
+ * A credits interval within a chapter.
+ *
+ * @property type The interval type, either `OPENING_CREDITS` or `CLOSING_CREDITS`.
+ * @property markIn The start position in milliseconds.
+ * @property markOut The end position in milliseconds.
+ */
+@Serializable
+data class TimeInterval(
+  val type: String,
+  val markIn: Long,
+  val markOut: Long,
 )
 
 /**
@@ -74,6 +108,8 @@ data class CompositionChapter(
  * @property quality The stream quality (e.g., `SD`, `HD`).
  * @property dvr Whether the stream supports DVR (time-shift).
  * @property live Whether the stream is a live broadcast.
+ * @property presentation The rendering mode (e.g., `DEFAULT`, `VIDEO_360`).
+ * @property tokenType The token required to play the stream (e.g., `NONE`, `AKAMAI`).
  * @property drmList The DRM systems protecting the stream, empty when clear.
  */
 @Serializable
@@ -84,6 +120,8 @@ data class Resource(
   val quality: String? = null,
   val dvr: Boolean = false,
   val live: Boolean = false,
+  val presentation: String? = null,
+  val tokenType: String? = null,
   val drmList: List<Drm> = emptyList(),
 )
 

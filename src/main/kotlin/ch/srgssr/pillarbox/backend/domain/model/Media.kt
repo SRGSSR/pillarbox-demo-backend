@@ -152,7 +152,7 @@ data class Chapter(
  *
  * @property startTime The start position in milliseconds.
  * @property endTime The end position in milliseconds.
- * @property type The category of the range (e.g., "blocked", "intro", "credits").
+ * @property type The category of the range (e.g., "BLOCKED", "OPENING_CREDITS", "CLOSING_CREDITS").
  */
 @Serializable
 data class TimeRange(

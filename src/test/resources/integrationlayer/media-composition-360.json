@@ -1,0 +1,163 @@
+{
+  "chapterUrn": "urn:rts:video:8414077",
+  "episode": {
+    "imageUrl": "https://img.rts.ch/info/2017/image/1bsrjf-26538116.image/16x9",
+    "imageTitle": "Le Gothard en 360°",
+    "publishedDate": "2017-11-02T11:00:00+01:00",
+    "id": "f9d5e407-722b-33be-a420-f243faaae947",
+    "title": "Le Gothard en 360°",
+    "description": ""
+  },
+  "show": {
+    "id": "6570942",
+    "vendor": "RTS",
+    "transmission": "TV",
+    "urn": "urn:rts:show:tv:6570942",
+    "title": "RTS en vidéo",
+    "imageUrl": "https://img.rts.ch/medias/2026/image/c91rqk-29181984.image/16x9",
+    "imageTitle": "RTS en vidéo",
+    "posterImageUrl": "https://img.rts.ch/medias/2026/image/tsckuz-29181985.image",
+    "posterImageIsFallbackUrl": false,
+    "podcastImageUrl": "https://img.rts.ch/medias/2026/image/c91rqk-29181984.image/1x1",
+    "podcastImageIsFallbackUrl": false,
+    "numberOfEpisodes": 758,
+    "audioDescriptionAvailable": false,
+    "subtitlesAvailable": false,
+    "multiAudioLanguagesAvailable": false,
+    "allowIndexing": false
+  },
+  "chapterList": [
+    {
+      "id": "8414077",
+      "mediaType": "VIDEO",
+      "vendor": "RTS",
+      "urn": "urn:rts:video:8414077",
+      "title": "Le Gothard en 360°",
+      "imageUrl": "https://img.rts.ch/info/2017/image/1bsrjf-26538116.image/16x9",
+      "imageTitle": "360 vidéo",
+      "type": "EPISODE",
+      "date": "2017-11-02T11:00:00+01:00",
+      "duration": 297000,
+      "playableAbroad": true,
+      "displayable": true,
+      "position": -1,
+      "noEmbed": false,
+      "analyticsData": {
+        "ns_st_ep": "Le Gothard en 360°",
+        "ns_st_ci": "8414077",
+        "ns_st_cl": "297000",
+        "ns_st_ct": "vc11"
+      },
+      "analyticsMetadata": {
+        "media_urn": "urn:rts:video:8414077",
+        "media_segment_length": "297",
+        "media_episode_length": "297",
+        "media_segment_id": "8414077",
+        "media_type": "Video",
+        "media_duration_category": "short",
+        "media_segment": "Le Gothard en 360°",
+        "media_is_geoblocked": "false",
+        "media_joker1": "RTSPLAY",
+        "media_sub_set_id": "EPISODE",
+        "media_signlanguage_on": "false"
+      },
+      "resourceList": [
+        {
+          "url": "https://rts-vod-amd.akamaized.net/ww/8414077/5c100765-dcfb-3d1a-831c-b98fe68def59/master.m3u8",
+          "quality": "HD",
+          "protocol": "HLS",
+          "encoding": "H264",
+          "mimeType": "application/x-mpegURL",
+          "presentation": "VIDEO_360",
+          "streaming": "HLS",
+          "dvr": false,
+          "live": false,
+          "mediaContainer": "FMP4",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "audioTrackList": [
+            {
+              "locale": "fr",
+              "language": "Français",
+              "source": "HLS",
+              "isAudioDescription": false,
+              "isOriginalVersion": false
+            }
+          ],
+          "analyticsMetadata": {
+            "media_url": "https://rts-vod-amd.akamaized.net/ww/8414077/5c100765-dcfb-3d1a-831c-b98fe68def59/master.m3u8",
+            "media_streaming_quality": "HD",
+            "media_audiodescription_on": "false"
+          }
+        },
+        {
+          "url": "https://rts-vod-dd.akamaized.net/ww/8414077/5c100765-dcfb-3d1a-831c-b98fe68def59.mp4",
+          "quality": "HD",
+          "protocol": "HTTPS",
+          "encoding": "H264",
+          "mimeType": "video/mp4",
+          "presentation": "VIDEO_360",
+          "streaming": "PROGRESSIVE",
+          "dvr": false,
+          "live": false,
+          "mediaContainer": "MP4",
+          "audioCodec": "AAC",
+          "videoCodec": "H264",
+          "tokenType": "NONE",
+          "audioTrackList": [
+            {
+              "locale": "fr",
+              "language": "Français",
+              "source": "HLS",
+              "isAudioDescription": false,
+              "isOriginalVersion": false
+            }
+          ],
+          "analyticsMetadata": {
+            "media_url": "https://rts-vod-dd.akamaized.net/ww/8414077/5c100765-dcfb-3d1a-831c-b98fe68def59.mp4",
+            "media_streaming_quality": "HD",
+            "media_audiodescription_on": "false"
+          }
+        }
+      ],
+      "aspectRatio": "16:9",
+      "podcastImageUrl": "https://img.rts.ch/info/2017/image/1bsrjf-26538116.image/1x1",
+      "bannerImageUrl": "https://img.rts.ch/info/2017/image/1bsrjf-26538116.image/16x9",
+      "podcastImageTitle": "360 vidéo",
+      "bannerImageTitle": "360 vidéo"
+    }
+  ],
+  "topicList": [],
+  "analyticsData": {
+    "ns_st_pr": "RTS en vidéo du 02.11.2017",
+    "ns_st_ddt": "2017-11-02",
+    "ns_st_tdt": "*null",
+    "ns_st_tm": "*null",
+    "ns_st_tep": "742486af-31ed-47c1-ad1c-9caf11d3a810",
+    "ns_st_stc": "0867",
+    "ns_st_st": "RTS Online",
+    "ns_st_tpr": "6570942"
+  },
+  "analyticsMetadata": {
+    "media_episode_id": "f9d5e407-722b-33be-a420-f243faaae947",
+    "media_tv_id": "742486af-31ed-47c1-ad1c-9caf11d3a810",
+    "media_show_id": "6570942",
+    "media_show": "RTS en vidéo",
+    "media_episode": "RTS en vidéo du 02.11.2017",
+    "media_is_livestream": "false",
+    "media_full_length": "full",
+    "media_enterprise_units": "RTS",
+    "media_content_group": "",
+    "media_since_publication_d": "3261",
+    "media_since_publication_h": "78266",
+    "media_thumbnail": "https://img.rts.ch/info/2017/image/1bsrjf-26538116.image/16x9",
+    "media_publication_date": "2017-11-02",
+    "media_publication_time": "11:00:00",
+    "media_publication_datetime": "2017-11-02T11:00:00+01:00",
+    "media_channel_cs": "0867",
+    "media_is_web_only": "true",
+    "media_joker1": "RTSPLAY",
+    "media_signlanguage_on": "false"
+  }
+}

@@ -29,6 +29,7 @@
           <p class="confirm-description" id="confirm-description"></p>
         </div>
       </div>
+      <ul class="item-summary"></ul>
       <footer>
         <button value="cancel" type="submit" class="btn confirm-cancel">Cancel</button>
         <button value="confirm" type="submit" class="btn btn-primary confirm-action">Confirm</button>

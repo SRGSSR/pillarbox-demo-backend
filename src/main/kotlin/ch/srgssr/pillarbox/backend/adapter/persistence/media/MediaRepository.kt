@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
@@ -152,17 +153,39 @@ class MediaRepository(
     }
 
   /**
+   * Filters the given [ids] down to those of existing media items, regardless of visibility.
+   *
+   * @param ids The unique identifiers to check.
+   * @return The identifiers among [ids] that belong to a media item.
+   */
+  override suspend fun existing(ids: Collection<String>): Set<String> =
+    query(readOnly = true) {
+      MediaTable
+        .select(MediaTable.id)
+        .where { MediaTable.id inList ids }
+        .mapTo(mutableSetOf()) { it[MediaTable.id] }
+    }
+
+  /**
    * Marks the media item with the given [id] as deleted without removing it from the database.
    *
    * @param id The unique identifier of the media to soft-delete.
    * @return `true` if the media was found and marked as deleted, `false` if it was already deleted or does not exist.
    */
-  override suspend fun softDelete(id: String): Boolean =
+  override suspend fun softDelete(id: String): Boolean = softDelete(listOf(id)) > 0
+
+  /**
+   * Marks the media items with the given [ids] as deleted in a single transaction.
+   *
+   * @param ids The unique identifiers of the media to soft-delete.
+   * @return The number of media marked as deleted. Media already deleted or missing are not counted.
+   */
+  override suspend fun softDelete(ids: Collection<String>): Int =
     query {
-      MediaTable.update({ (MediaTable.id eq id) and (MediaTable.deleted eq false) }) {
+      MediaTable.update({ (MediaTable.id inList ids) and (MediaTable.deleted eq false) }) {
         it[deleted] = true
         it[lastModified] = clock.now().toUtcOffsetDateTime()
-      } > 0
+      }
     }
 
   /**

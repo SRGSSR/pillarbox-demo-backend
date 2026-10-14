@@ -116,6 +116,30 @@ interface FolderCatalog {
   ): Boolean
 
   /**
+   * Assigns several media items to a folder in a single transaction, moving those
+   * assigned elsewhere.
+   *
+   * @param folderId The target folder.
+   * @param mediaIds The media to assign.
+   */
+  suspend fun assignMedia(
+    folderId: String,
+    mediaIds: Collection<String>,
+  )
+
+  /**
+   * Removes the assignment of several media items to a folder in a single transaction.
+   *
+   * @param folderId The folder the media are assigned to.
+   * @param mediaIds The media to unassign.
+   * @return The media whose assignment was removed. Media assigned to another folder or to none are left out.
+   */
+  suspend fun removeMediaAssignments(
+    folderId: String,
+    mediaIds: Collection<String>,
+  ): Set<String>
+
+  /**
    * Counts the active media in a folder and all of its descendants, or the unassigned media for `null`.
    *
    * @param folderId The folder whose subtree to count, or `null` for unassigned media.

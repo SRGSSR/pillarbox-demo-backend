@@ -7,6 +7,10 @@
   </button>
   <h3>Move to Folder</h3>
 
+  {# Without a mediaId the picker moves the selected media, listed here by
+     folder-picker.fragment.js. #}
+  <ul class="item-summary" hidden></ul>
+
   <input type="hidden" id="picker-media-id" name="mediaId" value="{{ mediaId }}">
   {% if folder is not empty %}
   <input type="hidden" id="picker-current-folder-id" value="{{ folder.id }}">
@@ -23,7 +27,12 @@
   <div class="folder-picker-remove">
     <button type="button"
             class="folder-picker-unassign"
+            {% if mediaId is not empty %}
             hx-delete="/console/actions/folder/{{ folder.id }}/media/{{ mediaId }}"
+            {% else %}
+            hx-post="/console/actions/folder/{{ folder.id }}/media/batch-remove"
+            hx-include="[data-select-media]:checked"
+            {% endif %}
             hx-swap="none">
       <span class="material-symbols-outlined" aria-hidden="true">folder_off</span>
       Remove from "{{ folder.name }}"

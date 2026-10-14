@@ -4,6 +4,7 @@
 @import url("../shared/components/user-menu.component.css");
 @import url("../shared/components/avatar.component.css");
 @import url("../shared/components/confirm-dialog.component.css");
+@import url("../shared/components/item-summary.component.css");
 
 body {
   overflow: hidden;

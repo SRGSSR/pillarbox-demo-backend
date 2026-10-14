@@ -43,6 +43,14 @@ interface MediaCatalog {
   suspend fun exists(id: String): Boolean
 
   /**
+   * Filters the given identifiers down to those of existing media items, regardless of visibility.
+   *
+   * @param ids The unique identifiers to check.
+   * @return The identifiers among [ids] that belong to a media item.
+   */
+  suspend fun existing(ids: Collection<String>): Set<String>
+
+  /**
    * Persists or overwrites a media item.
    *
    * @param item The media to save.
@@ -57,6 +65,14 @@ interface MediaCatalog {
    * @return `true` if the media was found and marked as deleted, `false` if it was already deleted or does not exist.
    */
   suspend fun softDelete(id: String): Boolean
+
+  /**
+   * Marks several media items as deleted in a single transaction.
+   *
+   * @param ids The unique identifiers of the media to soft-delete.
+   * @return The number of media marked as deleted. Media already deleted or missing are not counted.
+   */
+  suspend fun softDelete(ids: Collection<String>): Int
 
   /**
    * Restores a previously soft-deleted media item, making it active again.

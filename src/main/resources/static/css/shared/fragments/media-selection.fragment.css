@@ -1,0 +1,99 @@
+/* ── Selection bar ── floats over the list while media cards are selected.
+   It looks like the dropdown menus, and its buttons are the flat .btn-icon. */
+.selection-bar {
+  position: fixed;
+  z-index: 2;
+  inset-block-end: var(--size-5);
+
+  /* Centred with auto margins: the reveal animation owns `translate`. */
+  inset-inline: 0;
+
+  display: flex;
+  gap: var(--size-2);
+  align-items: center;
+
+  inline-size: fit-content;
+  max-inline-size: calc(100vw - var(--size-5));
+  margin-inline: auto;
+  padding: var(--size-2);
+  border: var(--border-size-1) solid var(--surface-3);
+  border-radius: var(--radius-3);
+
+  color: var(--text-1);
+
+  background: var(--surface-2);
+  box-shadow: var(--shadow-4);
+
+  animation: var(--animation-reveal);
+}
+
+.selection-bar[hidden] {
+  display: none;
+}
+
+.selection-bar .btn-icon {
+  flex-shrink: 0;
+  justify-content: center;
+
+  min-inline-size: 40px;
+  min-block-size: 40px;
+  padding: 0 var(--size-3);
+
+  white-space: nowrap;
+}
+
+/* The main action of the bar. */
+.selection-bar [data-open-move-dialog] {
+  color: var(--text-1);
+  background: var(--surface-3);
+}
+
+.selection-bar [data-open-move-dialog]:hover {
+  background: var(--surface-4);
+}
+
+.selection-bar .btn-icon.danger {
+  color: var(--accent-text);
+}
+
+/* Fixed-width digits keep the bar from shifting as the count changes. */
+.selection-count {
+  margin-inline-end: var(--size-2);
+
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-6);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.selection-separator {
+  flex-shrink: 0;
+  inline-size: var(--border-size-1);
+  block-size: var(--size-5);
+  background: var(--surface-4);
+}
+
+/* Keeps the last cards clear of the bar. */
+.is-selecting #main-container {
+  padding-block-end: var(--size-11);
+}
+
+/* "Remove from folder" targets the page folder, search results span folders. */
+body:has(.search-results) [data-selection-action="remove"] {
+  display: none;
+}
+
+/* Narrow screens: icon-only buttons, so the bar stays on one row. */
+@media (width <= 640px) {
+  .selection-bar {
+    gap: var(--size-1);
+  }
+
+  .selection-bar .btn-icon {
+    padding: 0;
+  }
+
+  .selection-label {
+    display: none;
+  }
+}

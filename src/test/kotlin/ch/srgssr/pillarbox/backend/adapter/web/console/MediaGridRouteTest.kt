@@ -28,6 +28,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.formUrlEncode
 import org.jsoup.Jsoup
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -129,6 +130,76 @@ class MediaGridRouteTest :
 
         client.hxDelete("${Navigation.CONSOLE}/actions/media/${media.id}") shouldHaveStatus
           HttpStatusCode.Forbidden
+      }
+    }
+
+    should("delete several media in one request") {
+      testApplicationContext {
+        login()
+
+        val media = List(3) { mediaFixture() }
+        media.forEach {
+          client.hxPost("${Navigation.CONSOLE}/actions/media") {
+            contentType(ContentType.Application.Json)
+            setBody(it)
+          }
+        }
+
+        val response =
+          client.hxPost("${Navigation.CONSOLE}/actions/media/batch-delete") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
+          }
+        response shouldHaveStatus HttpStatusCode.OK
+
+        with(Jsoup.parse(response.bodyAsText())) {
+          count("[hx-swap-oob^=delete]") shouldBe 2
+          select("#snackbar").text() shouldBe "2 items moved to the Bin"
+        }
+
+        val grid = client.hxGet("${Navigation.CONSOLE}/fragments/media-grid")
+        Jsoup.parse(grid.bodyAsText()).count(".media-card") shouldBe 1
+      }
+    }
+
+    should("delete nothing when one media of the batch is restricted to someone else") {
+      testApplicationContext {
+        login()
+
+        val (free, locked) = List(2) { mediaFixture() }
+        listOf(free, locked).forEach {
+          client.hxPost("${Navigation.CONSOLE}/actions/media") {
+            contentType(ContentType.Application.Json)
+            setBody(it)
+          }
+        }
+
+        // The session cookie also authenticates against the V1 API.
+        val folder =
+          client
+            .post("/v1/folder") {
+              contentType(ContentType.Application.Json)
+              setBody(FolderRequestV1(name = "Locked"))
+            }.body<FolderResponseV1>()
+        client.post("/v1/folder/${folder.id}/media") {
+          contentType(ContentType.Application.Json)
+          setBody(AssignMediaRequestV1(mediaId = locked.id))
+        } shouldHaveStatus HttpStatusCode.Created
+
+        seedUser(userFixture(oidcSub = "someone-else"))
+        client.post("/v1/folder/${folder.id}/permission") {
+          bearerAuth(tokenWithRoles(setOf(Role.ADMIN)))
+          contentType(ContentType.Application.Json)
+          setBody(FolderPermissionRequestV1(oidcSub = "someone-else"))
+        } shouldHaveStatus HttpStatusCode.Created
+
+        client.hxPost("${Navigation.CONSOLE}/actions/media/batch-delete") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf(free, locked).map { "mediaId" to it.id }.formUrlEncode())
+        } shouldHaveStatus HttpStatusCode.Forbidden
+
+        val grid = client.hxGet("${Navigation.CONSOLE}/fragments/media-grid")
+        Jsoup.parse(grid.bodyAsText()).count(".media-card") shouldBe 1
       }
     }
 

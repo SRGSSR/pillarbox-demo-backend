@@ -1,0 +1,44 @@
+/* ── Item summary ── the media a dialog acts on. The height is bounded, a long
+   list scrolls inside. */
+.item-summary {
+  scrollbar-gutter: stable;
+
+  overflow-y: auto;
+  display: grid;
+  gap: var(--size-1);
+
+  max-block-size: var(--size-11);
+  margin: 0;
+  padding: var(--size-2) var(--size-3);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--radius-2);
+
+  font-size: var(--font-size-0);
+  list-style: none;
+
+  background: var(--surface-0);
+}
+
+.item-summary[hidden] {
+  display: none;
+}
+
+.item-summary li {
+  overflow: hidden;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--size-2);
+  align-items: center;
+
+  padding: 0;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-summary li::before {
+  content: "movie";
+  font-family: "Material Symbols Outlined", serif;
+  font-size: var(--font-size-2);
+  color: var(--text-2);
+}

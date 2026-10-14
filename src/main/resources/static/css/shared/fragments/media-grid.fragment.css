@@ -47,7 +47,6 @@
   animation: var(--animation-reveal);
 }
 
-
 .media-card:hover {
   border-color: var(--surface-4);
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
@@ -56,6 +55,14 @@
 .media-card.dragging {
   cursor: grabbing;
   opacity: 0.45;
+}
+
+/* ── Breadcrumb drop target ── highlighted while media cards are dragged over it. */
+.breadcrumbs .page.drag-over {
+  border-radius: var(--radius-2);
+  color: var(--accent-text);
+  background: var(--accent-softer);
+  outline: 2px solid var(--accent);
 }
 
 /* The title link covers the whole card so a click anywhere opens the editor.
@@ -84,6 +91,49 @@
 .media-card .btn-icon {
   position: relative;
   z-index: 1;
+}
+
+/* ── Selection ── */
+.media-card:has([data-select-media]:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-1));
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* A click toggles the card while selecting, so its text must not get selected. */
+.is-selecting .media-list {
+  user-select: none;
+}
+
+/* The checkboxes sit in a gutter at the left of the cards. The list reserves
+   it when it has selectable cards. */
+.media-list:has(.media-card-select) {
+  padding-inline-start: var(--size-7);
+}
+
+/* Placed outside the card, in the gutter, over the full card height. */
+.media-card-select {
+  cursor: pointer;
+
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 100%;
+
+  /* At the start of the gutter, which leaves the rest as a gap to the card. */
+  display: grid;
+  place-items: center start;
+
+  inline-size: var(--size-7);
+}
+
+.media-card-select input {
+  cursor: pointer;
+
+  inline-size: var(--size-4);
+  block-size: var(--size-4);
+  margin: 0;
+
+  accent-color: var(--accent);
 }
 
 /* ── Thumbnail ── */

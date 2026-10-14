@@ -25,10 +25,10 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.statements.UpdateStatement
 import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.batchUpsert
+import org.jetbrains.exposed.v1.jdbc.deleteReturning
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.time.Clock
 
 /**
@@ -199,12 +199,26 @@ class FolderRepository(
   override suspend fun assignMedia(
     folderId: String,
     mediaId: String,
+  ): Unit = assignMedia(folderId, listOf(mediaId))
+
+  /**
+   * Assigns several media items to a folder in a single transaction. Media already
+   * assigned to another folder are moved to the specified folder.
+   *
+   * @param folderId The ID of the target folder.
+   * @param mediaIds The IDs of the media items to assign.
+   */
+  override suspend fun assignMedia(
+    folderId: String,
+    mediaIds: Collection<String>,
   ): Unit =
     query {
-      FolderMediaTable.upsert(FolderMediaTable.mediaId) {
-        it[FolderMediaTable.mediaId] = mediaId
-        it[FolderMediaTable.folderId] = folderId
-        it[FolderMediaTable.addedAt] = clock.now().toUtcOffsetDateTime()
+      val addedAt = clock.now().toUtcOffsetDateTime()
+
+      FolderMediaTable.batchUpsert(mediaIds.distinct(), FolderMediaTable.mediaId) { mediaId ->
+        this[FolderMediaTable.mediaId] = mediaId
+        this[FolderMediaTable.folderId] = folderId
+        this[FolderMediaTable.addedAt] = addedAt
       }
     }
 
@@ -218,11 +232,25 @@ class FolderRepository(
   override suspend fun removeMediaAssignment(
     folderId: String,
     mediaId: String,
-  ): Boolean =
+  ): Boolean = removeMediaAssignments(folderId, listOf(mediaId)).isNotEmpty()
+
+  /**
+   * Removes the folder assignment of several media items in a single transaction.
+   *
+   * @param folderId The folder ID currently assigned to these media.
+   * @param mediaIds The IDs of the media items to unassign.
+   * @return The IDs of the media whose assignment was removed. Media assigned to another folder
+   *   or to none are left out.
+   */
+  override suspend fun removeMediaAssignments(
+    folderId: String,
+    mediaIds: Collection<String>,
+  ): Set<String> =
     query {
-      FolderMediaTable.deleteWhere {
-        (FolderMediaTable.mediaId eq mediaId) and (FolderMediaTable.folderId eq folderId)
-      } > 0
+      FolderMediaTable
+        .deleteReturning(listOf(FolderMediaTable.mediaId)) {
+          (FolderMediaTable.mediaId inList mediaIds) and (FolderMediaTable.folderId eq folderId)
+        }.mapTo(mutableSetOf()) { it[FolderMediaTable.mediaId] }
     }
 
   /**

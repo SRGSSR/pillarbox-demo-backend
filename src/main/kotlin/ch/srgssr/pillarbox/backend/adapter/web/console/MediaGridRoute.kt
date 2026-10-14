@@ -17,6 +17,7 @@ import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.htmx.hx
+import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
@@ -118,6 +119,24 @@ fun Route.mediaGridActions(mediaCatalog: MediaCatalog) {
         true -> call.respond(HttpStatusCode.OK)
         false -> call.respond(HttpStatusCode.NotFound)
       }
+    }
+  }
+
+  hx.post("actions/media/batch-delete") {
+    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+    withMediaWrite(mediaIds) {
+      logger.info { "Attempting to delete ${mediaIds.size} media" }
+      val deleted = mediaCatalog.softDelete(mediaIds)
+
+      call.respondWithContext(
+        "modules/home/fragments/media-batch.fragment.peb",
+        mapOf(
+          "mediaIds" to mediaIds,
+          "changed" to deleted,
+          "outcome" to "moved to the Bin",
+        ),
+      )
     }
   }
 }

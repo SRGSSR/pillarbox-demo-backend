@@ -1,0 +1,18 @@
+{% import "../folder-card.macros.peb" %}
+{# @pebvariable name="mediaIds" type="java.util.List<java.lang.String>" #}
+{# @pebvariable name="changed" type="java.lang.Integer" #}
+{# @pebvariable name="outcome" type="java.lang.String" #}
+{# @pebvariable name="folder" type="ch.srgssr.pillarbox.backend.domain.model.Folder" #}
+{# @pebvariable name="count" type="java.lang.Long" #}
+
+{# Every part is an out-of-band swap: the cards leave the list, the snackbar
+   reports the outcome and the folder card shows its new count. #}
+{% for mediaId in mediaIds %}
+<div hx-swap-oob="delete:[id='media-card-{{ mediaId }}']"></div>
+{% endfor %}
+
+<div id="snackbar" hx-swap-oob="innerHTML">{{ changed }} item{{ changed != 1 ? "s" : "" }} {{ outcome }}</div>
+
+{% if folder is not empty %}
+{{ folderCard(folder, count, false, true) }}
+{% endif %}

@@ -119,7 +119,8 @@ private fun Route.folderFragments(folderCatalog: FolderCatalog) {
   }
 
   hx.get("fragments/folder-picker") {
-    val mediaId = call.queryParameters.getOrFail("mediaId")
+    // Empty when the picker moves the selected media instead of a single one.
+    val mediaId = call.queryParameters["mediaId"].orEmpty()
     val folder =
       call.queryParameters["folderId"]?.takeIf { it.isNotBlank() }?.let {
         folderCatalog.find(it)
@@ -265,6 +266,56 @@ private fun Route.folderActions(
           call.respond(HttpStatusCode.NotFound)
         }
       }
+    }
+  }
+
+  hx.post("actions/folder/{id}/media/batch-assign") {
+    val id = call.parameters.getOrFail("id")
+    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
+    val folder = folderCatalog.find(id) ?: return@post call.respond(HttpStatusCode.NotFound)
+    if (mediaCatalog.existing(mediaIds).size < mediaIds.toSet().size) {
+      return@post call.respond(HttpStatusCode.UnprocessableEntity)
+    }
+
+    withFolderWrite(id) {
+      withMediaWrite(mediaIds) {
+        logger.info { "Assigning ${mediaIds.size} media to folder $id" }
+        folderCatalog.assignMedia(id, mediaIds)
+
+        call.respondWithContext(
+          "modules/home/fragments/media-batch.fragment.peb",
+          mapOf(
+            "mediaIds" to mediaIds,
+            "changed" to mediaIds.size,
+            "outcome" to "moved to \"${folder.name}\"",
+            "folder" to folder,
+            "count" to folderCatalog.countMediaIn(id),
+          ),
+        )
+      }
+    }
+  }
+
+  hx.post("actions/folder/{id}/media/batch-remove") {
+    val id = call.parameters.getOrFail("id")
+    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
+    val folder = folderCatalog.find(id) ?: return@post call.respond(HttpStatusCode.NotFound)
+
+    withFolderWrite(id) {
+      logger.info { "Removing ${mediaIds.size} media from folder $id" }
+      // Only the removed cards leave the list: search results also show media of other folders.
+      val removed = folderCatalog.removeMediaAssignments(id, mediaIds)
+
+      call.respondWithContext(
+        "modules/home/fragments/media-batch.fragment.peb",
+        mapOf(
+          "mediaIds" to removed,
+          "changed" to removed.size,
+          "outcome" to "removed from \"${folder.name}\"",
+          "folder" to folder,
+          "count" to folderCatalog.countMediaIn(id),
+        ),
+      )
     }
   }
 }

@@ -219,6 +219,110 @@ class HomeRouteTest :
       }
     }
 
+    should("assign several media to a folder, then remove some, in one request each") {
+      testApplicationContext {
+        login()
+        val media = List(3) { mediaFixture() }
+        media.forEach {
+          client.hxPost("${Navigation.CONSOLE}/actions/media") {
+            contentType(ContentType.Application.Json)
+            setBody(it)
+          }
+        }
+        val folderId = client.createFolder("Test Folder")
+
+        val assigned =
+          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(media.map { "mediaId" to it.id }.formUrlEncode())
+          }
+        assigned shouldHaveStatus HttpStatusCode.OK
+
+        with(Jsoup.parse(assigned.bodyAsText())) {
+          count("[hx-swap-oob^=delete]") shouldBe 3
+          select("#snackbar").text() shouldBe "3 items moved to \"Test Folder\""
+          select(".folder-card-count").text() shouldBe "3 items"
+        }
+
+        val removed =
+          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-remove") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
+          }
+        removed shouldHaveStatus HttpStatusCode.OK
+
+        with(Jsoup.parse(removed.bodyAsText())) {
+          count("[hx-swap-oob^=delete]") shouldBe 2
+          select("#snackbar").text() shouldBe "2 items removed from \"Test Folder\""
+          select(".folder-card-count").text() shouldBe "1 item"
+        }
+      }
+    }
+
+    should("only remove the cards of media assigned to the folder when removing several media") {
+      testApplicationContext {
+        login()
+        val media = List(3) { mediaFixture() }
+        media.forEach {
+          client.hxPost("${Navigation.CONSOLE}/actions/media") {
+            contentType(ContentType.Application.Json)
+            setBody(it)
+          }
+        }
+        val folderId = client.createFolder("Test Folder")
+        val otherFolderId = client.createFolder("Other Folder")
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
+        }
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/$otherFolderId/media") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf("mediaId" to media[2].id).formUrlEncode())
+        }
+
+        val removed =
+          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-remove") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(listOf(media[0], media[2]).map { "mediaId" to it.id }.formUrlEncode())
+          }
+        removed shouldHaveStatus HttpStatusCode.OK
+
+        with(Jsoup.parse(removed.bodyAsText())) {
+          select("[hx-swap-oob^=delete]").map { it.attr("hx-swap-oob") } shouldBe
+            listOf("delete:[id='media-card-${media[0].id}']")
+          select("#snackbar").text() shouldBe "1 item removed from \"Test Folder\""
+          select(".folder-card-count").text() shouldBe "1 item"
+        }
+      }
+    }
+
+    should("return UNPROCESSABLE_ENTITY when assigning several media and one does not exist") {
+      testApplicationContext {
+        login()
+        val media = mediaFixture()
+        client.hxPost("${Navigation.CONSOLE}/actions/media") {
+          contentType(ContentType.Application.Json)
+          setBody(media)
+        }
+        val folderId = client.createFolder("Test Folder")
+
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf("mediaId" to media.id, "mediaId" to "not-a-media").formUrlEncode())
+        } shouldHaveStatus HttpStatusCode.UnprocessableEntity
+      }
+    }
+
+    should("return NOT_FOUND when assigning several media to a non-existent folder") {
+      testApplicationContext {
+        login()
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/not-a-folder/media/batch-assign") {
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf("mediaId" to "any-id").formUrlEncode())
+        } shouldHaveStatus HttpStatusCode.NotFound
+      }
+    }
+
     should("return NOT_FOUND when removing media from a non-existent folder") {
       testApplicationContext {
         login()
@@ -243,7 +347,7 @@ class HomeRouteTest :
         client.get(Navigation.CONSOLE) shouldHaveStatus HttpStatusCode.OK
         client.get("${Navigation.CONSOLE}/bin") shouldHaveStatus HttpStatusCode.OK
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-grid") shouldHaveStatus HttpStatusCode.OK
-        client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.BadRequest
+        client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.OK
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker-child") shouldHaveStatus HttpStatusCode.OK
         client.hxPost("${Navigation.CONSOLE}/actions/folder") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxPatch("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.Forbidden
@@ -261,7 +365,7 @@ class HomeRouteTest :
         client.get(Navigation.CONSOLE) shouldHaveStatus HttpStatusCode.OK
         client.get("${Navigation.CONSOLE}/bin") shouldHaveStatus HttpStatusCode.OK
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-grid") shouldHaveStatus HttpStatusCode.OK
-        client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.BadRequest
+        client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker") shouldHaveStatus HttpStatusCode.OK
         client.hxGet("${Navigation.CONSOLE}/fragments/folder-picker-child") shouldHaveStatus HttpStatusCode.OK
         client.hxPost("${Navigation.CONSOLE}/actions/folder") shouldHaveStatus HttpStatusCode.UnsupportedMediaType
         client.hxPatch("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus

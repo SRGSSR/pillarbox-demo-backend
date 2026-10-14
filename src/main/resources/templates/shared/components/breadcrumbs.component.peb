@@ -13,11 +13,13 @@
     <span class="page current">Media Library</span>
 
   {% else %}
-    <a href="/console" class="page">Media Library</a>
+    {# Dragged media can be dropped on the links: the root removes them from
+       the current folder, an ancestor receives them. #}
+    <a href="/console" class="page"{% if folder is not empty %} data-drop-unassign="{{ folder.id }}"{% endif %}>Media Library</a>
 
     {% if collapse %}
       <span class="sep">/</span>
-      <a href="/console?folderId={{ ancestors[0].id }}" class="page">{{ ancestors[0].name }}</a>
+      <a href="/console?folderId={{ ancestors[0].id }}" class="page" data-drop-folder="{{ ancestors[0].id }}">{{ ancestors[0].name }}</a>
       <span class="sep">/ ... /</span>
       {% if breadcrumb_current is not empty %}
         <span class="page current">{{ breadcrumb_current }}</span>
@@ -31,7 +33,7 @@
     {% else %}
       {% for ancestor in ancestors %}
         <span class="sep">/</span>
-        <a href="/console?folderId={{ ancestor.id }}" class="page">{{ ancestor.name }}</a>
+        <a href="/console?folderId={{ ancestor.id }}" class="page" data-drop-folder="{{ ancestor.id }}">{{ ancestor.name }}</a>
       {% endfor %}
 
       {% if folder is not empty %}

@@ -4,6 +4,7 @@ import "./fragments/folder-grid.fragment.js";
 import "./fragments/folder-picker.fragment.js";
 import "./fragments/folder-permissions.fragment.js";
 import "../../shared/fragments/media-grid.fragment.js";
+import "../../shared/fragments/media-selection.fragment.js";
 
 /**
  * Copies the media player API URL or the media ID to the clipboard when a copy

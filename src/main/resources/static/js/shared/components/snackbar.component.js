@@ -35,3 +35,11 @@ export function showSnackbar(message, anchor = null) {
   }
   snackbarTimeout = setTimeout(() => snackbarComponent.hidePopover(), 2000);
 }
+
+/**
+ * Shows the snackbar when a server response swaps a message into it.
+ * @listens HTMLElement#htmx:oobAfterSwap
+ */
+snackbarComponent?.addEventListener("htmx:oobAfterSwap", function() {
+  showSnackbar(snackbarComponent.textContent);
+});

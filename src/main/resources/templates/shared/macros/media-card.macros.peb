@@ -13,6 +13,15 @@
          hx-select=".media-card"
     {% endif %}>
 
+  {% if not readOnly and not media.deleted %}
+  <label class="media-card-select">
+    {# Submitted as mediaId by the selection bar actions, see home.page.peb. #}
+    <input type="checkbox" name="mediaId" value="{{ media.id }}" data-select-media autocomplete="off"
+           data-title="{{ media.metadata.title | default('Untitled Asset') }}"
+           aria-label="Select {{ media.metadata.title | default('Untitled Asset') }}">
+  </label>
+  {% endif %}
+
   <figure>
     <img src="{{ media.metadata.posterUrl | default("https://placehold.co/160x96/transparent/8a8d94?text=No+image") }}"
          alt="{{ media.metadata.title | default('Media Poster') }}"

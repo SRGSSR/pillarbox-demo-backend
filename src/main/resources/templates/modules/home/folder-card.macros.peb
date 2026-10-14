@@ -4,7 +4,7 @@
 {# @pebvariable name="readOnly" type="java.lang.Boolean" #}
 {# @pebvariable name="oob" type="java.lang.Boolean" #}
 
-<div class="folder-card" id="folder-card-{{ folder.id }}" {% if oob %} hx-swap-oob="outerHTML:#folder-card-{{ folder.id }}"{% endif %}>
+<div class="folder-card" id="folder-card-{{ folder.id }}"{% if not readOnly %} data-drop-folder="{{ folder.id }}"{% endif %}{% if oob %} hx-swap-oob="outerHTML:#folder-card-{{ folder.id }}"{% endif %}>
   <a href="/console?folderId={{ folder.id }}" class="folder-card-link">
     <div class="folder-card-icon">
       <span class="material-symbols-outlined">folder</span>

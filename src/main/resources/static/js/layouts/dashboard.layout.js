@@ -1,4 +1,5 @@
 import "htmx.org";
+import { fillItemSummary } from "../shared/components/item-summary.component.js";
 
 /**
  * Mirrors a popover dropdown's open state onto its invoker's aria-expanded,
@@ -63,9 +64,20 @@ function styleConfirmActions(dialog, cfg) {
 }
 
 /**
+ * Reads the titles of the items a confirm prompt applies to.
+ * @param {string} [selector] - Selects the elements that carry a data-title.
+ * @returns {string[]} The titles, empty when there is no selector.
+ */
+function confirmItems(selector) {
+  if (!selector) return [];
+
+  return [...document.querySelectorAll(selector)].map(el => el.dataset.title);
+}
+
+/**
  * Builds a confirm dialog from the template for the given prompt. hx-confirm is
- * the question; an optional description, icon, action label and destructive
- * styling come from data-confirm-* hooks on the trigger.
+ * the question; an optional description, item list, icon, action label and
+ * destructive styling come from data-confirm-* hooks on the trigger.
  * @param {string} question - The hx-confirm question, shown as the title.
  * @param {DOMStringMap} cfg - The trigger's data-confirm-* dataset.
  * @returns {HTMLDialogElement} The populated, detached dialog.
@@ -78,6 +90,10 @@ function buildConfirmDialog(question, cfg) {
   fillSlot(dialog, ".confirm-icon", cfg.confirmIcon);
   fillSlot(dialog, ".confirm-description", cfg.confirmDescription);
   if (!cfg.confirmDescription) dialog.removeAttribute("aria-describedby");
+  fillItemSummary(
+    dialog.querySelector(".item-summary"),
+    confirmItems(cfg.confirmItems)
+  );
 
   styleConfirmActions(dialog, cfg);
 

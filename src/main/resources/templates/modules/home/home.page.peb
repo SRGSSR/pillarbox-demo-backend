@@ -92,6 +92,51 @@
 {{ parent() }}
 {% include "../../shared/components/snackbar.component.peb" %}
 
+{# The batch actions submit the checked cards. Their response removes the cards
+   and fills the snackbar, see media-batch.fragment.peb. #}
+<div class="selection-bar" id="selection-bar" role="toolbar" aria-label="Selection actions" hidden>
+  <button class="btn-icon" type="button" data-selection-action="clear" aria-label="Clear selection" title="Clear selection">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+  <span class="selection-count" aria-live="polite"></span>
+  {# The labels are hidden on narrow screens, where the title names the button. #}
+  <button class="btn-icon" type="button" data-selection-action="all" title="Select all">
+    <span class="material-symbols-outlined" aria-hidden="true">select_all</span>
+    <span class="selection-label">Select all</span>
+  </button>
+  <span class="selection-separator" aria-hidden="true"></span>
+  <button class="btn-icon" type="button" title="Move to Folder"
+          data-open-move-dialog
+          hx-get="/console/fragments/folder-picker{% if folder is not empty %}?folderId={{ folder.id }}{% endif %}"
+          hx-target="#move-folder-dialog"
+          hx-swap="innerHTML">
+    <span class="material-symbols-outlined" aria-hidden="true">drive_file_move</span>
+    <span class="selection-label">Move to Folder</span>
+  </button>
+  {% if folder is not empty %}
+  <button class="btn-icon" type="button" data-selection-action="remove" title="Remove from folder"
+          hx-post="/console/actions/folder/{{ folder.id }}/media/batch-remove"
+          hx-include="[data-select-media]:checked"
+          hx-swap="none">
+    <span class="material-symbols-outlined" aria-hidden="true">folder_off</span>
+    <span class="selection-label">Remove from folder</span>
+  </button>
+  {% endif %}
+  <button class="btn-icon danger" type="button" title="Delete"
+          hx-post="/console/actions/media/batch-delete"
+          hx-include="[data-select-media]:checked"
+          hx-swap="none"
+          hx-confirm="Move the selected media to the Bin?"
+          data-confirm-description="Only an administrator can restore them."
+          data-confirm-items="[data-select-media]:checked"
+          data-confirm-danger
+          data-confirm-icon="delete"
+          data-confirm-action="Move to Bin">
+    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+    <span class="selection-label">Delete</span>
+  </button>
+</div>
+
 <dialog closedby="any" id="move-folder-dialog" class="move-folder-dialog"></dialog>
 <dialog closedby="any" id="folder-permissions-dialog" class="folder-permissions-dialog"></dialog>
 <dialog closedby="any" id="new-folder-dialog" class="new-folder-dialog">

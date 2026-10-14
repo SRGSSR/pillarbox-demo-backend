@@ -33,6 +33,25 @@ suspend fun RoutingContext.requireMediaWrite(mediaId: String?): Boolean =
   }
 
 /**
+ * Whether the authenticated user may write every one of the given [mediaIds],
+ * otherwise responds [HttpStatusCode.Forbidden] and returns false.
+ *
+ * @param mediaIds The media that must all be writable.
+ * @return true if the user has write permission to all the given media, false otherwise.
+ */
+suspend fun RoutingContext.requireMediaWrite(mediaIds: List<String>): Boolean =
+  if (call.permissionChecker
+      .canWriteMedia(call.user, mediaIds)
+      .values
+      .all { it }
+  ) {
+    true
+  } else {
+    call.respond(HttpStatusCode.Forbidden)
+    false
+  }
+
+/**
  * Whether authenticated user may write every one of the given [folderIds],
  * otherwise responds [HttpStatusCode.Forbidden] and returns false.
  *
@@ -80,4 +99,18 @@ suspend inline fun RoutingContext.withMediaWrite(
   block: suspend () -> Unit,
 ) {
   if (requireMediaWrite(mediaId)) block()
+}
+
+/**
+ * Runs [block] only if the authenticated user may write every one of the given [mediaIds],
+ * otherwise responds [HttpStatusCode.Forbidden] and skips it.
+ *
+ * @param mediaIds The media that must all be writable.
+ * @param block The work to perform when access is granted.
+ */
+suspend inline fun RoutingContext.withMediaWrite(
+  mediaIds: List<String>,
+  block: suspend () -> Unit,
+) {
+  if (requireMediaWrite(mediaIds)) block()
 }

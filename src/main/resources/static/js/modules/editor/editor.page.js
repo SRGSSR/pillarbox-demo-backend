@@ -317,3 +317,62 @@ if (form) {
     if (form.hasAttribute('data-submitted')) syncTabErrors();
   });
 }
+
+/**
+ * Parses the field errors of a failed response.
+ * @param {XMLHttpRequest} xhr - The failed request.
+ * @returns {Object<string, string>|undefined} The message for each field form name, if any.
+ */
+function parseFieldErrors(xhr) {
+  if (!xhr.getResponseHeader('Content-Type')?.startsWith('application/json')) return undefined;
+
+  try {
+    return JSON.parse(xhr.responseText).errors;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Marks each rejected form field invalid with its message, then reveals the
+ * first one. A field's message clears as soon as it is edited.
+ * @param {Object<string, string>} errors - The message for each field form name.
+ */
+function flagFormFields(errors) {
+  Object.entries(errors).forEach(([name, message]) => {
+    const input = form.elements[name];
+
+    input?.setCustomValidity(message);
+    input?.addEventListener('input', () => input.setCustomValidity(''), {once: true});
+  });
+
+  form.setAttribute('data-submitted', '');
+  syncTabErrors();
+  activateFirstErrorTab();
+  form.reportValidity();
+}
+
+/**
+ * Shows the server's field errors in the active view. In the JSON view the
+ * form is hidden, so the messages go to the JSON editor's error strip.
+ * @param {Object<string, string>} errors - The message for each field form name.
+ */
+function showFieldErrors(errors) {
+  if (jsonView?.active()) {
+    jsonView.showError(Object.entries(errors).map(([name, message]) => `${name}: ${message}`).join('; '));
+  } else {
+    flagFormFields(errors);
+  }
+}
+
+/**
+ * Shows the field errors of a rejected save.
+ * @listens document#htmx:afterRequest
+ */
+document.addEventListener('htmx:afterRequest', (e) => {
+  if (e.target !== form || e.detail.successful) return;
+
+  const errors = parseFieldErrors(e.detail.xhr);
+
+  if (errors) showFieldErrors(errors);
+});

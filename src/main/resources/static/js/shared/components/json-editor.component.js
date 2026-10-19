@@ -152,7 +152,7 @@ function createInput(name) {
  * @param {number} [revalidationDebounce] - Quiet period in ms before
  *   re-validating edits.
  *
- * @returns {{setText: Function, getText: Function, read: Function}} The editor API.
+ * @returns {{setText: Function, getText: Function, read: Function, showError: Function}} The editor API.
  */
 export function createJsonEditor(
   element,
@@ -193,5 +193,10 @@ export function createJsonEditor(
      * @returns {{valid: boolean, value: (*|undefined)}} The parse outcome.
      */
     read: () => parseText(jar.toString(), code, error, Boolean(input)),
+    /**
+     * Shows a message in the error strip until the next edit.
+     * @param {string} message - The message to display.
+     */
+    showError: (message) => renderError(code, error, message),
   };
 }

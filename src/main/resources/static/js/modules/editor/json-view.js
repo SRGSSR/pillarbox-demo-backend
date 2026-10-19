@@ -86,8 +86,9 @@ async function leaveJsonView(serialize) {
  * Wires the JSON view: the toggle switches views, and while the JSON view
  * is active the editor text is the payload submitted by the form.
  * @param {function(): string} serialize - Serializes the form to JSON text.
- * @returns {{active: function(): boolean, text: function(): string}|null}
- *   Accessors for the submit path, or null when the page has no JSON view.
+ * @returns {{active: function(): boolean, text: function(): string,
+ *   showError: function(string): void}|null} Accessors for the submit path,
+ *   or null when the page has no JSON view.
  */
 export function initJsonView(serialize) {
   if (!editor || !toggle) return null;
@@ -113,5 +114,9 @@ export function initJsonView(serialize) {
     }
   });
 
-  return {active: jsonViewActive, text: editor.getText};
+  return {
+    active: jsonViewActive,
+    text: editor.getText,
+    showError: editor.showError,
+  };
 }

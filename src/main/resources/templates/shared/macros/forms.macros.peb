@@ -1,8 +1,8 @@
-{% macro inputText(name, label, value, required=false, placeholder="", list="") %}
+{% macro inputText(name, label, value, required=false, placeholder="", list="", readonly=false) %}
 <div class="field">
     <label for="{{ name }}">{{ label }}</label>
     <input type="text" id="{{ name }}" name="{{ name }}" value="{{ value }}"
-           placeholder="{{ placeholder }}"{% if required %} required{% endif %}{% if list %} list="{{ list }}"{% endif %}>
+           placeholder="{{ placeholder }}"{% if required %} required{% endif %}{% if list %} list="{{ list }}"{% endif %}{% if readonly %} readonly{% endif %}>
 </div>
 {% endmacro %}
 

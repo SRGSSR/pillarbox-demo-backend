@@ -17,7 +17,7 @@
   {% endif %}
 
   <div class="folder-picker-list"
-       hx-get="/console/fragments/folder-picker-child?mediaId={{ mediaId }}{% if folder is not empty %}&currentFolderId={{ folder.id }}{% endif %}"
+       hx-get="/console/fragments/folder-picker-child?mediaId={{ mediaId | urlPart }}{% if folder is not empty %}&currentFolderId={{ folder.id }}{% endif %}"
        hx-trigger="load"
        hx-swap="innerHTML">
     <p>Loading…</p>
@@ -28,7 +28,7 @@
     <button type="button"
             class="folder-picker-unassign"
             {% if mediaId is not empty %}
-            hx-delete="/console/actions/folder/{{ folder.id }}/media/{{ mediaId }}"
+            hx-delete="/console/actions/folder/{{ folder.id }}/media/{{ mediaId | urlPart }}"
             {% else %}
             hx-post="/console/actions/folder/{{ folder.id }}/media/batch-remove"
             hx-include="[data-select-media]:checked"

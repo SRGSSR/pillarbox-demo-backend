@@ -1,5 +1,6 @@
 package ch.srgssr.pillarbox.backend.adapter.web.console
 
+import ch.srgssr.pillarbox.backend.adapter.web.http.respondFieldErrors
 import ch.srgssr.pillarbox.backend.adapter.web.http.withFolderWrite
 import ch.srgssr.pillarbox.backend.adapter.web.http.withMediaWrite
 import ch.srgssr.pillarbox.backend.adapter.web.http.withRole
@@ -112,20 +113,55 @@ fun Route.editorPage(
       val request = call.receive<Media>()
       val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
 
-      // Overwriting an existing media is governed by its folder; the destination folder gates the save.
-      withMediaWrite(request.id.takeIf { mediaCatalog.exists(it) }) {
-        withFolderWrite(folderId) {
-          logger.info { "Saving media: ${request.id}, folderId=$folderId" }
-          val media = mediaCatalog.save(request)
-          folderId?.let { folderCatalog.assignMedia(it, media.id) }
+      if (mediaCatalog.exists(request.id)) {
+        return@post call.respondFieldErrors(HttpStatusCode.Conflict, "id" to "A media with this ID already exists")
+      }
 
-          val redirect = if (folderId != null) "/console?folderId=$folderId" else "/console"
-          call.response.headers.append("HX-Redirect", redirect)
-          call.respond(HttpStatusCode.OK)
+      withFolderWrite(folderId) {
+        logger.info { "Creating media: ${request.id}, folderId=$folderId" }
+        saveMedia(mediaCatalog, folderCatalog, request, folderId)
+      }
+    }
+
+    hx.post("actions/media/{id}") {
+      val id = call.parameters.getOrFail("id")
+      val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
+
+      if (!mediaCatalog.exists(id)) return@post call.respond(HttpStatusCode.NotFound)
+      val request = call.receive<Media>()
+
+      // Overwriting an existing media is governed by its folder; the destination folder gates the save.
+      withMediaWrite(id) {
+        withFolderWrite(folderId) {
+          logger.info { "Updating media: $id, folderId=$folderId" }
+          // The path identifies the media; the body cannot change its id.
+          saveMedia(mediaCatalog, folderCatalog, request.copy(id = id), folderId)
         }
       }
     }
   }
+}
+
+/**
+ * Persists the media, assigns it to the folder, and redirects the browser to the folder view.
+ *
+ * @param mediaCatalog Repository used to persist the media.
+ * @param folderCatalog Repository used to assign the media to the folder.
+ * @param media The media to persist.
+ * @param folderId The folder to assign the media to, or null for the root scope.
+ */
+private suspend fun RoutingContext.saveMedia(
+  mediaCatalog: MediaCatalog,
+  folderCatalog: FolderCatalog,
+  media: Media,
+  folderId: String?,
+) {
+  val saved = mediaCatalog.save(media)
+  folderId?.let { folderCatalog.assignMedia(it, saved.id) }
+
+  val redirect = if (folderId != null) "/console?folderId=$folderId" else "/console"
+  call.response.headers.append("HX-Redirect", redirect)
+  call.respond(HttpStatusCode.OK)
 }
 
 /**

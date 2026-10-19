@@ -14,7 +14,7 @@
 {% block mainContent %}
 <main class="editor-main">
   <form class="media-form"
-        hx-post="/console/actions/media{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
+        hx-post="/console/actions/media{% if exists %}/{{ item.id | urlPart }}{% endif %}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
         hx-ext="dot-json">
 
     <header class="editor-toolbar">
@@ -60,7 +60,7 @@
     <div class="tab-panel" id="panel-general" role="tabpanel" aria-labelledby="tab-btn-general">
       <article class="tab-section">
         <div class="form-row form-row-two-one">
-          {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345") }}
+          {{ inputText("id", "Media ID", item.id, placeholder = "e.g. urn:pillarbox:12345", readonly=exists) }}
           {{ inputDateTime("expiresAt", "Expires", item.expiresAt | datetimeInput, timeZone) }}
         </div>
         {{ inputArray("tags", "Tags", item.tags | join(","), placeholder = "Comma-separated, e.g. hls, block-segment, live") }}

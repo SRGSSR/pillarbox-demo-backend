@@ -1,6 +1,7 @@
 package ch.srgssr.pillarbox.backend.adapter.web.http
 
 import ch.srgssr.pillarbox.backend.time.toZonedDateTime
+import io.ktor.http.encodeURLParameter
 import io.pebbletemplates.pebble.extension.AbstractExtension
 import io.pebbletemplates.pebble.extension.Filter
 import io.pebbletemplates.pebble.template.EvaluationContext
@@ -22,6 +23,7 @@ class PillarboxPebbleExtension(
     mapOf(
       "datetime" to DateTimeFilter(zone),
       "datetimeInput" to DateTimeInputFilter(zone),
+      "urlPart" to UrlPartFilter,
     )
 
   override fun getGlobalVariables(): Map<String, Any> = mapOf("timeZone" to zone.id)
@@ -70,4 +72,21 @@ private class DateTimeInputFilter(
     context: EvaluationContext?,
     lineNumber: Int,
   ): Any? = (input as? Instant)?.toZonedDateTime(zone)?.format(formatter) ?: input
+}
+
+/**
+ * Percent-encodes a string for use as one URL path segment or query value, e.g. `a#b c` becomes
+ * `a%23b%20c`. Unlike Pebble's `urlencode`, spaces become `%20`, which is valid in a path.
+ * A `null` input is returned unchanged.
+ */
+private object UrlPartFilter : Filter {
+  override fun getArgumentNames(): List<String>? = null
+
+  override fun apply(
+    input: Any?,
+    args: Map<String, Any>?,
+    self: PebbleTemplate?,
+    context: EvaluationContext?,
+    lineNumber: Int,
+  ): Any? = input?.toString()?.encodeURLParameter()
 }

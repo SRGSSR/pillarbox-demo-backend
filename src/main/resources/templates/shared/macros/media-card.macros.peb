@@ -41,7 +41,7 @@
       {% else %}
       {# Stretched over the whole card, see .media-card-link. #}
       <a class="media-card-link" draggable="false"
-         href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+         href="/console/editor/{{ media.id | urlPart }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
         {{ media.metadata.title | default('Untitled Asset') }}
       </a>
       {% endif %}
@@ -83,11 +83,11 @@
       <span class="material-symbols-outlined">more_vert</span>
     </button>
     <div class="dropdown" popover id="media-menu-{{ media.id }}">
-      <a class="btn dropdown-item" href="/console/editor/{{ media.id }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+      <a class="btn dropdown-item" href="/console/editor/{{ media.id | urlPart }}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
         <span class="material-symbols-outlined">edit</span>
         Edit
       </a>
-      <a class="btn dropdown-item" href="/console/editor/{{ media.id }}/duplicate{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
+      <a class="btn dropdown-item" href="/console/editor/{{ media.id | urlPart }}/duplicate{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}">
         <span class="material-symbols-outlined">content_copy</span>
         Duplicate
       </a>
@@ -95,7 +95,7 @@
       <button class="btn dropdown-item" type="button"
               data-open-move-dialog
               data-media-id="{{ media.id }}"
-              hx-get="/console/fragments/folder-picker?mediaId={{ media.id }}{% if folderId is not empty %}&folderId={{ folderId }}{% endif %}"
+              hx-get="/console/fragments/folder-picker?mediaId={{ media.id | urlPart }}{% if folderId is not empty %}&folderId={{ folderId }}{% endif %}"
               hx-target="#move-folder-dialog"
               hx-swap="innerHTML"
               onclick="this.closest('[popover]').hidePopover()">
@@ -103,7 +103,7 @@
         Move to Folder
       </button>
       <button class="btn dropdown-item danger" type="button"
-              hx-delete="/console/actions/media/{{ media.id }}"
+              hx-delete="/console/actions/media/{{ media.id | urlPart }}"
               hx-target="[id='media-card-{{ media.id }}']"
               hx-swap="outerHTML"
               hx-confirm="Move '{{ media.metadata.title }}' to the Bin?"
@@ -116,7 +116,7 @@
       </button>
       {% else %}
       <button class="btn dropdown-item" type="button"
-              hx-post="/console/actions/media/{{ media.id }}/restore"
+              hx-post="/console/actions/media/{{ media.id | urlPart }}/restore"
               hx-target="[id='media-card-{{ media.id }}']"
               hx-swap="outerHTML"
               hx-confirm="Restore '{{ media.metadata.title }}' to the library?"

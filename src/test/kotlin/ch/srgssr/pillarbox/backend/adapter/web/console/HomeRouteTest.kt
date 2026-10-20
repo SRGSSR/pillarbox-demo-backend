@@ -17,7 +17,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -238,7 +237,8 @@ class HomeRouteTest :
 
         val removed =
           client.hxDelete("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-            media.take(2).forEach { parameter("mediaId", it.id) }
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
           }
         removed shouldHaveStatus HttpStatusCode.OK
 
@@ -273,7 +273,8 @@ class HomeRouteTest :
 
         val removed =
           client.hxDelete("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-            listOf(media[0], media[2]).forEach { parameter("mediaId", it.id) }
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(listOf(media[0], media[2]).map { "mediaId" to it.id }.formUrlEncode())
           }
         removed shouldHaveStatus HttpStatusCode.OK
 
@@ -368,7 +369,8 @@ class HomeRouteTest :
           HttpStatusCode.UnsupportedMediaType
         client.hxPut("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
           HttpStatusCode.NotFound
-        client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus HttpStatusCode.BadRequest
+        client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus
+          HttpStatusCode.UnsupportedMediaType
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
           HttpStatusCode.NotFound
       }

@@ -119,6 +119,8 @@ document.addEventListener("click", function(e) {
 document.addEventListener("htmx:afterRequest", function(e) {
   if (!e.target.classList.contains("folder-picker-unassign") || !e.detail.successful) return;
 
-  document.getElementById("move-folder-dialog")?.close();
-  if (e.target.hasAttribute("hx-delete")) showSnackbar("Removed from folder");
+  const dialog = e.target.closest("dialog");
+
+  if (dialog.querySelector("#picker-media-id").value) showSnackbar("Removed from folder");
+  dialog.close();
 });

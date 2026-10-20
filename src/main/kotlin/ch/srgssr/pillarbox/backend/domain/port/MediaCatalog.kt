@@ -59,6 +59,14 @@ interface MediaCatalog {
   suspend fun save(item: Media): Media
 
   /**
+   * Inserts a new media item.
+   *
+   * @param item The media to create.
+   * @return The created media, or null if a media with the same id already exists.
+   */
+  suspend fun create(item: Media): Media?
+
+  /**
    * Marks a media item as deleted without removing it from the database.
    *
    * @param id The unique identifier of the media to soft-delete.

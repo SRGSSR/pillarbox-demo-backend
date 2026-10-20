@@ -299,7 +299,7 @@ private fun Route.folderActions(
 
   hx.delete("actions/folder/{id}/media") {
     val id = call.parameters.getOrFail("id")
-    val mediaIds = call.queryParameters.getAll("mediaId") ?: return@delete call.respond(HttpStatusCode.BadRequest)
+    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@delete call.respond(HttpStatusCode.BadRequest)
     val folder = folderCatalog.find(id) ?: return@delete call.respond(HttpStatusCode.NotFound)
 
     withFolderWrite(id) {

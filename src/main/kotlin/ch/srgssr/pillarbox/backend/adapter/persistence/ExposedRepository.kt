@@ -18,6 +18,7 @@ import org.jetbrains.exposed.v1.core.statements.UpsertBuilder
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insertIgnore
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
@@ -35,6 +36,7 @@ import org.jetbrains.exposed.v1.jdbc.upsert
  * @property table The Exposed [Table] definition.
  * @property idColumn The specific [Column] used as the primary lookup key.
  */
+@SuppressWarnings("TooManyFunctions")
 abstract class ExposedRepository<T, ID>(
   protected val db: Database,
   protected val table: Table,
@@ -184,6 +186,24 @@ abstract class ExposedRepository<T, ID>(
       table
         .selectAll()
         .where { idColumn eq id }
+        .single()
+        .decode()
+    }
+
+  /**
+   * Inserts a new resource, leaving any existing resource with the same id untouched.
+   *
+   * @param item The entity to insert.
+   *
+   * @return The inserted entity, or null if a resource with the same id already exists.
+   */
+  open suspend fun create(item: T): T? =
+    query {
+      val stmt = table.insertIgnore { encode(it, item) }
+      if (stmt.insertedCount == 0) return@query null
+      table
+        .selectAll()
+        .where { idColumn eq stmt[idColumn] }
         .single()
         .decode()
     }

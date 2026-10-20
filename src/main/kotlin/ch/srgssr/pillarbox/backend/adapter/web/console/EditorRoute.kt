@@ -22,6 +22,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.util.getOrFail
 import io.ktor.utils.io.ExperimentalKtorApi
 
@@ -123,11 +124,11 @@ fun Route.editorPage(
       }
     }
 
-    hx.post("actions/media/{id}") {
+    hx.put("actions/media/{id}") {
       val id = call.parameters.getOrFail("id")
       val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
 
-      if (!mediaCatalog.exists(id)) return@post call.respond(HttpStatusCode.NotFound)
+      if (!mediaCatalog.exists(id)) return@put call.respond(HttpStatusCode.NotFound)
       val request = call.receive<Media>()
 
       // Overwriting an existing media is governed by its folder; the destination folder gates the save.

@@ -30,7 +30,7 @@
             {% if mediaId is not empty %}
             hx-delete="/console/actions/folder/{{ folder.id }}/media/{{ mediaId | urlPart }}"
             {% else %}
-            hx-post="/console/actions/folder/{{ folder.id }}/media/batch-remove"
+            hx-delete="/console/actions/folder/{{ folder.id }}/media"
             hx-include="[data-select-media]:checked"
             {% endif %}
             hx-swap="none">

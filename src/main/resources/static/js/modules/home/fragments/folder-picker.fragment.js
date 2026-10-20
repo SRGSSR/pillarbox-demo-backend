@@ -78,8 +78,7 @@ function moveToFolder(mediaId, folderId, folderName) {
     return assignMedia(selectedMedia().map(item => item.id), folderId);
   }
 
-  return htmx.ajax("POST", `/console/actions/folder/${folderId}/media`, {
-    values: { mediaId },
+  return htmx.ajax("PUT", `/console/actions/folder/${folderId}/media/${encodeURIComponent(mediaId)}`, {
     swap: "none",
   }).then(() => showSnackbar(`Moved to "${folderName}"`));
 }

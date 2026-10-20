@@ -25,6 +25,7 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.util.getOrFail
 import io.ktor.utils.io.ExperimentalKtorApi
 
@@ -212,15 +213,15 @@ private fun Route.folderActions(
     }
   }
 
-  hx.post("actions/folder/{id}/media") {
+  hx.put("actions/folder/{id}/media/{mediaId}") {
     val id = call.parameters.getOrFail("id")
-    val mediaId = call.receiveParameters().getOrFail("mediaId")
+    val mediaId = call.parameters.getOrFail("mediaId")
 
     logger.info { "Assigning media $mediaId to folder $id" }
 
-    val folder = folderCatalog.find(id) ?: return@post call.respond(HttpStatusCode.NotFound)
-    if (!mediaCatalog.exists(mediaId)) return@post call.respond(HttpStatusCode.UnprocessableEntity)
-    if (folderCatalog.isMediaInFolder(id, mediaId)) return@post call.respond(HttpStatusCode.OK)
+    val folder = folderCatalog.find(id) ?: return@put call.respond(HttpStatusCode.NotFound)
+    if (!mediaCatalog.exists(mediaId)) return@put call.respond(HttpStatusCode.UnprocessableEntity)
+    if (folderCatalog.isMediaInFolder(id, mediaId)) return@put call.respond(HttpStatusCode.OK)
 
     withFolderWrite(id) {
       withMediaWrite(mediaId) {
@@ -269,7 +270,7 @@ private fun Route.folderActions(
     }
   }
 
-  hx.post("actions/folder/{id}/media/batch-assign") {
+  hx.post("actions/folder/{id}/media") {
     val id = call.parameters.getOrFail("id")
     val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
     val folder = folderCatalog.find(id) ?: return@post call.respond(HttpStatusCode.NotFound)
@@ -296,10 +297,10 @@ private fun Route.folderActions(
     }
   }
 
-  hx.post("actions/folder/{id}/media/batch-remove") {
+  hx.delete("actions/folder/{id}/media") {
     val id = call.parameters.getOrFail("id")
-    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
-    val folder = folderCatalog.find(id) ?: return@post call.respond(HttpStatusCode.NotFound)
+    val mediaIds = call.queryParameters.getAll("mediaId") ?: return@delete call.respond(HttpStatusCode.BadRequest)
+    val folder = folderCatalog.find(id) ?: return@delete call.respond(HttpStatusCode.NotFound)
 
     withFolderWrite(id) {
       logger.info { "Removing ${mediaIds.size} media from folder $id" }

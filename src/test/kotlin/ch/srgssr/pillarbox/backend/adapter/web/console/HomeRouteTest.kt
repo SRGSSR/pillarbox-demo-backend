@@ -7,6 +7,7 @@ import ch.srgssr.pillarbox.backend.test.hxDelete
 import ch.srgssr.pillarbox.backend.test.hxGet
 import ch.srgssr.pillarbox.backend.test.hxPatch
 import ch.srgssr.pillarbox.backend.test.hxPost
+import ch.srgssr.pillarbox.backend.test.hxPut
 import ch.srgssr.pillarbox.backend.test.login
 import ch.srgssr.pillarbox.backend.test.mediaFixture
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
@@ -16,6 +17,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -162,10 +164,7 @@ class HomeRouteTest :
         val folderId = client.createFolder("Test Folder")
 
         val response =
-          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(listOf("mediaID" to media.id).formUrlEncode())
-          }
+          client.hxPut("${Navigation.CONSOLE}/actions/folder/$folderId/media/${media.id}")
         response shouldHaveStatus HttpStatusCode.OK
 
         Jsoup.parse(response.bodyAsText()).select(".folder-card-count").text() shouldBe "1 item"
@@ -181,10 +180,8 @@ class HomeRouteTest :
           setBody(media)
         }
 
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/not-a-folder/media") {
-          contentType(ContentType.Application.FormUrlEncoded)
-          setBody(listOf("mediaID" to media.id).formUrlEncode())
-        } shouldHaveStatus HttpStatusCode.NotFound
+        client.hxPut("${Navigation.CONSOLE}/actions/folder/not-a-folder/media/${media.id}") shouldHaveStatus
+          HttpStatusCode.NotFound
       }
     }
 
@@ -193,10 +190,8 @@ class HomeRouteTest :
         login()
         val folderId = client.createFolder("Test Folder")
 
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-          contentType(ContentType.Application.FormUrlEncoded)
-          setBody(listOf("mediaID" to "non-existent-media").formUrlEncode())
-        } shouldHaveStatus HttpStatusCode.UnprocessableEntity
+        client.hxPut("${Navigation.CONSOLE}/actions/folder/$folderId/media/non-existent-media") shouldHaveStatus
+          HttpStatusCode.UnprocessableEntity
       }
     }
 
@@ -209,10 +204,7 @@ class HomeRouteTest :
           setBody(media)
         }
         val folderId = client.createFolder("Test Folder")
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
-          contentType(ContentType.Application.FormUrlEncoded)
-          setBody(listOf("mediaID" to media.id).formUrlEncode())
-        }
+        client.hxPut("${Navigation.CONSOLE}/actions/folder/$folderId/media/${media.id}")
 
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/$folderId/media/${media.id}") shouldHaveStatus
           HttpStatusCode.OK
@@ -232,7 +224,7 @@ class HomeRouteTest :
         val folderId = client.createFolder("Test Folder")
 
         val assigned =
-          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(media.map { "mediaId" to it.id }.formUrlEncode())
           }
@@ -245,9 +237,8 @@ class HomeRouteTest :
         }
 
         val removed =
-          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-remove") {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
+          client.hxDelete("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
+            media.take(2).forEach { parameter("mediaId", it.id) }
           }
         removed shouldHaveStatus HttpStatusCode.OK
 
@@ -271,7 +262,7 @@ class HomeRouteTest :
         }
         val folderId = client.createFolder("Test Folder")
         val otherFolderId = client.createFolder("Other Folder")
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
           contentType(ContentType.Application.FormUrlEncoded)
           setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
         }
@@ -281,9 +272,8 @@ class HomeRouteTest :
         }
 
         val removed =
-          client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-remove") {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(listOf(media[0], media[2]).map { "mediaId" to it.id }.formUrlEncode())
+          client.hxDelete("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
+            listOf(media[0], media[2]).forEach { parameter("mediaId", it.id) }
           }
         removed shouldHaveStatus HttpStatusCode.OK
 
@@ -306,7 +296,7 @@ class HomeRouteTest :
         }
         val folderId = client.createFolder("Test Folder")
 
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media/batch-assign") {
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/$folderId/media") {
           contentType(ContentType.Application.FormUrlEncoded)
           setBody(listOf("mediaId" to media.id, "mediaId" to "not-a-media").formUrlEncode())
         } shouldHaveStatus HttpStatusCode.UnprocessableEntity
@@ -316,7 +306,7 @@ class HomeRouteTest :
     should("return NOT_FOUND when assigning several media to a non-existent folder") {
       testApplicationContext {
         login()
-        client.hxPost("${Navigation.CONSOLE}/actions/folder/not-a-folder/media/batch-assign") {
+        client.hxPost("${Navigation.CONSOLE}/actions/folder/not-a-folder/media") {
           contentType(ContentType.Application.FormUrlEncoded)
           setBody(listOf("mediaId" to "any-id").formUrlEncode())
         } shouldHaveStatus HttpStatusCode.NotFound
@@ -353,6 +343,9 @@ class HomeRouteTest :
         client.hxPatch("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxPost("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus HttpStatusCode.Forbidden
+        client.hxPut("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
+          HttpStatusCode.Forbidden
+        client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus HttpStatusCode.Forbidden
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
           HttpStatusCode.Forbidden
       }
@@ -373,6 +366,9 @@ class HomeRouteTest :
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id") shouldHaveStatus HttpStatusCode.NotFound
         client.hxPost("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus
           HttpStatusCode.UnsupportedMediaType
+        client.hxPut("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
+          HttpStatusCode.NotFound
+        client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media") shouldHaveStatus HttpStatusCode.BadRequest
         client.hxDelete("${Navigation.CONSOLE}/actions/folder/any-id/media/any-id") shouldHaveStatus
           HttpStatusCode.NotFound
       }

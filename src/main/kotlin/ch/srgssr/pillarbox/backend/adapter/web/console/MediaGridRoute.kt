@@ -17,7 +17,6 @@ import ch.srgssr.pillarbox.backend.log.info
 import ch.srgssr.pillarbox.backend.log.logger
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.htmx.hx
-import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
@@ -122,8 +121,8 @@ fun Route.mediaGridActions(mediaCatalog: MediaCatalog) {
     }
   }
 
-  hx.post("actions/media/batch-delete") {
-    val mediaIds = call.receiveParameters().getAll("mediaId") ?: return@post call.respond(HttpStatusCode.BadRequest)
+  hx.delete("actions/media") {
+    val mediaIds = call.queryParameters.getAll("mediaId") ?: return@delete call.respond(HttpStatusCode.BadRequest)
 
     withMediaWrite(mediaIds) {
       logger.info { "Attempting to delete ${mediaIds.size} media" }

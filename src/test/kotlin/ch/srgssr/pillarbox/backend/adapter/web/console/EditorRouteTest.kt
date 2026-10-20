@@ -8,6 +8,7 @@ import ch.srgssr.pillarbox.backend.test.MediaLibrary
 import ch.srgssr.pillarbox.backend.test.get
 import ch.srgssr.pillarbox.backend.test.hxGet
 import ch.srgssr.pillarbox.backend.test.hxPost
+import ch.srgssr.pillarbox.backend.test.hxPut
 import ch.srgssr.pillarbox.backend.test.login
 import ch.srgssr.pillarbox.backend.test.mediaFixture
 import ch.srgssr.pillarbox.backend.test.testApplicationContext
@@ -148,7 +149,7 @@ class EditorRouteTest :
         val doc = Jsoup.parse(client.get("${Navigation.CONSOLE}/editor/${media.id}").bodyAsText())
 
         doc["input[name='id']"].first()?.hasAttr("readonly") shouldBe true
-        doc["form.media-form"].first()?.attributes()["hx-post"] shouldBe
+        doc["form.media-form"].first()?.attributes()["hx-put"] shouldBe
           "${Navigation.CONSOLE}/actions/media/${media.id}"
       }
     }
@@ -186,7 +187,7 @@ class EditorRouteTest :
           setBody(media)
         }
 
-        client.hxPost("${Navigation.CONSOLE}/actions/media/${media.id}") {
+        client.hxPut("${Navigation.CONSOLE}/actions/media/${media.id}") {
           contentType(ContentType.Application.Json)
           setBody(media.copy(metadata = MediaMetadata(title = "Updated")))
         } shouldHaveStatus HttpStatusCode.OK
@@ -206,7 +207,7 @@ class EditorRouteTest :
           setBody(media)
         }
 
-        client.hxPost("${Navigation.CONSOLE}/actions/media/${media.id}") {
+        client.hxPut("${Navigation.CONSOLE}/actions/media/${media.id}") {
           contentType(ContentType.Application.Json)
           setBody(media.copy(id = "renamed-id", metadata = MediaMetadata(title = "Updated")))
         } shouldHaveStatus HttpStatusCode.OK
@@ -223,7 +224,7 @@ class EditorRouteTest :
       testApplicationContext {
         login()
 
-        client.hxPost("${Navigation.CONSOLE}/actions/media/not-a-media") {
+        client.hxPut("${Navigation.CONSOLE}/actions/media/not-a-media") {
           contentType(ContentType.Application.Json)
           setBody(mediaFixture { id = "not-a-media" })
         } shouldHaveStatus HttpStatusCode.NotFound

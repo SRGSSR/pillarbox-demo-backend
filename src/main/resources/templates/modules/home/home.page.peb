@@ -115,7 +115,7 @@
   </button>
   {% if folder is not empty %}
   <button class="btn-icon" type="button" data-selection-action="remove" title="Remove from folder"
-          hx-post="/console/actions/folder/{{ folder.id }}/media/batch-remove"
+          hx-delete="/console/actions/folder/{{ folder.id }}/media"
           hx-include="[data-select-media]:checked"
           hx-swap="none">
     <span class="material-symbols-outlined" aria-hidden="true">folder_off</span>
@@ -123,7 +123,7 @@
   </button>
   {% endif %}
   <button class="btn-icon danger" type="button" title="Delete"
-          hx-post="/console/actions/media/batch-delete"
+          hx-delete="/console/actions/media"
           hx-include="[data-select-media]:checked"
           hx-swap="none"
           hx-confirm="Move the selected media to the Bin?"

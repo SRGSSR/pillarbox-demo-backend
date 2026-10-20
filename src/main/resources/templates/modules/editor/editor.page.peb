@@ -14,7 +14,7 @@
 {% block mainContent %}
 <main class="editor-main">
   <form class="media-form"
-        hx-post="/console/actions/media{% if exists %}/{{ item.id | urlPart }}{% endif %}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
+        {% if exists %}hx-put="/console/actions/media/{{ item.id | urlPart }}{% else %}hx-post="/console/actions/media{% endif %}{% if folderId is not empty %}?folderId={{ folderId }}{% endif %}"
         hx-ext="dot-json">
 
     <header class="editor-toolbar">

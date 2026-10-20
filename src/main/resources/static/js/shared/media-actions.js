@@ -8,7 +8,7 @@ import htmx from "htmx.org";
  * @returns {Promise<void>} Resolves once the request has completed.
  */
 export function assignMedia(mediaIds, folderId) {
-  return htmx.ajax("POST", `/console/actions/folder/${folderId}/media/batch-assign`, {
+  return htmx.ajax("POST", `/console/actions/folder/${folderId}/media`, {
     values: { mediaId: mediaIds },
     swap: "none",
   });
@@ -23,7 +23,7 @@ export function assignMedia(mediaIds, folderId) {
  * @returns {Promise<void>} Resolves once the request has completed.
  */
 export function removeMedia(mediaIds, folderId) {
-  return htmx.ajax("POST", `/console/actions/folder/${folderId}/media/batch-remove`, {
+  return htmx.ajax("DELETE", `/console/actions/folder/${folderId}/media`, {
     values: { mediaId: mediaIds },
     swap: "none",
   });

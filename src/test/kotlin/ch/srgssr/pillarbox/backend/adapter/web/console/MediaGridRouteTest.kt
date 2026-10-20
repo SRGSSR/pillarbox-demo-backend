@@ -22,13 +22,13 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.formUrlEncode
 import org.jsoup.Jsoup
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -147,7 +147,8 @@ class MediaGridRouteTest :
 
         val response =
           client.hxDelete("${Navigation.CONSOLE}/actions/media") {
-            media.take(2).forEach { parameter("mediaId", it.id) }
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(media.take(2).map { "mediaId" to it.id }.formUrlEncode())
           }
         response shouldHaveStatus HttpStatusCode.OK
 
@@ -193,7 +194,8 @@ class MediaGridRouteTest :
         } shouldHaveStatus HttpStatusCode.Created
 
         client.hxDelete("${Navigation.CONSOLE}/actions/media") {
-          listOf(free, locked).forEach { parameter("mediaId", it.id) }
+          contentType(ContentType.Application.FormUrlEncoded)
+          setBody(listOf(free, locked).map { "mediaId" to it.id }.formUrlEncode())
         } shouldHaveStatus HttpStatusCode.Forbidden
 
         val grid = client.hxGet("${Navigation.CONSOLE}/fragments/media-grid")

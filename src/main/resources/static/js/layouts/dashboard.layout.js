@@ -1,5 +1,8 @@
-import "htmx.org";
+import htmx from "htmx.org";
 import { fillItemSummary } from "../shared/components/item-summary.component.js";
+
+// DELETE sends its parameters in the body like POST: batch media IDs can exceed the request-line limit.
+htmx.config.methodsThatUseUrlParams = ["get"];
 
 /**
  * Mirrors a popover dropdown's open state onto its invoker's aria-expanded,

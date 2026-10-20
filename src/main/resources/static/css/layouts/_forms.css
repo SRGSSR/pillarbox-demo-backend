@@ -75,13 +75,13 @@
 
 /* ── Hover ── */
 
-.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):hover {
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):hover:not(:disabled, [readonly]) {
   background-color: var(--surface-3);
 }
 
 /* ── Focus ── */
 
-.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus {
+.field :is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus:not([readonly]) {
   border-color: var(--accent);
   background-color: var(--surface-1);
   box-shadow: 0 0 0 3px var(--accent-softer);
@@ -113,7 +113,7 @@ label.checkbox {
 
 /* ── Disabled ── */
 
-.field :is(input, textarea, select):disabled {
+.field :is(input, textarea, select):is(:disabled, [readonly]) {
   cursor: not-allowed;
   color: var(--text-2);
   opacity: 0.5;

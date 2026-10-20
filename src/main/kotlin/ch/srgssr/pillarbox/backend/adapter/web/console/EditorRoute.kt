@@ -114,13 +114,15 @@ fun Route.editorPage(
       val request = call.receive<Media>()
       val folderId = call.parameters["folderId"]?.takeIf { it.isNotBlank() }
 
-      if (mediaCatalog.exists(request.id)) {
-        return@post call.respondFieldErrors(HttpStatusCode.Conflict, "id" to "A media with this ID already exists")
-      }
-
       withFolderWrite(folderId) {
         logger.info { "Creating media: ${request.id}, folderId=$folderId" }
-        saveMedia(mediaCatalog, folderCatalog, request, folderId)
+        val media =
+          mediaCatalog.create(request)
+            ?: return@withFolderWrite call.respondFieldErrors(
+              HttpStatusCode.Conflict,
+              "id" to "A media with this ID already exists",
+            )
+        respondSaved(folderCatalog, media, folderId)
       }
     }
 
@@ -136,7 +138,7 @@ fun Route.editorPage(
         withFolderWrite(folderId) {
           logger.info { "Updating media: $id, folderId=$folderId" }
           // The path identifies the media; the body cannot change its id.
-          saveMedia(mediaCatalog, folderCatalog, request.copy(id = id), folderId)
+          respondSaved(folderCatalog, mediaCatalog.save(request.copy(id = id)), folderId)
         }
       }
     }
@@ -144,21 +146,18 @@ fun Route.editorPage(
 }
 
 /**
- * Persists the media, assigns it to the folder, and redirects the browser to the folder view.
+ * Assigns the saved media to the folder and redirects the browser to the folder view.
  *
- * @param mediaCatalog Repository used to persist the media.
  * @param folderCatalog Repository used to assign the media to the folder.
- * @param media The media to persist.
+ * @param media The persisted media.
  * @param folderId The folder to assign the media to, or null for the root scope.
  */
-private suspend fun RoutingContext.saveMedia(
-  mediaCatalog: MediaCatalog,
+private suspend fun RoutingContext.respondSaved(
   folderCatalog: FolderCatalog,
   media: Media,
   folderId: String?,
 ) {
-  val saved = mediaCatalog.save(media)
-  folderId?.let { folderCatalog.assignMedia(it, saved.id) }
+  folderId?.let { folderCatalog.assignMedia(it, media.id) }
 
   val redirect = if (folderId != null) "/console?folderId=$folderId" else "/console"
   call.response.headers.append("HX-Redirect", redirect)

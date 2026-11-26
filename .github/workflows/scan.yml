@@ -99,6 +99,7 @@ jobs:
           version: v0.75.0
           image-ref: ${{ env.IMAGE }}
           timeout: 15m
+          vuln-type: os
           severity: HIGH,CRITICAL
           limit-severities-for-sarif: true
           format: ${{ env.SARIF == 'true' && 'sarif' || 'table' }}

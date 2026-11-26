@@ -8,38 +8,43 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: prod
     permissions:
       id-token: write
     env:
-      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+      IMAGE: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pillarbox-demo-backend
+      VERSION: ${{ inputs.version }}
 
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.GH_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: Pull the selected version of the image
-        run: |
-          docker pull ${{ env.ECR_REGISTRY }}/pillarbox-demo-backend:${{ github.event.inputs.version }}
+        run: docker pull "$IMAGE:$VERSION"
 
       - name: Tag the image as stable
         run: |
-          docker tag ${{ env.ECR_REGISTRY }}/pillarbox-demo-backend:${{ github.event.inputs.version }} ${{ env.ECR_REGISTRY }}/pillarbox-demo-backend:stable
-          docker push ${{ env.ECR_REGISTRY }}/pillarbox-demo-backend:stable
+          docker tag "$IMAGE:$VERSION" "$IMAGE:stable"
+          docker push "$IMAGE:stable"
 
       - name: ECS deployment
-        run: >
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
           aws ecs update-service \
             --cluster pillarbox-demo-backend-cluster \
             --service demo-backend-service \
             --force-new-deployment \
-            --region ${{ secrets.AWS_REGION }} >/dev/null
+            --region "$AWS_REGION" >/dev/null

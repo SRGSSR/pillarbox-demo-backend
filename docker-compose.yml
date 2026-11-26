@@ -46,8 +46,6 @@ services:
     profiles: [full]
     build:
       context: .
-      args:
-        NODE_VERSION: ${NODE_VERSION}
     ports:
       - "8080:8080"
     env_file:

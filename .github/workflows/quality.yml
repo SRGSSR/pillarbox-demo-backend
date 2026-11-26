@@ -5,6 +5,8 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions: {}
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -15,10 +17,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: '.nvmrc'
 
@@ -33,7 +37,7 @@ jobs:
           npm run eslint && npm run stylelint
 
       - name: Set up JDK
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: 'temurin'
           java-version: '26'
@@ -56,4 +60,4 @@ jobs:
           min-coverage-overall: 0
 
       - name: Build Docker image
-        run: docker build -t pillarbox-demo-backend --build-arg NODE_VERSION=$(cat .nvmrc) .
+        run: docker build -t pillarbox-demo-backend .

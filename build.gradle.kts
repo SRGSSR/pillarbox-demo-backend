@@ -27,8 +27,13 @@ group = "ch.srgssr.pillarbox"
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(26)
+    languageVersion = JavaLanguageVersion.of(27)
   }
+}
+
+// The Java tasks target the same Java as Kotlin, or Gradle refuses the build as inconsistent.
+tasks.withType<JavaCompile>().configureEach {
+  options.release = 26
 }
 
 // ==============================================================================
@@ -73,6 +78,8 @@ dependencies {
 
 kotlin {
   compilerOptions {
+    // Kotlin 2.4 writes no bytecode newer than Java 26, which the Java 27 of the toolchain runs.
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_26
     freeCompilerArgs.addAll("-Xjsr305=strict")
   }
 }

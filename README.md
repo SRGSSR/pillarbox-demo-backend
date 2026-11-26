@@ -151,12 +151,16 @@ This project automates its own development workflow using GitHub Actions:
 
 3. **Scan Workflow**
    Runs on every pull request to `main`, on every push to `main` and weekly. zizmor audits the
-   workflows. Trivy scans the Dockerfile and the built image. Both report to the Security tab,
-   beside CodeQL, and fail no job.
+   workflows. Trivy scans the Dockerfile and the operating system packages of the built image.
+   Both report to the Security tab, beside CodeQL, and fail no job.
 
 4. **Promote Workflow**
    Run by hand from `main`. It tags a published version as `stable` in Amazon ECR and restarts the
    production service.
+
+5. **Dependency Submission Workflow**
+   Runs on every push to `main`. It sends the runtime dependencies that Gradle resolves to the
+   GitHub dependency graph, so Dependabot alerts cover the Java libraries.
 
 The jobs that reach AWS run in a GitHub environment. Each environment holds its own secrets and
 deploys from `main` alone. The trust policy of each AWS role accepts the subject
